@@ -1,11 +1,77 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-// The "TOBY Automation Core": a lit, faceted core wrapped in two wireframe
-// shells and a loose particle field. Emerges slowly from darkness on load,
-// drifts and rotates at a deliberately slow pace, leans gently toward the
-// cursor, and dollies/dissolves as the visitor scrolls past the hero —
-// tying the object to the page's camera/scroll narrative rather than
-// spinning on its own as decoration.
+// The "TOBY" 3D wordmark: the four uploaded letter models (T, O, B, Y),
+// normalized to a common scale and lit as one lettering, sitting fixed
+// behind the whole page (see .toby-stage in global.css) rather than
+// confined to the hero — it emerges from darkness once, then stays in
+// place at the same position/size while the visitor scrolls all the way
+// to the footer, dimming slightly outside the hero so page content stays
+// legible instead of dollying/dissolving away.
+const LETTERS = [
+  { file: 't-monogram.glb' },
+  { file: 'o-monogram.glb' },
+  { file: 'b-monogram.glb' },
+  { file: 'Y-monogram.glb' },
+];
+const TARGET_HEIGHT = 2.2;
+const LETTER_GAP = 0.22;
+
+function buildLetterMaterial() {
+  return new THREE.MeshStandardMaterial({
+    color: 0x0c1016,
+    metalness: 0.88,
+    roughness: 0.28,
+    emissive: 0x123a30,
+    emissiveIntensity: 0.5,
+    flatShading: false,
+  });
+}
+
+function normalizeLetter(root) {
+  root.traverse((node) => {
+    if (node.isMesh) {
+      node.material = buildLetterMaterial();
+      node.castShadow = false;
+      node.receiveShadow = false;
+    }
+  });
+  const box = new THREE.Box3().setFromObject(root);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  const scale = TARGET_HEIGHT / (size.y || 1);
+  root.scale.setScalar(scale);
+
+  const box2 = new THREE.Box3().setFromObject(root);
+  const center = new THREE.Vector3();
+  box2.getCenter(center);
+  root.position.y -= center.y;
+  root.position.z -= center.z;
+
+  const size2 = new THREE.Vector3();
+  box2.getSize(size2);
+  return { root, width: size2.x };
+}
+
+async function loadWordmark(scene) {
+  const loader = new GLTFLoader();
+  const letters = await Promise.all(
+    LETTERS.map((l) => loader.loadAsync(`/models/${l.file}`).then((gltf) => normalizeLetter(gltf.scene)))
+  );
+
+  const totalWidth = letters.reduce((sum, l) => sum + l.width, 0) + LETTER_GAP * (letters.length - 1);
+  let cursor = -totalWidth / 2;
+  const wordGroup = new THREE.Group();
+  letters.forEach(({ root, width }) => {
+    root.position.x = cursor + width / 2;
+    root.scale.setScalar(0); // pop-in handled by the entrance tween below
+    wordGroup.add(root);
+    cursor += width + LETTER_GAP;
+  });
+  scene.add(wordGroup);
+  return { wordGroup, letters };
+}
+
 export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   if (!canvas || prefersReducedMotion) return null;
   if (window.innerWidth < 560) return null; // skip on small/low-power screens
@@ -40,41 +106,10 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   accentLight.position.set(2.2, -1.4, 4.2);
   scene.add(accentLight);
 
-  const group = new THREE.Group();
-  scene.add(group);
-
-  // Solid faceted core — this is what actually receives light/reflections.
-  const core = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(1.55, 1),
-    new THREE.MeshStandardMaterial({
-      color: 0x0c1016,
-      metalness: 0.88,
-      roughness: 0.28,
-      emissive: 0x123a30,
-      emissiveIntensity: 0.5,
-      flatShading: true,
-    })
-  );
-  group.add(core);
-
-  // Outer + inner wireframe shells give it structure without competing
-  // with the lit core for attention.
-  const shell = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(2.15, 1),
-    new THREE.MeshBasicMaterial({ color: 0x6ef0c6, wireframe: true, transparent: true, opacity: 0.32 })
-  );
-  group.add(shell);
-
-  const innerShell = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(1.05, 0),
-    new THREE.MeshBasicMaterial({ color: 0x8c7bff, wireframe: true, transparent: true, opacity: 0.28 })
-  );
-  group.add(innerShell);
-
-  const particleCount = 160;
+  const particleCount = 140;
   const positions = new Float32Array(particleCount * 3);
   for (let i = 0; i < particleCount; i++) {
-    const r = 3.4 + Math.random() * 2.4;
+    const r = 3.6 + Math.random() * 2.6;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
@@ -87,27 +122,23 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
     particleGeo,
     new THREE.PointsMaterial({ color: 0xd7fff0, size: 0.03, transparent: true, opacity: 0 })
   );
-  group.add(particles);
+  scene.add(particles);
 
-  // Everything starts invisible/dark; the entrance tween below reveals it.
-  const dimmables = { ambient: 0.04, keyIntensity: 0, rimIntensity: 0, accentIntensity: 0, shellOpacity: 0, innerOpacity: 0, particleOpacity: 0, emissive: 0 };
+  const dimmables = { ambient: 0.04, keyIntensity: 0, rimIntensity: 0, accentIntensity: 0, particleOpacity: 0, emissive: 0 };
   keyLight.intensity = 0;
   rimLight.intensity = 0;
   accentLight.intensity = 0;
-  shell.material.opacity = 0;
-  innerShell.material.opacity = 0;
-  core.material.emissiveIntensity = 0;
-  core.scale.setScalar(0.7);
 
-  let pointerX = 0, pointerY = 0, scrollT = 0, visible = true, raf = null;
+  let pointerX = 0, pointerY = 0, visible = true, raf = null, wordGroup = null;
   let rotTargetX = 0, rotTargetY = 0;
+  let scrollDim = 1; // 1 = full presence (hero), fades to ~0.4 past the hero
   const clock = new THREE.Clock();
 
   function resize() {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    camera.aspect = rect.width / rect.height || 1;
+    const w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h || 1;
     camera.updateProjectionMatrix();
-    renderer.setSize(rect.width, rect.height, false);
+    renderer.setSize(w, h, false);
   }
   resize();
   window.addEventListener('resize', resize);
@@ -117,97 +148,120 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
     pointerY = (e.clientY / window.innerHeight) * 2 - 1;
   });
 
-  const heroEl = canvas.parentElement.parentElement;
+  const heroEl = document.querySelector('.hero');
+  const footerEl = document.querySelector('.site-foot');
   function updateScroll() {
     const heroHeight = heroEl?.offsetHeight || window.innerHeight;
-    scrollT = Math.min(Math.max(window.scrollY / heroHeight, 0), 1);
+    const pastHero = Math.min(Math.max((window.scrollY - heroHeight * 0.7) / heroHeight, 0), 1);
+    let dim = 1 - pastHero * 0.62; // settle at ~0.38 once well past the hero
+
+    // Brighten again as the closing CTA/footer comes into view — a bookend.
+    if (footerEl) {
+      const footerTop = footerEl.getBoundingClientRect().top;
+      const nearFooter = 1 - Math.min(Math.max(footerTop / window.innerHeight, 0), 1);
+      dim = Math.max(dim, nearFooter * 0.85);
+    }
+    scrollDim = dim;
   }
   window.addEventListener('scroll', updateScroll, { passive: true });
   updateScroll();
 
-  const io = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
+  document.addEventListener('visibilitychange', () => {
+    visible = document.visibilityState === 'visible';
     if (visible && !raf) tick();
-  }, { threshold: 0.02 });
-  io.observe(canvas.parentElement);
+  });
 
   function tick() {
     if (!visible) { raf = null; return; }
     const t = clock.getElapsedTime();
 
-    // Slow, elegant rotation + gentle floating drift — never a fast spin.
-    rotTargetX += (pointerY * 0.22 - rotTargetX) * 0.02;
-    rotTargetY += (pointerX * 0.22 - rotTargetY) * 0.02;
-    group.rotation.x = rotTargetX + scrollT * 0.5;
-    group.rotation.y = t * 0.055 + rotTargetY;
-    group.position.y = Math.sin(t * 0.35) * 0.12;
-    particles.rotation.y -= 0.00035;
+    if (wordGroup) {
+      rotTargetX += (pointerY * 0.14 - rotTargetX) * 0.02;
+      rotTargetY += (pointerX * 0.16 - rotTargetY) * 0.02;
+      wordGroup.rotation.x = rotTargetX;
+      wordGroup.rotation.y = Math.sin(t * 0.05) * 0.05 + rotTargetY;
+      wordGroup.position.y = Math.sin(t * 0.35) * 0.08;
+    }
+    particles.rotation.y -= 0.00025;
 
-    // Scroll dolly: camera pushes in and the core dissolves into the
-    // next section as the visitor scrolls past the hero.
-    const targetZ = 9.4 - scrollT * 2.6;
-    camera.position.z += (targetZ - camera.position.z) * 0.06;
-    camera.position.x += (pointerX * 0.45 - camera.position.x) * 0.03;
-    camera.position.y += (-pointerY * 0.3 - camera.position.y) * 0.03;
+    camera.position.x += (pointerX * 0.35 - camera.position.x) * 0.03;
+    camera.position.y += (-pointerY * 0.22 - camera.position.y) * 0.03;
     camera.lookAt(0, 0, 0);
-
-    shell.material.opacity = dimmables.shellOpacity * (1 - scrollT * 0.6);
-    innerShell.material.opacity = dimmables.innerOpacity * (1 - scrollT * 0.5);
-    core.material.opacity = 1;
 
     // Occasional slow light sweep across the surface, independent of the
     // continuous key light — a subtle cinematic beat rather than a loop.
     const sweep = (Math.sin(t * 0.12) + 1) / 2;
     keyLight.position.x = 3.2 + sweep * 2.4;
-    keyLight.intensity = dimmables.keyIntensity * (0.85 + sweep * 0.3);
-    rimLight.intensity = dimmables.rimIntensity;
-    accentLight.intensity = dimmables.accentIntensity;
+    keyLight.intensity = dimmables.keyIntensity * (0.85 + sweep * 0.3) * scrollDim;
+    rimLight.intensity = dimmables.rimIntensity * scrollDim;
+    accentLight.intensity = dimmables.accentIntensity * scrollDim;
+    ambient.intensity = dimmables.ambient * (0.4 + scrollDim * 0.6);
+    particles.material.opacity = dimmables.particleOpacity * scrollDim;
 
     renderer.render(scene, camera);
     raf = requestAnimationFrame(tick);
   }
   tick();
 
-  // Entrance: light and material reveal from darkness, ~2.4s, easing in
-  // after the DOM/hero text has already begun its own entrance.
-  if (gsap) {
-    gsap.to(dimmables, {
-      ambient: 0.55,
-      keyIntensity: 1.15,
-      rimIntensity: 5,
-      accentIntensity: 3.2,
-      shellOpacity: 0.32,
-      innerOpacity: 0.28,
-      particleOpacity: 0.55,
-      emissive: 0.5,
-      duration: 2.6,
-      ease: 'power2.out',
-      delay: 0.3,
-      onUpdate() {
-        core.material.emissiveIntensity = dimmables.emissive;
-        particles.material.opacity = dimmables.particleOpacity;
-        ambient.intensity = dimmables.ambient;
-      },
-    });
-    gsap.to(core.scale, { x: 1, y: 1, z: 1, duration: 2.2, ease: 'power3.out', delay: 0.3 });
-  } else {
-    ambient.intensity = 0.55;
+  const entrance = gsap
+    ? gsap.to(dimmables, {
+        ambient: 0.55,
+        keyIntensity: 1.15,
+        rimIntensity: 5,
+        accentIntensity: 3.2,
+        particleOpacity: 0.5,
+        emissive: 0.5,
+        duration: 2.6,
+        ease: 'power2.out',
+        delay: 0.3,
+      })
+    : null;
+  if (!gsap) {
+    dimmables.ambient = 0.55;
     dimmables.keyIntensity = 1.15;
     dimmables.rimIntensity = 5;
     dimmables.accentIntensity = 3.2;
-    dimmables.shellOpacity = 0.32;
-    dimmables.innerOpacity = 0.28;
-    particles.material.opacity = 0.55;
-    core.material.emissiveIntensity = 0.5;
-    core.scale.setScalar(1);
+    dimmables.particleOpacity = 0.5;
   }
+
+  loadWordmark(scene)
+    .then((result) => {
+      wordGroup = result.wordGroup;
+      if (gsap) {
+        gsap.to(
+          result.letters.map((l) => l.root.scale),
+          {
+            x: 1, y: 1, z: 1,
+            duration: 1.4,
+            ease: 'back.out(1.4)',
+            stagger: 0.12,
+            delay: 0.35,
+            onUpdate() {
+              result.letters.forEach((l) => { l.root.material && (l.root.material.emissiveIntensity = dimmables.emissive); });
+            },
+          }
+        );
+        result.letters.forEach((l) => {
+          l.root.traverse((node) => {
+            if (node.isMesh) {
+              gsap.to(node.material, { emissiveIntensity: 0.5, duration: 2.2, ease: 'power2.out', delay: 0.4 });
+            }
+          });
+        });
+      } else {
+        result.letters.forEach((l) => l.root.scale.setScalar(1));
+      }
+    })
+    .catch(() => {
+      // Missing/broken model files: fail quietly, keep the lit atmosphere.
+    });
 
   return {
     destroy() {
       cancelAnimationFrame(raf);
-      io.disconnect();
       window.removeEventListener('scroll', updateScroll);
       window.removeEventListener('resize', resize);
+      entrance && entrance.kill();
       renderer.dispose();
     },
   };
