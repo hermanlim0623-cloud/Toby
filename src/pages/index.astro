@@ -1,87 +1,101 @@
 ---
-const services = [
+import '../styles/global.css';
+
+const expertise = [
   {
     num: "01",
-    title: "Sales & ops dashboards",
-    desc: "Turning raw daily sales and order data into dashboards the team checks every morning.",
+    title: "Dashboards & data systems",
+    desc: "Turning raw daily sales and order data into live dashboards the team actually checks every morning.",
   },
   {
     num: "02",
-    title: "Reporting tools",
-    desc: "Automated recap and back-office reports that used to be compiled by hand, now generated in minutes.",
+    title: "Backend & automation",
+    desc: "Scripts, bots and small services that remove repetitive manual work and catch mistakes before they compound.",
   },
   {
     num: "03",
-    title: "Process automation",
-    desc: "Small bots and scripts that catch mistakes, log adjustments, and remove repetitive manual work.",
+    title: "Reporting systems",
+    desc: "Recap and back-office reports that used to take an hour by hand, generated in minutes instead.",
+  },
+  {
+    num: "04",
+    title: "APIs & integrations",
+    desc: "Connecting spreadsheets, internal tools and data sources so information moves without manual re-entry.",
+  },
+  {
+    num: "05",
+    title: "Frontend engineering",
+    desc: "Interfaces built for people under time pressure — fast, legible, and low-friction to use daily.",
+  },
+  {
+    num: "06",
+    title: "Creative coding",
+    desc: "This site itself: scroll-driven motion, WebGL and interaction design as a working proof of craft.",
   },
 ];
 
-const process = [
-  {
-    index: "01",
-    title: "Observe",
-    desc: "Sit with the actual workflow — see where time is lost and where mistakes creep in.",
-  },
-  {
-    index: "02",
-    title: "Build",
-    desc: "Put together a working version fast, using whatever tool fits — a script, a sheet, a small app.",
-  },
-  {
-    index: "03",
-    title: "Test in the field",
-    desc: "Run it alongside the real process until it holds up under real, messy daily use.",
-  },
-  {
-    index: "04",
-    title: "Hand off",
-    desc: "Simplify it until the team can run it without me, and keep it maintained after launch.",
-  },
-];
-
-const work = [
+const projects = [
   {
     tag: "Dashboard",
     title: "Sales Dashboard",
     desc: "Daily and monthly sales overview for Pawby Kitchen, replacing manual recap spreadsheets with a live view of performance.",
-    impact: "↳ recap time cut from ~30 min to instant",
+    impact: "Recap time cut from ~30 min to instant",
+    stack: ["Python", "Sheets API", "Automation"],
   },
   {
     tag: "Operations",
     title: "Kitchen Operations Site",
     desc: "Internal site consolidating menu, pricing, and operational references used across the business.",
-    impact: "↳ single source of truth for the team",
+    impact: "Single source of truth for the team",
+    stack: ["HTML/CSS", "Internal tooling"],
   },
   {
     tag: "Automation",
     title: "Order Adjustment Bot",
     desc: "Automates repetitive order-adjustment entries that were previously handled manually, one by one.",
-    impact: "↳ removes a recurring manual task",
+    impact: "Removes a recurring manual task",
+    stack: ["Python", "Scripting", "Bots"],
   },
   {
     tag: "Reporting",
     title: "Back Office Report",
     desc: "Structured back-office reporting tool that compiles operational data into a clean, shareable format.",
-    impact: "↳ standardized weekly reporting",
+    impact: "Standardized weekly reporting",
+    stack: ["Python", "Reporting"],
   },
   {
     tag: "Tracking",
     title: "Mistake Count Tracker",
     desc: "Lightweight tool for logging and tracking recurring operational mistakes so patterns can be caught early.",
-    impact: "↳ surfaces recurring issues faster",
+    impact: "Surfaces recurring issues faster",
+    stack: ["Automation", "Logging"],
   },
   {
     tag: "Reporting",
     title: "RTP Report Tool",
     desc: "Focused reporting utility built to track a specific recurring metric without manual recalculation each cycle.",
-    impact: "↳ removes manual recalculation",
+    impact: "Removes manual recalculation",
+    stack: ["Python", "Reporting"],
   },
   {
     tag: "Internal tool",
     title: "Basic Withdrawal Tool",
     desc: "Simple internal utility for handling withdrawal records in a consistent, auditable way.",
-    impact: "↳ consistent record-keeping",
+    impact: "Consistent record-keeping",
+    stack: ["Internal tooling"],
+  },
+];
+
+const stack = [
+  "Python", "JavaScript / TypeScript", "Astro", "GSAP + ScrollTrigger",
+  "Lenis", "Three.js / WebGL", "Google Sheets API", "REST APIs", "Automation scripting",
+];
+
+const experience = [
+  {
+    when: "Ongoing",
+    title: "Operations & Automation — Pawby Kitchen",
+    desc: "Embedded in day-to-day operations, building the dashboards, bots and reporting tools the team relies on to run service without manual bottlenecks.",
   },
 ];
 ---
@@ -91,104 +105,202 @@ const work = [
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Toby — Portfolio</title>
+<meta name="description" content="Toby — creative technologist building dashboards, automation and backend systems for real operations.">
+<title>Toby — Creative Technologist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="wrap">
+<div class="atmosphere" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
 
-  <header class="site">
-    <div class="brand">Toby</div>
-    <nav>
-      <a href="#work">Work</a>
-      <a href="#services">What I do</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
+<nav class="nav">
+  <a href="#top" class="nav-brand">Toby<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#intro">Intro</a></li>
+    <li><a href="#expertise">Expertise</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#tech">Tech</a></li>
+    <li><a href="#experience">Experience</a></li>
+  </ul>
+  <a class="nav-cta magnetic" href="#contact">Get in touch</a>
+  <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</nav>
 
-  <section class="hero">
-    <div class="eyebrow">Operations · Reporting · Automation</div>
-    <h1>I build the tools<br>that keep the kitchen<br><em>running on time.</em></h1>
-    <div class="hero-sub">
-      <p>I work inside Pawby Kitchen's day-to-day operations — turning manual tracking, spreadsheets, and recurring reports into dashboards and small tools the team actually uses.</p>
-      <div class="hero-meta">
-        <div><strong>Based in</strong> — Indonesia</div>
-        <div><strong>Focus</strong> — F&amp;B operations tooling</div>
-        <div><strong>Stack</strong> — Python, HTML/CSS, automation scripts</div>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#intro">Intro</a>
+  <a href="#expertise">Expertise</a>
+  <a href="#work">Work</a>
+  <a href="#tech">Tech</a>
+  <a href="#experience">Experience</a>
+  <a href="#contact">Contact</a>
+</div>
+
+<main id="top">
+
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-stage" aria-hidden="true">
+      <div class="hero-fallback"></div>
+      <canvas id="hero-canvas"></canvas>
+    </div>
+    <div class="wrap hero-content">
+      <div class="eyebrow">Toby — creative technologist</div>
+      <h1>I engineer<br>the systems that<br><em>run the business.</em></h1>
+      <div class="hero-sub">
+        <p>Dashboards, automations and backend tools built inside Pawby Kitchen's day-to-day operations — the invisible machinery behind a kitchen that runs on time.</p>
+        <div class="hero-meta">
+          <div><strong>Based in</strong> — Indonesia</div>
+          <div><strong>Focus</strong> — Full-stack + automation</div>
+          <div><strong>Stack</strong> — Python, JavaScript, Astro</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <span class="rail"></span>
+    </div>
+  </section>
+
+  <section id="intro">
+    <div class="wrap">
+      <div class="eyebrow">01 — Intro</div>
+      <div class="intro-grid" style="margin-top:26px;">
+        <p class="lede" data-reveal>Not just dashboards. <em>Systems that hold up</em> under real, messy daily use.</p>
+        <div class="intro-copy" data-reveal>
+          <p>I work close to the ground — inside the actual workflow of a food business, not from a spec document. That means the tools I build get judged the same way the kitchen does: does it work today, under pressure, without babysitting.</p>
+          <p>Most of what I ship isn't glamorous. It's the recap that used to take thirty minutes, the report that used to be typed by hand, the entry that used to get forgotten. Small systems, compounding.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <section id="services">
-    <div class="section-head">
-      <h2>What I do</h2>
-      <div class="eyebrow">03 areas</div>
-    </div>
-    <div class="services-grid">
-      {services.map((s) => (
-        <div class="service">
-          <div class="num">{s.num}</div>
-          <h3>{s.title}</h3>
-          <p>{s.desc}</p>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section id="process">
-    <div class="section-head">
-      <h2>How I work</h2>
-      <div class="eyebrow">4 steps</div>
-    </div>
-    <div class="process">
-      {process.map((p) => (
-        <div class="process-step">
-          <div class="step-index">{p.index}</div>
-          <h3>{p.title}</h3>
-          <p>{p.desc}</p>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section id="work">
-    <div class="section-head">
-      <h2>Selected work</h2>
-      <div class="eyebrow">7 projects</div>
-    </div>
-    <div class="work-list">
-      {work.map((w) => (
-        <div class="work-row">
-          <div class="work-info">
-            <div class="work-tag">{w.tag}</div>
-            <h3>{w.title}</h3>
-            <p>{w.desc}</p>
-            <div class="work-impact">{w.impact}</div>
+  <section id="expertise">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-split>What I build</h2>
+        <div class="eyebrow">02 — Expertise</div>
+      </div>
+      <div class="expertise-grid" data-reveal-group>
+        {expertise.map((item) => (
+          <div class="expertise-card">
+            <div class="num">{item.num}</div>
+            <h3>{item.title}</h3>
+            <p>{item.desc}</p>
           </div>
-          <div class="shot" data-label="Screenshot"></div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   </section>
 
-  <footer id="contact">
-    <h2>Let's fix the next bottleneck together.</h2>
-    <div class="footer-contact">
-      <div class="eyebrow">Get in touch</div>
-      <a href="mailto:hermanlim.0623@gmail.com">hermanlim.0623@gmail.com</a>
+  <section id="work" style="padding-inline:0;">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-split>Selected work</h2>
+        <div class="eyebrow">03 — Featured projects</div>
+      </div>
     </div>
-    <div class="foot-note">
-      <span>Toby — Operations &amp; Automation</span>
-      <span>Built for Pawby Kitchen</span>
+    <div class="gallery-pin">
+      <div class="gallery-viewport">
+        <div class="gallery-track wrap">
+          {projects.map((p, i) => (
+            <div class="project-card">
+              <div class="project-top">
+                <span class="project-num">{String(i + 1).padStart(2, "0")}</span>
+                <span class="project-tag">{p.tag}</span>
+              </div>
+              <div class="project-visual" data-label="Screenshot"></div>
+              <h3>{p.title}</h3>
+              <p>{p.desc}</p>
+              <div class="project-impact">↳ {p.impact}</div>
+              <div class="project-stack">
+                {p.stack.map((s) => <span>{s}</span>)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
-  </footer>
+    <div class="gallery-progress wrap">
+      <div class="gallery-progress-bar"></div>
+    </div>
+  </section>
 
-</div>
+  <section aria-label="Case study spotlight">
+    <div class="wrap spotlight">
+      <div class="spotlight-visual" data-reveal>
+        <div class="spotlight-stat">Instant<small>Down from ~30 min/day</small></div>
+      </div>
+      <div class="spotlight-copy" data-reveal>
+        <div class="eyebrow">Case study</div>
+        <h3>Sales Dashboard</h3>
+        <p>Pawby Kitchen used to close each day with a manual recap — pulling numbers into a spreadsheet by hand. The dashboard replaced that with a live view of daily and monthly performance, so the team spends that time reading the numbers instead of assembling them.</p>
+      </div>
+    </div>
+  </section>
 
-<script src="/script.js" is:inline></script>
+  <section id="tech">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-split>Tech & experiments</h2>
+        <div class="eyebrow">04 — Stack</div>
+      </div>
+      <div class="tech-cloud" data-reveal-group>
+        {stack.map((t) => <span class="tech-chip">{t}</span>)}
+      </div>
+      <p class="tech-note" data-reveal>This site is one of the experiments — built in Astro, animated with GSAP and ScrollTrigger, scrolled with Lenis, and rendered with a lightweight Three.js scene in the hero. Reduced-motion and low-power devices get a simplified, static version automatically.</p>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-split>Experience</h2>
+        <div class="eyebrow">05 — Timeline</div>
+      </div>
+      <div class="timeline">
+        {experience.map((e) => (
+          <div class="timeline-row" data-reveal>
+            <div class="timeline-when">{e.when}</div>
+            <div>
+              <h3>{e.title}</h3>
+              <p>{e.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap contact">
+      <div class="eyebrow" style="justify-content:center;">06 — Contact</div>
+      <h2 data-split style="margin-top:20px;">Let's fix the next bottleneck together.</h2>
+      <a class="contact-link magnetic" href="mailto:hermanlim.0623@gmail.com">hermanlim.0623@gmail.com</a>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="wrap">
+      <h2 data-split>Ready to build the <em>next system?</em></h2>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; width:100%;">
+    <span>Toby — Operations &amp; Automation</span>
+    <span>Built for Pawby Kitchen</span>
+  </div>
+</footer>
+
+<script>
+  import '../scripts/main.js';
+</script>
+
 </body>
 </html>
