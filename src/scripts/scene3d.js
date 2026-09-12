@@ -8,11 +8,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 // place at the same position/size while the visitor scrolls all the way
 // to the footer, dimming slightly outside the hero so page content stays
 // legible instead of dollying/dissolving away.
+// `scale` is a manual per-letter fine-tune applied after auto height-fit —
+// the source models weren't drawn to a shared scale, so O and Y read as
+// visually heavier/larger than b at the same bounding-box height.
 const LETTERS = [
-  { file: 't-monogram.glb' },
-  { file: 'o-monogram.glb' },
-  { file: 'b-monogram.glb' },
-  { file: 'Y-monogram.glb' },
+  { file: 't-monogram.glb', scale: 1 },
+  { file: 'o-monogram.glb', scale: 0.72 },
+  { file: 'b-monogram.glb', scale: 1 },
+  { file: 'Y-monogram.glb', scale: 0.78 },
 ];
 const TARGET_HEIGHT = 2.2;
 const LETTER_GAP = 0.22;
@@ -28,7 +31,7 @@ function buildLetterMaterial() {
   });
 }
 
-function normalizeLetter(root) {
+function normalizeLetter(root, letterScale = 1) {
   root.traverse((node) => {
     if (node.isMesh) {
       node.material = buildLetterMaterial();
@@ -39,7 +42,7 @@ function normalizeLetter(root) {
   const box = new THREE.Box3().setFromObject(root);
   const size = new THREE.Vector3();
   box.getSize(size);
-  const scale = TARGET_HEIGHT / (size.y || 1);
+  const scale = (TARGET_HEIGHT / (size.y || 1)) * letterScale;
   root.scale.setScalar(scale);
 
   const box2 = new THREE.Box3().setFromObject(root);
@@ -56,7 +59,7 @@ function normalizeLetter(root) {
 async function loadWordmark(scene) {
   const loader = new GLTFLoader();
   const letters = await Promise.all(
-    LETTERS.map((l) => loader.loadAsync(`/models/${l.file}`).then((gltf) => normalizeLetter(gltf.scene)))
+    LETTERS.map((l) => loader.loadAsync(`/models/${l.file}`).then((gltf) => normalizeLetter(gltf.scene, l.scale)))
   );
 
   const totalWidth = letters.reduce((sum, l) => sum + l.width, 0) + LETTER_GAP * (letters.length - 1);
