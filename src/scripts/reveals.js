@@ -28,11 +28,15 @@ export function createReveals(gsap, ScrollTrigger, prefersReducedMotion) {
     });
   });
 
+  // Sections dissolve in with a touch of scale + blur rather than a plain
+  // fade, so one scene feels like it's settling into focus from the last.
   gsap.utils.toArray('[data-reveal]').forEach((el) => {
     gsap.from(el, {
-      y: 32,
+      y: 36,
+      scale: 0.97,
       opacity: 0,
-      duration: 0.9,
+      filter: 'blur(6px)',
+      duration: 1.1,
       ease: 'power3.out',
       scrollTrigger: { trigger: el, start: 'top 88%' },
     });
@@ -40,9 +44,11 @@ export function createReveals(gsap, ScrollTrigger, prefersReducedMotion) {
 
   gsap.utils.toArray('[data-reveal-group]').forEach((group) => {
     gsap.from(group.children, {
-      y: 26,
+      y: 30,
+      scale: 0.97,
       opacity: 0,
-      duration: 0.7,
+      filter: 'blur(5px)',
+      duration: 0.85,
       ease: 'power3.out',
       stagger: 0.08,
       scrollTrigger: { trigger: group, start: 'top 85%' },

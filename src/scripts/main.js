@@ -29,20 +29,21 @@ createHorizontalGallery(gsap, ScrollTrigger);
 const heroCanvas = document.querySelector('#hero-canvas');
 if (heroCanvas && !prefersReducedMotion && window.innerWidth >= 560) {
   import('./scene3d.js').then(({ createHeroScene }) => {
-    createHeroScene(heroCanvas, { prefersReducedMotion });
+    createHeroScene(heroCanvas, { prefersReducedMotion, gsap });
   });
 }
 
-// Hero entrance: eyebrow / heading / subtext / scroll indicator, staggered.
+// Hero entrance: a controlled reveal, not everything at once. The eyebrow
+// leads, the headline unmasks line by line, the object fades in alongside
+// (handled in scene3d), and the subtext/indicator settle in last.
 if (!prefersReducedMotion) {
-  gsap.from(['.hero .eyebrow', '.hero h1', '.hero-sub', '.scroll-indicator'], {
-    y: 24,
-    opacity: 0,
-    duration: 1,
-    ease: 'power3.out',
-    stagger: 0.12,
-    delay: 0.15,
-  });
+  gsap.timeline({ delay: 0.2 })
+    .from('.hero .eyebrow', { y: 16, opacity: 0, duration: 0.8, ease: 'power3.out' })
+    .from('.hero h1 .split-line > span', {
+      yPercent: 115, opacity: 0, duration: 1.1, ease: 'power4.out', stagger: 0.09,
+    }, '-=0.35')
+    .from('.hero-sub', { y: 20, opacity: 0, duration: 0.9, ease: 'power3.out' }, '-=0.5')
+    .from('.scroll-indicator', { opacity: 0, duration: 0.8, ease: 'power2.out' }, '-=0.4');
 } else {
   document.querySelectorAll('.hero .eyebrow, .hero h1, .hero-sub, .scroll-indicator')
     .forEach((el) => { el.style.opacity = 1; });
