@@ -72,8 +72,23 @@ header.site nav{
   font-size:0.9rem;
   color:var(--ink-soft);
 }
-header.site nav a{text-decoration:none;}
+header.site nav a{
+  position:relative;
+  text-decoration:none;
+  padding-bottom:2px;
+  transition:color 0.3s ease;
+}
+header.site nav a::after{
+  content:"";
+  position:absolute;
+  left:0; right:100%;
+  bottom:0;
+  height:1px;
+  background:var(--ink);
+  transition:right 0.35s cubic-bezier(.65,0,.35,1);
+}
 header.site nav a:hover{color:var(--ink);}
+header.site nav a:hover::after{right:0;}
 
 /* ---------- hero ---------- */
 .hero{padding-block:64px 48px;}
@@ -83,6 +98,24 @@ header.site nav a:hover{color:var(--ink);}
   font-weight:500;
   line-height:1.03;
   letter-spacing:-0.01em;
+}
+
+/* Hero entrance: eyebrow, heading and subtext each fade/slide in with a
+   short stagger once .hero-in is added by script.js on first paint. */
+.js-ready .hero .eyebrow,
+.js-ready .hero h1,
+.js-ready .hero-sub{
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity 0.8s cubic-bezier(.16,1,.3,1), transform 0.8s cubic-bezier(.16,1,.3,1);
+}
+.js-ready .hero h1{transition-delay:0.08s;}
+.js-ready .hero-sub{transition-delay:0.18s;}
+.hero-in .hero .eyebrow,
+.hero-in .hero h1,
+.hero-in .hero-sub{
+  opacity:1;
+  transform:none;
 }
 .hero h1 em{
   font-style:italic;
@@ -146,6 +179,13 @@ section{padding-block:56px; border-top:1px solid var(--line);}
   display:flex;
   flex-direction:column;
   gap:10px;
+  transition:transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s ease;
+  will-change:transform;
+}
+.service:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 32px -20px rgba(0,0,0,0.28);
+  z-index:1;
 }
 .service .num{
   font-family:"IBM Plex Mono", monospace;
@@ -178,7 +218,9 @@ section{padding-block:56px; border-top:1px solid var(--line);}
   display:flex;
   flex-direction:column;
   gap:8px;
+  transition:transform 0.4s cubic-bezier(.16,1,.3,1);
 }
+.process-step:hover{transform:translateY(-4px);}
 .process-step .step-index{
   font-family:"IBM Plex Mono", monospace;
   font-size:0.78rem;
@@ -256,7 +298,21 @@ section{padding-block:56px; border-top:1px solid var(--line);}
   justify-content:center;
   position:relative;
   overflow:hidden;
+  transition:transform 0.5s cubic-bezier(.16,1,.3,1), box-shadow 0.5s ease;
 }
+.shot:hover{
+  box-shadow:0 20px 40px -22px rgba(0,0,0,0.32);
+}
+
+/* Cursor-driven tilt, applied to .tilt elements by script.js. Falls back
+   to a plain hover lift when JS/hover support is unavailable. */
+.tilt{
+  --tilt-x:0deg;
+  --tilt-y:0deg;
+  transform:perspective(700px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition:transform 0.25s ease-out, box-shadow 0.4s ease;
+}
+.tilt:hover{transition:box-shadow 0.4s ease;}
 .shot::before{
   content:attr(data-label);
   font-family:"IBM Plex Mono", monospace;
@@ -325,6 +381,25 @@ footer h2{
   opacity:1;
   transform:none;
 }
+
+/* Staggered card entrance: each child of a revealed grid/list animates in
+   with an incremental delay (set as --reveal-delay by script.js). */
+.js-ready .reveal-item{
+  opacity:0;
+  transform:translateY(16px);
+  transition:opacity 0.6s cubic-bezier(.16,1,.3,1), transform 0.6s cubic-bezier(.16,1,.3,1);
+  transition-delay:var(--reveal-delay, 0ms);
+}
+.js-ready .reveal.is-visible .reveal-item{
+  opacity:1;
+  transform:none;
+}
+
 @media (prefers-reduced-motion: reduce){
-  .js-ready .reveal{opacity:1; transform:none; transition:none;}
+  .js-ready .reveal,
+  .js-ready .reveal-item,
+  .js-ready .hero .eyebrow,
+  .js-ready .hero h1,
+  .js-ready .hero-sub{opacity:1; transform:none; transition:none;}
+  .tilt{transform:none !important;}
 }
