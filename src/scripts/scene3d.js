@@ -133,9 +133,15 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   accentLight.intensity = 0;
 
   let pointerX = 0, pointerY = 0, visible = true, raf = null, wordGroup = null;
+  let rawPointerX = -9999, rawPointerY = -9999; // raw client px, for per-letter proximity
   let rotTargetX = 0, rotTargetY = 0;
   let scrollDim = 1; // 1 = full presence (hero), fades to ~0.4 past the hero
+  let letterMeshes = [];
+  const HOVER_RADIUS = 320; // px
+  const HOVER_DISPLACE = 0.9; // world units
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   const clock = new THREE.Clock();
+  const _screenPos = new THREE.Vector3();
 
   function resize() {
     const w = window.innerWidth, h = window.innerHeight;
@@ -149,6 +155,12 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   window.addEventListener('pointermove', (e) => {
     pointerX = (e.clientX / window.innerWidth) * 2 - 1;
     pointerY = (e.clientY / window.innerHeight) * 2 - 1;
+    rawPointerX = e.clientX;
+    rawPointerY = e.clientY;
+  });
+  window.addEventListener('pointerleave', () => {
+    rawPointerX = -9999;
+    rawPointerY = -9999;
   });
 
   const heroEl = document.querySelector('.hero');
@@ -184,7 +196,36 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
       wordGroup.rotation.x = rotTargetX;
       wordGroup.rotation.y = Math.sin(t * 0.05) * 0.05 + rotTargetY;
       wordGroup.position.y = Math.sin(t * 0.35) * 0.08;
+      wordGroup.updateMatrixWorld();
     }
+
+    // Letters lean/scatter away from the cursor when it comes near — each
+    // one measured in real screen space, not just the group's overall tilt.
+    if (canHover && letterMeshes.length) {
+      const w = window.innerWidth, h = window.innerHeight;
+      letterMeshes.forEach(({ root, base }) => {
+        _screenPos.copy(base).applyMatrix4(wordGroup.matrixWorld).project(camera);
+        const sx = (_screenPos.x * 0.5 + 0.5) * w;
+        const sy = (1 - (_screenPos.y * 0.5 + 0.5)) * h;
+        const dx = sx - rawPointerX;
+        const dy = sy - rawPointerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        let targetX = 0, targetY = 0, targetZ = 0;
+        if (dist < HOVER_RADIUS) {
+          const force = 1 - dist / HOVER_RADIUS;
+          const eased = force * force;
+          const nx = dist > 0.001 ? dx / dist : 0;
+          const ny = dist > 0.001 ? dy / dist : 0;
+          targetX = nx * eased * HOVER_DISPLACE;
+          targetY = -ny * eased * HOVER_DISPLACE;
+          targetZ = eased * HOVER_DISPLACE * 0.6;
+        }
+        root.position.x += (base.x + targetX - root.position.x) * 0.12;
+        root.position.y += (base.y + targetY - root.position.y) * 0.12;
+        root.position.z += (base.z + targetZ - root.position.z) * 0.12;
+      });
+    }
+
     particles.rotation.y -= 0.00025;
 
     camera.position.x += (pointerX * 0.35 - camera.position.x) * 0.03;
@@ -230,6 +271,7 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   loadWordmark(scene)
     .then((result) => {
       wordGroup = result.wordGroup;
+      letterMeshes = result.letters.map((l) => ({ root: l.root, base: l.root.position.clone() }));
       if (gsap) {
         gsap.to(
           result.letters.map((l) => l.root.scale),
