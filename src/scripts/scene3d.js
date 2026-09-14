@@ -1,24 +1,20 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-// The "TOBY" 3D wordmark: the four uploaded letter models (T, O, B, Y),
-// normalized to a common scale and lit as one lettering, sitting fixed
-// behind the whole page (see .toby-stage in global.css) rather than
-// confined to the hero — it emerges from darkness once, then stays in
-// place at the same position/size while the visitor scrolls all the way
-// to the footer, dimming slightly outside the hero so page content stays
-// legible instead of dollying/dissolving away.
-// `scale` is a manual per-letter fine-tune applied after auto height-fit —
-// the source models weren't drawn to a shared scale, so O and Y read as
-// visually heavier/larger than b at the same bounding-box height.
+// The TOBY mark, reduced to just the single "T" monogram: normalized and
+// lit, sitting fixed behind the whole page (see .toby-stage in
+// global.css) rather than confined to the hero. It emerges from darkness
+// once, then drifts side to side as the visitor scrolls — a slow,
+// continuous left/right traverse tied to scroll position rather than a
+// static placement — dimming slightly outside the hero so page content
+// stays legible.
 const LETTERS = [
   { file: 't-monogram.glb', scale: 1 },
-  { file: 'o-monogram.glb', scale: 0.72 },
-  { file: 'b-monogram.glb', scale: 1 },
-  { file: 'Y-monogram.glb', scale: 0.78 },
 ];
 const TARGET_HEIGHT = 2.2;
 const LETTER_GAP = 0.22;
+const DRIFT_RANGE = 3.4; // world units the T travels left/right across a full scroll cycle
+const DRIFT_CYCLE = 1.6; // number of full left-right traverses across the whole page
 
 function buildLetterMaterial() {
   return new THREE.MeshStandardMaterial({
@@ -136,6 +132,7 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   let rawPointerX = -9999, rawPointerY = -9999; // raw client px, for per-letter proximity
   let rotTargetX = 0, rotTargetY = 0;
   let scrollDim = 1; // 1 = full presence (hero), fades to ~0.4 past the hero
+  let driftX = 0; // scroll-driven left/right target for the T, smoothed in tick()
   let letterMeshes = [];
   const HOVER_RADIUS = 320; // px
   const HOVER_DISPLACE = 0.9; // world units
@@ -177,6 +174,13 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
       dim = Math.max(dim, nearFooter * 0.85);
     }
     scrollDim = dim;
+
+    // Drive the T's left/right traverse from overall page scroll progress —
+    // a slow sine sweep so it feels like one continuous aesthetic drift
+    // rather than snapping section to section.
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pageProgress = docHeight > 0 ? window.scrollY / docHeight : 0;
+    driftX = Math.sin(pageProgress * Math.PI * DRIFT_CYCLE) * (DRIFT_RANGE / 2);
   }
   window.addEventListener('scroll', updateScroll, { passive: true });
   updateScroll();
@@ -196,6 +200,7 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
       wordGroup.rotation.x = rotTargetX;
       wordGroup.rotation.y = Math.sin(t * 0.05) * 0.05 + rotTargetY;
       wordGroup.position.y = Math.sin(t * 0.35) * 0.08;
+      wordGroup.position.x += (driftX - wordGroup.position.x) * 0.025;
       wordGroup.updateMatrixWorld();
     }
 
