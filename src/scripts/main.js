@@ -7,6 +7,12 @@ import { createNav } from './nav.js';
 import { createReveals } from './reveals.js';
 import { createMagnetic } from './magnetic.js';
 import { createHorizontalGallery } from './horizontal.js';
+import { createIdentityScan } from './identity.js';
+import { createConstellation } from './constellation.js';
+import { createAutomationPipeline } from './automation.js';
+import { createTransmission } from './terminal.js';
+import { createShutdown } from './shutdown.js';
+import { SKILL_NODES } from './skillData.js';
 
 gsap.registerPlugin(ScrollTrigger);
 window.ScrollTrigger = ScrollTrigger;
@@ -21,6 +27,13 @@ createCursor(gsap);
 createMagnetic(gsap);
 createReveals(gsap, ScrollTrigger, prefersReducedMotion);
 createHorizontalGallery(gsap, ScrollTrigger);
+createIdentityScan(gsap, ScrollTrigger, prefersReducedMotion);
+createAutomationPipeline(gsap, ScrollTrigger, prefersReducedMotion);
+createTransmission(gsap, ScrollTrigger, prefersReducedMotion);
+createShutdown(gsap, ScrollTrigger, prefersReducedMotion);
+
+const skillCanvas = document.querySelector('#skill-canvas');
+if (skillCanvas) createConstellation(skillCanvas, SKILL_NODES, { prefersReducedMotion });
 
 // Three.js is heavy (~150kb+ gzipped) — only fetch it when the hero scene
 // will actually run (skipped already inside scene3d for small/low-power

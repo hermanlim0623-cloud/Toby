@@ -1,42 +1,10 @@
 ---
 import '../styles/global.css';
 
-const expertise = [
-  {
-    num: "01",
-    title: "Dashboards & data systems",
-    desc: "Turning raw daily sales and order data into live dashboards the team actually checks every morning.",
-  },
-  {
-    num: "02",
-    title: "Backend & automation",
-    desc: "Scripts, bots and small services that remove repetitive manual work and catch mistakes before they compound.",
-  },
-  {
-    num: "03",
-    title: "Reporting systems",
-    desc: "Recap and back-office reports that used to take an hour by hand, generated in minutes instead.",
-  },
-  {
-    num: "04",
-    title: "APIs & integrations",
-    desc: "Connecting spreadsheets, internal tools and data sources so information moves without manual re-entry.",
-  },
-  {
-    num: "05",
-    title: "Frontend engineering",
-    desc: "Interfaces built for people under time pressure — fast, legible, and low-friction to use daily.",
-  },
-  {
-    num: "06",
-    title: "Creative coding",
-    desc: "This site itself: scroll-driven motion, WebGL and interaction design as a working proof of craft.",
-  },
-];
-
 const projects = [
   {
     tag: "Dashboard",
+    world: "control",
     title: "Sales Dashboard",
     desc: "Daily and monthly sales overview for a food & beverage business, replacing manual recap spreadsheets with a live view of performance.",
     impact: "Recap time cut from ~30 min to instant",
@@ -44,6 +12,7 @@ const projects = [
   },
   {
     tag: "Operations",
+    world: "editorial",
     title: "Kitchen Operations Site",
     desc: "Internal site consolidating menu, pricing, and operational references used across the business.",
     impact: "Single source of truth for the team",
@@ -51,6 +20,7 @@ const projects = [
   },
   {
     tag: "Automation",
+    world: "bot",
     title: "Order Adjustment Bot",
     desc: "Automates repetitive order-adjustment entries that were previously handled manually, one by one.",
     impact: "Removes a recurring manual task",
@@ -58,6 +28,7 @@ const projects = [
   },
   {
     tag: "Reporting",
+    world: "report",
     title: "Back Office Report",
     desc: "Structured back-office reporting tool that compiles operational data into a clean, shareable format.",
     impact: "Standardized weekly reporting",
@@ -65,6 +36,7 @@ const projects = [
   },
   {
     tag: "Tracking",
+    world: "tracker",
     title: "Mistake Count Tracker",
     desc: "Lightweight tool for logging and tracking recurring operational mistakes so patterns can be caught early.",
     impact: "Surfaces recurring issues faster",
@@ -72,6 +44,7 @@ const projects = [
   },
   {
     tag: "Reporting",
+    world: "report",
     title: "RTP Report Tool",
     desc: "Focused reporting utility built to track a specific recurring metric without manual recalculation each cycle.",
     impact: "Removes manual recalculation",
@@ -79,6 +52,7 @@ const projects = [
   },
   {
     tag: "Internal tool",
+    world: "system",
     title: "Basic Withdrawal Tool",
     desc: "Simple internal utility for handling withdrawal records in a consistent, auditable way.",
     impact: "Consistent record-keeping",
@@ -98,6 +72,32 @@ const experience = [
     desc: "Embedded in day-to-day operations, building the dashboards, bots and reporting tools the team relies on to run service without manual bottlenecks.",
   },
 ];
+
+const identityLines = [
+  "> SCANNING SOURCE...",
+  "> IDENTITY FOUND",
+  "> DESIGNATION: TOBY",
+  "> ROLE: CREATIVE TECHNOLOGIST",
+  "> CORE: SYSTEMS · AUTOMATION · AI",
+  "> DECLARED CAPABILITIES: 9",
+];
+const identityTags = [
+  "AUTOMATION", "WEB DEVELOPMENT", "AI", "3D WEB", "UI/UX",
+  "API & SYSTEMS", "CREATIVE TECHNOLOGY", "BOTS", "INTERACTIVE EXPERIENCES",
+];
+
+const pipelineStages = [
+  { k: "INPUT", d: "Raw daily orders, recap numbers, recurring manual entries." },
+  { k: "PROCESS", d: "Scripts normalize, validate and transform the incoming data." },
+  { k: "DECISION", d: "Rules and thresholds decide what needs a human, what doesn't." },
+  { k: "ACTION", d: "The system writes, flags, or files the result automatically." },
+  { k: "OUTPUT", d: "A dashboard, a report, or a completed record — no manual step." },
+];
+const pipelineStats = [
+  { n: 1000, label: "Tasks handled / month" },
+  { n: 5, label: "Parallel workers" },
+  { n: 30, label: "Minutes saved / recap" },
+];
 ---
 
 <!DOCTYPE html>
@@ -105,8 +105,8 @@ const experience = [
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Toby — creative technologist building dashboards, automation and backend systems for real operations.">
-<title>Toby — Creative Technologist</title>
+<meta name="description" content="TOBY — creative technologist building digital systems, automation, AI and 3D web experiences.">
+<title>TOBY — Creative Technologist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -120,10 +120,10 @@ const experience = [
 </div>
 
 <nav class="nav">
-  <a href="#top" class="nav-brand">Toby<span>.</span></a>
+  <a href="#top" class="nav-brand">TOBY<span>.</span></a>
   <ul class="nav-links">
-    <li><a href="#intro">Intro</a></li>
-    <li><a href="#expertise">Expertise</a></li>
+    <li><a href="#intro">Identity</a></li>
+    <li><a href="#expertise">Skills</a></li>
     <li><a href="#work">Work</a></li>
     <li><a href="#tech">Tech</a></li>
     <li><a href="#experience">Experience</a></li>
@@ -135,8 +135,8 @@ const experience = [
 </nav>
 
 <div class="mobile-menu" id="mobile-menu">
-  <a href="#intro">Intro</a>
-  <a href="#expertise">Expertise</a>
+  <a href="#intro">Identity</a>
+  <a href="#expertise">Skills</a>
   <a href="#work">Work</a>
   <a href="#tech">Tech</a>
   <a href="#experience">Experience</a>
@@ -148,11 +148,11 @@ const experience = [
   <section class="hero" aria-label="Introduction">
     <div class="hero-fallback" aria-hidden="true"></div>
     <div class="wrap hero-content">
-      <div class="eyebrow">Toby — creative technologist</div>
+      <div class="eyebrow">TOBY — Creative Technologist</div>
       <h1>
-        <span class="split-line"><span>I engineer</span></span>
-        <span class="split-line"><span>the systems that</span></span>
-        <span class="split-line"><span><em>run the business.</em></span></span>
+        <span class="split-line"><span>I build digital</span></span>
+        <span class="split-line"><span>systems &amp;</span></span>
+        <span class="split-line"><span><em>experiences.</em></span></span>
       </h1>
       <div class="hero-sub">
         <p>Dashboards, automations and backend tools built inside a business's day-to-day operations — the invisible machinery behind a kitchen that runs on time.</p>
@@ -169,35 +169,45 @@ const experience = [
     </div>
   </section>
 
-  <section id="intro">
+  <section id="intro" class="identity-section" data-identity>
+    <div class="id-scanline" aria-hidden="true"></div>
+    <div class="id-grid" aria-hidden="true"></div>
     <div class="wrap">
-      <div class="eyebrow">01 — Intro</div>
-      <div class="intro-grid" style="margin-top:26px;">
-        <p class="lede" data-reveal>Not just dashboards. <em>Systems that hold up</em> under real, messy daily use.</p>
-        <div class="intro-copy" data-reveal>
-          <p>I work close to the ground — inside the actual workflow of a food business, not from a spec document. That means the tools I build get judged the same way the kitchen does: does it work today, under pressure, without babysitting.</p>
-          <p>Most of what I ship isn't glamorous. It's the recap that used to take thirty minutes, the report that used to be typed by hand, the entry that used to get forgotten. Small systems, compounding.</p>
-        </div>
+      <div class="eyebrow">01 — Identity · Who is behind the system</div>
+      <div class="id-terminal" style="margin-top:26px;">
+        {identityLines.map((line) => (
+          <p class="id-line" data-id-line={line}>{line}</p>
+        ))}
+      </div>
+      <div class="id-tags" aria-label="Capabilities">
+        {identityTags.map((t) => <span class="id-tag" data-id-tag>{t}</span>)}
+      </div>
+      <div class="intro-copy" data-reveal>
+        <p>I work close to the ground — inside the actual workflow of a food business, not from a spec document. The tools I build get judged the same way the kitchen does: does it work today, under pressure, without babysitting.</p>
       </div>
     </div>
   </section>
 
-  <section id="expertise">
+  <section id="expertise" class="skills-section">
     <div class="wrap">
       <div class="section-head">
-        <h2 data-split>What I build</h2>
-        <div class="eyebrow">02 — Expertise</div>
-      </div>
-      <div class="expertise-grid" data-reveal-group>
-        {expertise.map((item) => (
-          <div class="expertise-card">
-            <div class="num">{item.num}</div>
-            <h3>{item.title}</h3>
-            <p>{item.desc}</p>
-          </div>
-        ))}
+        <h2 data-split>The skill matrix</h2>
+        <div class="eyebrow">02 — Network, not a list</div>
       </div>
     </div>
+    <div class="skill-stage">
+      <canvas id="skill-canvas"></canvas>
+      <div class="skill-panel" data-skill-panel>
+        <div class="eyebrow" style="margin-bottom:10px;">Skill</div>
+        <h3 data-skill-name>—</h3>
+        <p data-skill-desc>Hover a node to inspect it.</p>
+        <div class="skill-related">
+          <span class="eyebrow" style="margin-bottom:6px;">Related work</span>
+          <p data-skill-related></p>
+        </div>
+      </div>
+    </div>
+    <p class="tech-note wrap" style="margin-top:28px;">A live constellation of what I actually work with — hover a node on desktop, or tap on touch, to see how it connects to real projects below.</p>
   </section>
 
   <section id="work" style="padding-inline:0;">
@@ -211,12 +221,12 @@ const experience = [
       <div class="gallery-viewport">
         <div class="gallery-track wrap">
           {projects.map((p, i) => (
-            <div class="project-card">
+            <div class="project-card" data-world={p.world}>
               <div class="project-top">
                 <span class="project-num">{String(i + 1).padStart(2, "0")}</span>
                 <span class="project-tag">{p.tag}</span>
               </div>
-              <div class="project-visual" data-label="Screenshot"></div>
+              <div class="project-visual" data-label="Screenshot" data-world-visual={p.world}></div>
               <h3>{p.title}</h3>
               <p>{p.desc}</p>
               <div class="project-impact">↳ {p.impact}</div>
@@ -233,25 +243,46 @@ const experience = [
     </div>
   </section>
 
-  <section aria-label="Case study spotlight">
-    <div class="wrap spotlight">
-      <div class="spotlight-visual" data-reveal>
-        <div class="spotlight-stat">Instant<small>Down from ~30 min/day</small></div>
+  <section aria-label="Automation pipeline" class="automation-section" data-automation>
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-split>Machines I build</h2>
+        <div class="eyebrow">04 — The automation factory</div>
       </div>
-      <div class="spotlight-copy" data-reveal>
-        <div class="eyebrow">Case study</div>
-        <h3>Sales Dashboard</h3>
-        <p>The business used to close each day with a manual recap — pulling numbers into a spreadsheet by hand. The dashboard replaced that with a live view of daily and monthly performance, so the team spends that time reading the numbers instead of assembling them.</p>
+      <p class="tech-note" data-reveal style="margin-bottom:44px;">The business used to close each day with a manual recap, typed by hand. Here's the shape of what replaced it: data goes in one end, a decision happens in the middle, and a finished result comes out the other side — no one babysitting it.</p>
+
+      <svg class="pipeline-svg" viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <path data-flow-path d="M 40 100 C 200 100, 200 40, 340 40 C 480 40, 480 160, 620 160 C 760 160, 760 100, 960 100" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" stroke-dasharray="2 8" stroke-linecap="round" />
+        {[0,1,2,3,4,5].map(() => <circle data-flow-dot r="3.2" fill="#6EF0C6" />)}
+      </svg>
+
+      <div class="pipeline-stages">
+        {pipelineStages.map((s) => (
+          <div class="pipeline-stage" data-stage>
+            <div class="pipeline-k">{s.k}</div>
+            <p>{s.d}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="pipeline-stats">
+        {pipelineStats.map((s) => (
+          <div class="pipeline-stat">
+            <div class="pipeline-stat-n"><span data-counter={s.n}>0</span>{s.label.includes('Minutes') ? '' : '+'}</div>
+            <div class="pipeline-stat-l">{s.label}</div>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
-  <section id="tech">
+  <section id="tech" class="systems-section">
     <div class="wrap">
       <div class="section-head">
-        <h2 data-split>Tech & experiments</h2>
-        <div class="eyebrow">04 — Stack</div>
+        <h2 data-split>Under the surface</h2>
+        <div class="eyebrow">05 — Systems &amp; stack</div>
       </div>
+      <p class="tech-note" data-reveal style="margin-bottom:30px;">TOBY doesn't only design what you see. Every interface here sits on a stack that has to be understood layer by layer — UI, network, API, data, automation, output.</p>
       <div class="tech-cloud" data-reveal-group>
         {stack.map((t) => <span class="tech-chip">{t}</span>)}
       </div>
@@ -259,11 +290,11 @@ const experience = [
     </div>
   </section>
 
-  <section id="experience">
+  <section id="experience" class="evolution-section">
     <div class="wrap">
       <div class="section-head">
-        <h2 data-split>Experience</h2>
-        <div class="eyebrow">05 — Timeline</div>
+        <h2 data-split>The evolution</h2>
+        <div class="eyebrow">06 — Timeline</div>
       </div>
       <div class="timeline">
         {experience.map((e) => (
@@ -279,17 +310,32 @@ const experience = [
     </div>
   </section>
 
-  <section id="contact">
+  <section id="contact" class="transmission-section" data-transmission>
     <div class="wrap contact">
-      <div class="eyebrow" style="justify-content:center;">06 — Contact</div>
-      <h2 data-split style="margin-top:20px;">Let's fix the next bottleneck together.</h2>
-      <a class="contact-link magnetic" href="mailto:hermanlim.0623@gmail.com">hermanlim.0623@gmail.com</a>
+      <div class="eyebrow" style="justify-content:center;">07 — Transmission</div>
+      <div class="transmission-status" data-transmission-status>ESTABLISHING CONNECTION…</div>
+      <div class="transmission-bar-track"><div class="transmission-bar" data-transmission-bar></div></div>
+      <div class="transmission-pct" data-transmission-pct>0%</div>
+
+      <h2 data-split data-transmission-reveal style="margin-top:32px;">Let's fix the next bottleneck together.</h2>
+      <div class="transmission-tags" data-transmission-reveal>
+        <span class="eyebrow" style="justify-content:center; margin-bottom:12px;">Available for</span>
+        <div class="id-tags" style="justify-content:center;">
+          {["WEB", "AUTOMATION", "AI", "3D", "SYSTEMS", "CREATIVE DEVELOPMENT"].map((t) => <span class="id-tag">{t}</span>)}
+        </div>
+      </div>
+      <a class="contact-link magnetic" data-transmission-reveal href="mailto:hermanlim.0623@gmail.com">INITIATE TRANSMISSION → hermanlim.0623@gmail.com</a>
     </div>
   </section>
 
-  <section class="final-cta">
+  <section class="final-cta shutdown-section" data-shutdown>
+    <div class="shutdown-world" data-shutdown-world aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
     <div class="wrap">
-      <h2 data-split>Ready to build the <em>next system?</em></h2>
+      <p class="shutdown-line" data-shutdown-line>THANK YOU FOR VISITING.</p>
+      <p class="shutdown-line" data-shutdown-line>SYSTEM STATUS — SESSION COMPLETE</p>
+      <h2 data-shutdown-closing class="shutdown-closing">TOBY<br /><em>Build. Break. Rebuild.</em></h2>
     </div>
   </section>
 
