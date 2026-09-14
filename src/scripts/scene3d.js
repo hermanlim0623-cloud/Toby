@@ -2,19 +2,24 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // The TOBY mark, reduced to just the single "T" monogram: normalized and
-// lit, sitting fixed behind the whole page (see .toby-stage in
-// global.css) rather than confined to the hero. It emerges from darkness
-// once, then drifts side to side as the visitor scrolls — a slow,
-// continuous left/right traverse tied to scroll position rather than a
-// static placement — dimming slightly outside the hero so page content
-// stays legible.
+// lit, sitting fixed and centered behind the whole page (see .toby-stage
+// in global.css) rather than confined to the hero. It emerges from
+// darkness once and stays in place — no left/right traverse — while its
+// material evolves with scroll depth, dimming slightly outside the hero
+// so page content stays legible.
 const LETTERS = [
   { file: 't-monogram.glb', scale: 1 },
 ];
 const TARGET_HEIGHT = 2.2;
 const LETTER_GAP = 0.22;
-const DRIFT_RANGE = 3.4; // world units the T travels left/right across a full scroll cycle
-const DRIFT_CYCLE = 1.6; // number of full left-right traverses across the whole page
+
+// The T evolves with depth: bright glass at the surface, a darker,
+// more saturated body deeper down, with an inner cyan core that only
+// really announces itself once the dive reaches the abyss.
+const SURFACE_COLOR = new THREE.Color(0xd9f0ff);
+const ABYSS_COLOR = new THREE.Color(0x040608);
+const SURFACE_EMISSIVE = new THREE.Color(0x1c4a5e);
+const ABYSS_EMISSIVE = new THREE.Color(0x6feaff);
 
 function buildLetterMaterial() {
   return new THREE.MeshStandardMaterial({
@@ -132,8 +137,11 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   let rawPointerX = -9999, rawPointerY = -9999; // raw client px, for per-letter proximity
   let rotTargetX = 0, rotTargetY = 0;
   let scrollDim = 1; // 1 = full presence (hero), fades to ~0.4 past the hero
-  let driftX = 0; // scroll-driven left/right target for the T, smoothed in tick()
+  let depthT = 0; // 0 = surface, 1 = abyss — same easing as the depth-meter/scrim
   let letterMeshes = [];
+  let materials = [];
+  const _matColor = new THREE.Color();
+  const _matEmissive = new THREE.Color();
   const HOVER_RADIUS = 320; // px
   const HOVER_DISPLACE = 0.9; // world units
   const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -175,12 +183,16 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
     }
     scrollDim = dim;
 
-    // Drive the T's left/right traverse from overall page scroll progress —
-    // a slow sine sweep so it feels like one continuous aesthetic drift
-    // rather than snapping section to section.
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     const pageProgress = docHeight > 0 ? window.scrollY / docHeight : 0;
-    driftX = Math.sin(pageProgress * Math.PI * DRIFT_CYCLE) * (DRIFT_RANGE / 2);
+    // Mirrors the depth-meter/scrim curve in ocean.js: descends through
+    // ~82% of the page, then eases back toward the surface look for the
+    // closing transmission/shutdown stretch, so the T isn't still reading
+    // "abyss" while the copy and depth reading say otherwise.
+    const clampedProgress = Math.min(Math.max(pageProgress, 0), 1);
+    depthT = clampedProgress <= 0.82
+      ? Math.pow(clampedProgress / 0.82, 1.35)
+      : Math.max(0, 1 - ((clampedProgress - 0.82) / 0.18) * 0.92);
   }
   window.addEventListener('scroll', updateScroll, { passive: true });
   updateScroll();
@@ -200,7 +212,6 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
       wordGroup.rotation.x = rotTargetX;
       wordGroup.rotation.y = Math.sin(t * 0.05) * 0.05 + rotTargetY;
       wordGroup.position.y = Math.sin(t * 0.35) * 0.08;
-      wordGroup.position.x += (driftX - wordGroup.position.x) * 0.025;
       wordGroup.updateMatrixWorld();
     }
 
@@ -228,6 +239,20 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
         root.position.x += (base.x + targetX - root.position.x) * 0.12;
         root.position.y += (base.y + targetY - root.position.y) * 0.12;
         root.position.z += (base.z + targetZ - root.position.z) * 0.12;
+      });
+    }
+
+    // The T's material evolves with depth: glass-bright at the surface,
+    // toward a dark, almost silhouetted body with a strengthening cyan
+    // core the deeper the dive goes.
+    if (materials.length) {
+      _matColor.lerpColors(SURFACE_COLOR, ABYSS_COLOR, depthT);
+      _matEmissive.lerpColors(SURFACE_EMISSIVE, ABYSS_EMISSIVE, depthT);
+      const targetIntensity = (0.35 + depthT * 1.15) * dimmables.emissive;
+      materials.forEach((m) => {
+        m.color.copy(_matColor);
+        m.emissive.copy(_matEmissive);
+        m.emissiveIntensity = targetIntensity;
       });
     }
 
@@ -259,7 +284,7 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
         rimIntensity: 5,
         accentIntensity: 3.2,
         particleOpacity: 0.5,
-        emissive: 0.5,
+        emissive: 1,
         duration: 2.6,
         ease: 'power2.out',
         delay: 0.3,
@@ -271,33 +296,23 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
     dimmables.rimIntensity = 5;
     dimmables.accentIntensity = 3.2;
     dimmables.particleOpacity = 0.5;
+    dimmables.emissive = 1;
   }
 
   loadWordmark(scene)
     .then((result) => {
       wordGroup = result.wordGroup;
       letterMeshes = result.letters.map((l) => ({ root: l.root, base: l.root.position.clone() }));
+      materials = result.letters.flatMap((l) => {
+        const mats = [];
+        l.root.traverse((node) => { if (node.isMesh) mats.push(node.material); });
+        return mats;
+      });
       if (gsap) {
         gsap.to(
           result.letters.map((l) => l.root.scale),
-          {
-            x: 1, y: 1, z: 1,
-            duration: 1.4,
-            ease: 'back.out(1.4)',
-            stagger: 0.12,
-            delay: 0.35,
-            onUpdate() {
-              result.letters.forEach((l) => { l.root.material && (l.root.material.emissiveIntensity = dimmables.emissive); });
-            },
-          }
+          { x: 1, y: 1, z: 1, duration: 1.4, ease: 'back.out(1.4)', stagger: 0.12, delay: 0.35 }
         );
-        result.letters.forEach((l) => {
-          l.root.traverse((node) => {
-            if (node.isMesh) {
-              gsap.to(node.material, { emissiveIntensity: 0.5, duration: 2.2, ease: 'power2.out', delay: 0.4 });
-            }
-          });
-        });
       } else {
         result.letters.forEach((l) => l.root.scale.setScalar(1));
       }

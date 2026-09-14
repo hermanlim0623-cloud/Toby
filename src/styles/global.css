@@ -35,26 +35,6 @@
   --ease-soft: cubic-bezier(.22,.61,.36,1);
 }
 
-/* ---- light theme: used by the surface/shallow bookend sections (hero,
-   identity, skills, shutdown) — redefines the same tokens so every
-   component that reads var(--ink) etc. just works on a bright ground. ---- */
-.theme-light{
-  --ink: #06345C;
-  --ink-soft: #3E6C8C;
-  --ink-faint: #6E93AC;
-  --line: rgba(6,52,92,0.12);
-  --line-strong: rgba(6,52,92,0.22);
-  --surface: rgba(6,52,92,0.035);
-  --surface-strong: rgba(6,52,92,0.06);
-  --accent: var(--deep-ocean);
-  --accent-2: var(--deep-blue);
-  --accent-ink: #FFFFFF;
-  /* `color` is only assigned once, on body — it inherits down as an
-     already-resolved value, not a live var() lookup — so redefining
-     --ink alone wouldn't recolor text here without reasserting `color`. */
-  color:var(--ink);
-}
-
 *{ box-sizing:border-box; }
 html{ background:var(--bg); color-scheme:dark; }
 body{
@@ -64,6 +44,20 @@ body{
   font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing:antialiased;
   overflow-x:clip;
+  /* text-shadow inherits to every descendant — cheap insurance so type
+     stays legible over live, unpredictable video frames rather than a
+     flat background, without needing to box every line in a panel. */
+  text-shadow:0 2px 20px rgba(2,24,39,0.65), 0 1px 2px rgba(2,24,39,0.5);
+}
+
+/* ---- glass: sparing use for the few text blocks dense enough that a
+   shadow alone isn't enough insurance against a bright video frame. ---- */
+.glass{
+  background:rgba(2,24,39,0.4);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid rgba(111,232,255,0.14);
+  border-radius:20px;
 }
 ::selection{ background:var(--accent); color:var(--accent-ink); }
 a{ color:inherit; }
@@ -90,15 +84,52 @@ h1,h2,h3,h4{ font-family:"Fraunces", Georgia, serif; margin:0; text-wrap:balance
 
 .wrap{ max-width:1180px; margin:0 auto; padding-inline:24px; position:relative; }
 
-/* ---------- atmosphere: grain + vignette, fixed full-page ---------- */
+/* ---------- cinematic video environment ----------
+   Two full-viewport <video> layers crossfade at clip boundaries (driven
+   by src/scripts/cinema.js); this IS the site's background now — the
+   dark fallback stays visible until the first frame is ready. */
+.cinema-stage{
+  position:fixed; inset:0;
+  z-index:-1;
+  background:var(--deep-abyss);
+  overflow:hidden;
+}
+.cinema-video{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  opacity:0;
+  transition:opacity 0.6s ease;
+}
+.cinema-video.is-active{ opacity:1; }
+.cinema-loading{
+  position:absolute; inset:0;
+  background:var(--deep-abyss);
+  z-index:1;
+  transition:opacity 0.8s ease;
+}
+.cinema-loading.is-hidden{ opacity:0; pointer-events:none; }
+
+/* A single depth-modulated vignette that keeps HTML content legible over
+   whatever the footage is doing, darkening gently as the dive deepens
+   (see ocean.js) rather than ever hard-cutting to a flat color. */
+.scrim{
+  position:fixed; inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(2,24,39,0.32), rgba(2,24,39,var(--scrim-a, 0.4)) 55%, rgba(2,24,39, calc(var(--scrim-a, 0.4) + 0.2)));
+}
+
+/* ---------- atmosphere: a soft color-accent wash on top of the video --- */
 .atmosphere{
   position:fixed; inset:0;
   z-index:0;
   pointer-events:none;
   background:
-    radial-gradient(1200px 700px at 15% -10%, rgba(58,175,232,0.14), transparent 60%),
-    radial-gradient(900px 600px at 90% 10%, rgba(111,232,255,0.09), transparent 55%),
-    radial-gradient(1400px 900px at 50% 120%, rgba(111,232,255,0.07), transparent 60%);
+    radial-gradient(1200px 700px at 15% -10%, rgba(58,175,232,0.10), transparent 60%),
+    radial-gradient(900px 600px at 90% 10%, rgba(111,232,255,0.06), transparent 55%),
+    radial-gradient(1400px 900px at 50% 120%, rgba(111,232,255,0.05), transparent 60%);
 }
 
 /* ---- caustic light: a slow-drifting soft glow, like sunlight refracted
@@ -107,7 +138,7 @@ h1,h2,h3,h4{ font-family:"Fraunces", Georgia, serif; margin:0; text-wrap:balance
   position:fixed; inset:0;
   z-index:0;
   pointer-events:none;
-  opacity:0.5;
+  opacity:0.22;
   background:
     radial-gradient(60% 40% at 30% 20%, rgba(111,232,255,0.14), transparent 60%),
     radial-gradient(50% 35% at 75% 60%, rgba(58,175,232,0.10), transparent 65%);
@@ -309,8 +340,7 @@ main, header, footer{ position:relative; z-index:2; }
   grid-template-columns:1.1fr 1fr;
   gap:40px;
   margin-top:44px;
-  padding-top:28px;
-  border-top:1px solid var(--line);
+  padding:26px clamp(20px,3vw,32px);
   max-width:820px;
 }
 .hero-sub p{ font-size:1.05rem; line-height:1.6; color:var(--ink-soft); max-width:38ch; }
@@ -345,21 +375,13 @@ main, header, footer{ position:relative; z-index:2; }
 /* ---------- section shell ---------- */
 section{ position:relative; padding-block:min(14vw, 128px); border-top:1px solid var(--line); }
 
-/* ---------- ocean depth chain ----------
-   Each section is a gradient stop in one continuous dive: a section's top
-   color matches the previous section's bottom color, so scrolling reads
-   as one uninterrupted descent (then ascent, on the way back to the
-   surface) rather than a hard cut between blocks. */
-.hero{ background:linear-gradient(180deg, var(--surface-white), var(--mist)); }
-.identity-section{ background:linear-gradient(180deg, var(--mist), var(--shallow)); }
-.skills-section{ background:linear-gradient(180deg, var(--shallow), var(--aqua)); }
-#work{ background:linear-gradient(180deg, var(--ocean), var(--deep-ocean)); }
-.automation-section{ background:linear-gradient(180deg, var(--deep-ocean), var(--deep-blue)); }
-.systems-section{ background:linear-gradient(180deg, var(--deep-blue), var(--abyss-blue)); }
-.evolution-section{ background:linear-gradient(180deg, var(--abyss-blue), var(--deep-abyss)); }
-.transmission-section{ background:linear-gradient(180deg, var(--deep-abyss), var(--abyss-blue) 45%, var(--deep-ocean)); }
-.shutdown-section{ background:linear-gradient(180deg, var(--deep-ocean), var(--aqua) 55%, var(--shallow) 80%, var(--surface-white)); }
-footer.site-foot{ background:var(--surface-white); }
+/* ---------- sections sit inside the world, not on top of it ----------
+   The cinematic video is the environment now, so every section is
+   transparent — content floats over whatever depth the dive has reached,
+   with .scrim (above, depth-modulated) doing the legibility work instead
+   of a flat per-section background color. */
+section{ background:transparent; border-top-color:transparent; }
+footer.site-foot{ background:var(--deep-abyss); }
 .section-head{
   display:flex; justify-content:space-between; align-items:baseline;
   gap:24px; margin-bottom:56px; flex-wrap:wrap;
@@ -565,17 +587,18 @@ html.no-hover .cursor-dot, html.no-hover .cursor-ring{ display:none; }
    ============================================================ */
 .identity-section{ position:relative; overflow:hidden; }
 .id-grid{
-  position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.6;
+  position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.5;
   background-image:
-    linear-gradient(rgba(6,52,92,0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(6,52,92,0.07) 1px, transparent 1px);
+    linear-gradient(rgba(111,232,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111,232,255,0.06) 1px, transparent 1px);
   background-size:42px 42px;
   mask-image:radial-gradient(circle at 30% 30%, black, transparent 75%);
 }
 .id-scanline{
   position:absolute; left:0; right:0; top:0; height:120px; z-index:1; pointer-events:none;
-  background:linear-gradient(180deg, transparent, rgba(58,175,232,0.22), transparent);
+  background:linear-gradient(180deg, transparent, rgba(111,232,255,0.16), transparent);
 }
+.id-console{ padding:clamp(20px,4vw,32px); max-width:640px; }
 .id-terminal{
   font-family:"IBM Plex Mono", monospace;
   display:flex; flex-direction:column; gap:8px;
@@ -598,6 +621,7 @@ html.no-hover .cursor-dot, html.no-hover .cursor-ring{ display:none; }
 .identity-section .intro-copy{
   margin-top:36px; position:relative; z-index:2; max-width:60ch;
   color:var(--ink-soft); line-height:1.7;
+  padding:clamp(18px,3vw,26px);
 }
 
 /* ============================================================
@@ -704,6 +728,7 @@ html.no-hover .cursor-dot, html.no-hover .cursor-ring{ display:none; }
    SECTION 11 — TRANSMISSION terminal
    ============================================================ */
 .transmission-section{ text-align:center; }
+.transmission-console{ display:inline-block; padding:clamp(24px,4vw,36px) clamp(28px,6vw,56px); }
 .transmission-status{
   font-family:"IBM Plex Mono", monospace; font-size:0.8rem; letter-spacing:0.08em;
   color:var(--accent); margin-top:8px;

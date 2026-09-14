@@ -13,14 +13,20 @@ import { createAutomationPipeline } from './automation.js';
 import { createTransmission } from './terminal.js';
 import { createShutdown } from './shutdown.js';
 import { createOceanAtmosphere } from './ocean.js';
+import { createCinema } from './cinema.js';
 import { SKILL_NODES } from './skillData.js';
 
 gsap.registerPlugin(ScrollTrigger);
 window.ScrollTrigger = ScrollTrigger;
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lowPower = window.innerWidth < 760
+  || (navigator.deviceMemory && navigator.deviceMemory <= 4)
+  || (navigator.connection && navigator.connection.saveData);
 
 document.documentElement.classList.add('js-ready');
+
+createCinema({ prefersReducedMotion, lowPower });
 
 createSmoothScroll(gsap, prefersReducedMotion);
 createNav();

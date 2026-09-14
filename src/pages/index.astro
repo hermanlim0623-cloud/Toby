@@ -113,6 +113,12 @@ const pipelineStats = [
 </head>
 <body>
 
+<div class="cinema-stage" data-cinema aria-hidden="true">
+  <div class="cinema-loading" data-cinema-loading></div>
+  <video class="cinema-video" data-cinema-a muted playsinline disablepictureinpicture></video>
+  <video class="cinema-video" data-cinema-b muted playsinline disablepictureinpicture></video>
+</div>
+<div class="scrim" aria-hidden="true"></div>
 <div class="atmosphere" aria-hidden="true"></div>
 <div class="caustics" aria-hidden="true"></div>
 <div class="bubbles" id="bubbles" aria-hidden="true"></div>
@@ -151,7 +157,7 @@ const pipelineStats = [
 
 <main id="top">
 
-  <section class="hero theme-light" aria-label="Introduction">
+  <section class="hero" aria-label="Introduction">
     <div class="hero-fallback" aria-hidden="true"></div>
     <div class="wrap hero-content">
       <div class="eyebrow">TOBY — Creative Technologist</div>
@@ -160,7 +166,7 @@ const pipelineStats = [
         <span class="split-line"><span>systems &amp;</span></span>
         <span class="split-line"><span><em>experiences.</em></span></span>
       </h1>
-      <div class="hero-sub">
+      <div class="hero-sub glass">
         <p>Dashboards, automations and backend tools built inside a business's day-to-day operations — the invisible machinery behind a kitchen that runs on time.</p>
         <div class="hero-meta">
           <div><strong>Based in</strong> — Indonesia</div>
@@ -175,26 +181,28 @@ const pipelineStats = [
     </div>
   </section>
 
-  <section id="intro" class="identity-section theme-light" data-identity>
+  <section id="intro" class="identity-section" data-identity>
     <div class="id-scanline" aria-hidden="true"></div>
     <div class="id-grid" aria-hidden="true"></div>
     <div class="wrap">
       <div class="eyebrow">01 — Identity · Who is behind the system</div>
-      <div class="id-terminal" style="margin-top:26px;">
-        {identityLines.map((line) => (
-          <p class="id-line" data-id-line={line}>{line}</p>
-        ))}
+      <div class="id-console glass" style="margin-top:26px;">
+        <div class="id-terminal">
+          {identityLines.map((line) => (
+            <p class="id-line" data-id-line={line}>{line}</p>
+          ))}
+        </div>
+        <div class="id-tags" aria-label="Capabilities">
+          {identityTags.map((t) => <span class="id-tag" data-id-tag>{t}</span>)}
+        </div>
       </div>
-      <div class="id-tags" aria-label="Capabilities">
-        {identityTags.map((t) => <span class="id-tag" data-id-tag>{t}</span>)}
-      </div>
-      <div class="intro-copy" data-reveal>
+      <div class="intro-copy glass" data-reveal>
         <p>I work close to the ground — inside the actual workflow of a food business, not from a spec document. The tools I build get judged the same way the kitchen does: does it work today, under pressure, without babysitting.</p>
       </div>
     </div>
   </section>
 
-  <section id="expertise" class="skills-section theme-light">
+  <section id="expertise" class="skills-section">
     <div class="wrap">
       <div class="section-head">
         <h2 data-split>The skill matrix</h2>
@@ -319,9 +327,11 @@ const pipelineStats = [
   <section id="contact" class="transmission-section" data-transmission>
     <div class="wrap contact">
       <div class="eyebrow" style="justify-content:center;">07 — Transmission</div>
-      <div class="transmission-status" data-transmission-status>ESTABLISHING CONNECTION…</div>
-      <div class="transmission-bar-track"><div class="transmission-bar" data-transmission-bar></div></div>
-      <div class="transmission-pct" data-transmission-pct>0%</div>
+      <div class="transmission-console glass">
+        <div class="transmission-status" data-transmission-status>ESTABLISHING CONNECTION…</div>
+        <div class="transmission-bar-track"><div class="transmission-bar" data-transmission-bar></div></div>
+        <div class="transmission-pct" data-transmission-pct>0%</div>
+      </div>
 
       <h2 data-split data-transmission-reveal style="margin-top:32px;">Let's fix the next bottleneck together.</h2>
       <div class="transmission-tags" data-transmission-reveal>
@@ -334,7 +344,7 @@ const pipelineStats = [
     </div>
   </section>
 
-  <section class="final-cta shutdown-section theme-light" data-shutdown>
+  <section class="final-cta shutdown-section" data-shutdown>
     <div class="shutdown-world" data-shutdown-world aria-hidden="true">
       <span></span><span></span><span></span><span></span><span></span>
     </div>

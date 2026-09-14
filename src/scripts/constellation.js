@@ -100,7 +100,7 @@ export function createConstellation(canvas, nodes, { prefersReducedMotion } = {}
         const p1x = n.x * w, p1y = n.y * h;
         const p2x = m.x * w, p2y = m.y * h;
         const isHot = active === i || active === j;
-        ctx.strokeStyle = isHot ? 'rgba(8,127,193,0.8)' : 'rgba(6,52,92,0.14)';
+        ctx.strokeStyle = isHot ? 'rgba(111,232,255,0.8)' : 'rgba(255,255,255,0.14)';
         ctx.lineWidth = isHot ? 1.4 : 0.8;
         ctx.beginPath();
         ctx.moveTo(p1x, p1y);
@@ -116,18 +116,21 @@ export function createConstellation(canvas, nodes, { prefersReducedMotion } = {}
       const r = isActive ? 7 : 4.2;
       ctx.beginPath();
       ctx.arc(px, py, r + (isActive ? 8 : 0), 0, Math.PI * 2);
-      ctx.fillStyle = isActive ? 'rgba(8,127,193,0.16)' : 'rgba(8,127,193,0.0)';
+      ctx.fillStyle = isActive ? 'rgba(111,232,255,0.18)' : 'rgba(111,232,255,0.0)';
       ctx.fill();
 
       ctx.beginPath();
       ctx.arc(px, py, r, 0, Math.PI * 2);
-      ctx.fillStyle = isActive ? '#087FC1' : 'rgba(6,52,92,0.55)';
+      ctx.fillStyle = isActive ? '#6FE8FF' : 'rgba(243,244,240,0.8)';
       ctx.fill();
 
       ctx.font = `${isActive ? 600 : 400} ${isActive ? 12 : 10.5}px "IBM Plex Mono", monospace`;
-      ctx.fillStyle = isActive ? '#06345C' : 'rgba(6,52,92,0.7)';
+      ctx.fillStyle = isActive ? '#F3F4F0' : 'rgba(159,182,198,0.9)';
       ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(2,24,39,0.9)';
+      ctx.shadowBlur = 6;
       ctx.fillText(n.label, px, py - r - 10);
+      ctx.shadowBlur = 0;
     });
 
     raf = requestAnimationFrame(draw);
