@@ -21,7 +21,7 @@ function buildLetterMaterial() {
     color: 0x0c1016,
     metalness: 0.88,
     roughness: 0.28,
-    emissive: 0x123a30,
+    emissive: 0x0a3a52,
     emissiveIntensity: 0.5,
     flatShading: false,
   });
@@ -88,20 +88,20 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
   camera.position.set(0, 0, 9.4);
 
-  // ---- lighting: dark environment, one key light, one violet rim light,
-  // one teal accent used for the emissive glow / occasional sweep.
-  const ambient = new THREE.AmbientLight(0x1a2230, 0.04);
+  // ---- lighting: dark environment, one key light, one ocean-blue rim
+  // light, one bioluminescent accent used for the emissive glow / sweep.
+  const ambient = new THREE.AmbientLight(0x0a2a3a, 0.04);
   scene.add(ambient);
 
   const keyLight = new THREE.DirectionalLight(0xf3f4f0, 1.15);
   keyLight.position.set(3.2, 4, 5.5);
   scene.add(keyLight);
 
-  const rimLight = new THREE.PointLight(0x8c7bff, 6, 20);
+  const rimLight = new THREE.PointLight(0x3aafe8, 6, 20);
   rimLight.position.set(-4, -1.6, -5);
   scene.add(rimLight);
 
-  const accentLight = new THREE.PointLight(0x6ef0c6, 4, 16);
+  const accentLight = new THREE.PointLight(0x6feaff, 4, 16);
   accentLight.position.set(2.2, -1.4, 4.2);
   scene.add(accentLight);
 
@@ -119,7 +119,7 @@ export function createHeroScene(canvas, { prefersReducedMotion, gsap } = {}) {
   particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   const particles = new THREE.Points(
     particleGeo,
-    new THREE.PointsMaterial({ color: 0xd7fff0, size: 0.03, transparent: true, opacity: 0 })
+    new THREE.PointsMaterial({ color: 0xd6f3ff, size: 0.03, transparent: true, opacity: 0 })
   );
   scene.add(particles);
 

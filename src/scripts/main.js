@@ -12,6 +12,7 @@ import { createConstellation } from './constellation.js';
 import { createAutomationPipeline } from './automation.js';
 import { createTransmission } from './terminal.js';
 import { createShutdown } from './shutdown.js';
+import { createOceanAtmosphere } from './ocean.js';
 import { SKILL_NODES } from './skillData.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -31,6 +32,7 @@ createIdentityScan(gsap, ScrollTrigger, prefersReducedMotion);
 createAutomationPipeline(gsap, ScrollTrigger, prefersReducedMotion);
 createTransmission(gsap, ScrollTrigger, prefersReducedMotion);
 createShutdown(gsap, ScrollTrigger, prefersReducedMotion);
+createOceanAtmosphere(prefersReducedMotion);
 
 const skillCanvas = document.querySelector('#skill-canvas');
 if (skillCanvas) createConstellation(skillCanvas, SKILL_NODES, { prefersReducedMotion });

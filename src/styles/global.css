@@ -5,22 +5,54 @@
    ============================================================ */
 
 :root{
-  --bg: #05070a;
-  --bg-1: #0a0e13;
-  --bg-2: #0d1118;
+  /* ---- ocean depth palette: the whole site is one continuous dive ---- */
+  --surface-white: #FFFFFF;
+  --mist: #EAF8FF;
+  --shallow: #BFEFFF;
+  --aqua: #8ED8F5;
+  --ocean: #3AAFE8;
+  --deep-ocean: #087FC1;
+  --deep-blue: #075B9E;
+  --abyss-blue: #06345C;
+  --deep-abyss: #021827;
+  --biolume: #6FE8FF;
+
+  --bg: var(--deep-abyss);
+  --bg-1: var(--abyss-blue);
+  --bg-2: var(--deep-blue);
   --surface: rgba(255,255,255,0.035);
   --surface-strong: rgba(255,255,255,0.06);
   --line: rgba(255,255,255,0.09);
   --line-strong: rgba(255,255,255,0.16);
   --ink: #F3F4F0;
-  --ink-soft: #98A0AC;
-  --ink-faint: #5B626E;
-  --accent: #6EF0C6;
-  --accent-2: #8C7BFF;
-  --accent-ink: #05070a;
-  --glow: 0 0 80px -20px rgba(110,240,198,0.35);
+  --ink-soft: #9FB6C6;
+  --ink-faint: #5B7688;
+  --accent: var(--biolume);
+  --accent-2: var(--deep-ocean);
+  --accent-ink: #021827;
+  --glow: 0 0 80px -20px rgba(111,232,255,0.35);
   --ease-out: cubic-bezier(.16,1,.3,1);
   --ease-soft: cubic-bezier(.22,.61,.36,1);
+}
+
+/* ---- light theme: used by the surface/shallow bookend sections (hero,
+   identity, skills, shutdown) — redefines the same tokens so every
+   component that reads var(--ink) etc. just works on a bright ground. ---- */
+.theme-light{
+  --ink: #06345C;
+  --ink-soft: #3E6C8C;
+  --ink-faint: #6E93AC;
+  --line: rgba(6,52,92,0.12);
+  --line-strong: rgba(6,52,92,0.22);
+  --surface: rgba(6,52,92,0.035);
+  --surface-strong: rgba(6,52,92,0.06);
+  --accent: var(--deep-ocean);
+  --accent-2: var(--deep-blue);
+  --accent-ink: #FFFFFF;
+  /* `color` is only assigned once, on body — it inherits down as an
+     already-resolved value, not a live var() lookup — so redefining
+     --ink alone wouldn't recolor text here without reasserting `color`. */
+  color:var(--ink);
 }
 
 *{ box-sizing:border-box; }
@@ -64,9 +96,49 @@ h1,h2,h3,h4{ font-family:"Fraunces", Georgia, serif; margin:0; text-wrap:balance
   z-index:0;
   pointer-events:none;
   background:
-    radial-gradient(1200px 700px at 15% -10%, rgba(140,123,255,0.16), transparent 60%),
-    radial-gradient(900px 600px at 90% 10%, rgba(110,240,198,0.10), transparent 55%),
-    radial-gradient(1400px 900px at 50% 120%, rgba(110,240,198,0.08), transparent 60%);
+    radial-gradient(1200px 700px at 15% -10%, rgba(58,175,232,0.14), transparent 60%),
+    radial-gradient(900px 600px at 90% 10%, rgba(111,232,255,0.09), transparent 55%),
+    radial-gradient(1400px 900px at 50% 120%, rgba(111,232,255,0.07), transparent 60%);
+}
+
+/* ---- caustic light: a slow-drifting soft glow, like sunlight refracted
+   through a moving water surface. Cheap — one gradient, animated position. */
+.caustics{
+  position:fixed; inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0.5;
+  background:
+    radial-gradient(60% 40% at 30% 20%, rgba(111,232,255,0.14), transparent 60%),
+    radial-gradient(50% 35% at 75% 60%, rgba(58,175,232,0.10), transparent 65%);
+  background-size:160% 160%;
+  animation:causticDrift 26s ease-in-out infinite alternate;
+}
+@keyframes causticDrift{
+  0%{ background-position:0% 0%, 100% 100%; }
+  100%{ background-position:20% 15%, 80% 85%; }
+}
+
+/* ---- rising bubbles: a handful of fixed particles drifting upward,
+   injected once by ocean.js. Pure CSS transform/opacity — GPU-friendly. */
+.bubbles{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.bubble{
+  position:absolute; bottom:-8%;
+  width:var(--bs, 6px); height:var(--bs, 6px);
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(111,232,255,0.12) 70%, transparent 75%);
+  animation:bubbleRise var(--bd, 18s) linear infinite;
+  animation-delay:var(--bt, 0s);
+  opacity:0;
+}
+@keyframes bubbleRise{
+  0%{ transform:translateY(0) translateX(0); opacity:0; }
+  8%{ opacity:0.55; }
+  92%{ opacity:0.4; }
+  100%{ transform:translateY(-108vh) translateX(var(--bx, 20px)); opacity:0; }
+}
+@media (prefers-reduced-motion: reduce){
+  .caustics, .bubble{ animation:none; opacity:0.15; }
 }
 .grain{
   position:fixed; inset:-10%;
@@ -88,18 +160,42 @@ main, header, footer{ position:relative; z-index:2; }
 }
 .toby-stage canvas{ width:100%; height:100%; display:block; }
 
+/* ---------- depth HUD ---------- */
+.depth-hud{
+  position:fixed; left:20px; bottom:20px; z-index:40;
+  display:flex; align-items:baseline; gap:8px;
+  font-family:"IBM Plex Mono", monospace;
+  padding:8px 12px;
+  border-radius:8px;
+  background:rgba(2,24,39,0.45);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(111,232,255,0.16);
+  pointer-events:none;
+}
+.depth-hud span{ font-size:0.62rem; letter-spacing:0.14em; color:#6E93AC; }
+.depth-hud strong{ font-size:0.82rem; color:var(--biolume); font-weight:500; }
+@media (max-width:700px){ .depth-hud{ display:none; } }
+
 /* ---------- nav ---------- */
+/* The nav sits above sections that swing from pure white to near-black as
+   the page dives, so it carries its own permanent dark glass surface and
+   fixed (non-theme) text colors instead of inheriting per-section theme —
+   it needs to stay legible over every depth, not blend into one. */
 .nav{
   position:fixed; top:0; left:0; right:0; z-index:50;
   display:flex; align-items:center; justify-content:space-between;
-  padding:20px clamp(20px, 4vw, 48px);
-  transition:background 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease;
-  border-bottom:1px solid transparent;
+  padding:14px clamp(20px, 4vw, 48px);
+  margin:12px clamp(12px, 3vw, 32px) 0;
+  border-radius:16px;
+  background:rgba(2,24,39,0.55);
+  backdrop-filter:blur(14px) saturate(140%);
+  border:1px solid rgba(111,232,255,0.14);
+  transition:background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
 .nav.is-scrolled{
-  background:rgba(5,7,10,0.65);
-  backdrop-filter:blur(14px) saturate(140%);
-  border-bottom-color:var(--line);
+  background:rgba(2,24,39,0.78);
+  border-color:rgba(111,232,255,0.22);
+  box-shadow:0 12px 40px -18px rgba(2,24,39,0.6);
 }
 .nav-brand{
   font-family:"Fraunces", serif;
@@ -107,8 +203,9 @@ main, header, footer{ position:relative; z-index:2; }
   font-size:1.1rem;
   letter-spacing:0.01em;
   text-decoration:none;
+  color:#F3F4F0;
 }
-.nav-brand span{ color:var(--accent); }
+.nav-brand span{ color:var(--biolume); }
 .nav-links{
   display:flex; gap:32px;
   list-style:none; margin:0; padding:0;
@@ -119,16 +216,16 @@ main, header, footer{ position:relative; z-index:2; }
   font-size:0.8rem;
   letter-spacing:0.04em;
   text-decoration:none;
-  color:var(--ink-soft);
+  color:#9FB6C6;
   padding:4px 0;
   transition:color 0.3s ease;
 }
 .nav-links a::after{
   content:""; position:absolute; left:0; right:100%; bottom:0; height:1px;
-  background:var(--accent);
+  background:var(--biolume);
   transition:right 0.35s var(--ease-out);
 }
-.nav-links a:hover, .nav-links a.is-active{ color:var(--ink); }
+.nav-links a:hover, .nav-links a.is-active{ color:#F3F4F0; }
 .nav-links a:hover::after, .nav-links a.is-active::after{ right:0; }
 .nav-cta{
   font-family:"IBM Plex Mono", monospace;
@@ -139,7 +236,7 @@ main, header, footer{ position:relative; z-index:2; }
   text-decoration:none;
   transition:border-color 0.3s ease, background 0.3s ease;
 }
-.nav-cta:hover{ border-color:var(--accent); background:rgba(110,240,198,0.08); }
+.nav-cta:hover{ border-color:var(--accent); background:rgba(111,232,255,0.08); }
 .nav-toggle{
   display:none;
   width:36px; height:36px;
@@ -187,8 +284,8 @@ main, header, footer{ position:relative; z-index:2; }
   z-index:0;
   pointer-events:none;
   background:
-    radial-gradient(560px 560px at 72% 42%, rgba(110,240,198,0.16), transparent 70%),
-    radial-gradient(420px 420px at 30% 60%, rgba(140,123,255,0.14), transparent 70%);
+    radial-gradient(560px 560px at 72% 42%, rgba(111,232,255,0.28), transparent 70%),
+    radial-gradient(420px 420px at 30% 60%, rgba(58,175,232,0.20), transparent 70%);
   filter:blur(2px);
 }
 .hero-content{ position:relative; z-index:2; }
@@ -247,6 +344,22 @@ main, header, footer{ position:relative; z-index:2; }
 
 /* ---------- section shell ---------- */
 section{ position:relative; padding-block:min(14vw, 128px); border-top:1px solid var(--line); }
+
+/* ---------- ocean depth chain ----------
+   Each section is a gradient stop in one continuous dive: a section's top
+   color matches the previous section's bottom color, so scrolling reads
+   as one uninterrupted descent (then ascent, on the way back to the
+   surface) rather than a hard cut between blocks. */
+.hero{ background:linear-gradient(180deg, var(--surface-white), var(--mist)); }
+.identity-section{ background:linear-gradient(180deg, var(--mist), var(--shallow)); }
+.skills-section{ background:linear-gradient(180deg, var(--shallow), var(--aqua)); }
+#work{ background:linear-gradient(180deg, var(--ocean), var(--deep-ocean)); }
+.automation-section{ background:linear-gradient(180deg, var(--deep-ocean), var(--deep-blue)); }
+.systems-section{ background:linear-gradient(180deg, var(--deep-blue), var(--abyss-blue)); }
+.evolution-section{ background:linear-gradient(180deg, var(--abyss-blue), var(--deep-abyss)); }
+.transmission-section{ background:linear-gradient(180deg, var(--deep-abyss), var(--abyss-blue) 45%, var(--deep-ocean)); }
+.shutdown-section{ background:linear-gradient(180deg, var(--deep-ocean), var(--aqua) 55%, var(--shallow) 80%, var(--surface-white)); }
+footer.site-foot{ background:var(--surface-white); }
 .section-head{
   display:flex; justify-content:space-between; align-items:baseline;
   gap:24px; margin-bottom:56px; flex-wrap:wrap;
@@ -300,7 +413,7 @@ section{ position:relative; padding-block:min(14vw, 128px); border-top:1px solid
 }
 .project-card::before{
   content:""; position:absolute; inset:0;
-  background:linear-gradient(140deg, rgba(110,240,198,0.08), transparent 55%);
+  background:linear-gradient(140deg, rgba(111,232,255,0.08), transparent 55%);
   opacity:0; transition:opacity 0.5s ease;
 }
 .project-card:hover::before{ opacity:1; }
@@ -308,14 +421,14 @@ section{ position:relative; padding-block:min(14vw, 128px); border-top:1px solid
 .project-num{ font-family:"IBM Plex Mono", monospace; color:var(--ink-faint); font-size:0.85rem; }
 .project-tag{
   font-family:"IBM Plex Mono", monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase;
-  color:var(--accent); background:rgba(110,240,198,0.09); padding:5px 10px; border-radius:999px; width:fit-content;
+  color:var(--accent); background:rgba(111,232,255,0.09); padding:5px 10px; border-radius:999px; width:fit-content;
 }
 .project-visual{
   aspect-ratio:16/10; border-radius:14px;
   border:1px solid var(--line-strong);
   background:
     repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 16px),
-    linear-gradient(160deg, rgba(140,123,255,0.10), rgba(110,240,198,0.06));
+    linear-gradient(160deg, rgba(58,175,232,0.10), rgba(111,232,255,0.06));
   position:relative; overflow:hidden;
   transition:transform 0.6s var(--ease-out);
 }
@@ -358,7 +471,7 @@ section{ position:relative; padding-block:min(14vw, 128px); border-top:1px solid
 .spotlight-visual{
   aspect-ratio:4/3; border-radius:20px;
   border:1px solid var(--line-strong);
-  background:linear-gradient(150deg, rgba(110,240,198,0.12), rgba(140,123,255,0.10));
+  background:linear-gradient(150deg, rgba(111,232,255,0.12), rgba(58,175,232,0.10));
   position:relative; overflow:hidden;
 }
 .spotlight-stat{
@@ -448,20 +561,20 @@ footer.site-foot{
 html.no-hover .cursor-dot, html.no-hover .cursor-ring{ display:none; }
 
 /* ============================================================
-   SECTION 02 — IDENTITY: dark technical scanner interface
+   SECTION 02 — IDENTITY: shallow-water technical scanner interface
    ============================================================ */
-.identity-section{ position:relative; overflow:hidden; background:#040507; }
+.identity-section{ position:relative; overflow:hidden; }
 .id-grid{
-  position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.5;
+  position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.6;
   background-image:
-    linear-gradient(rgba(110,240,198,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(110,240,198,0.06) 1px, transparent 1px);
+    linear-gradient(rgba(6,52,92,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6,52,92,0.07) 1px, transparent 1px);
   background-size:42px 42px;
   mask-image:radial-gradient(circle at 30% 30%, black, transparent 75%);
 }
 .id-scanline{
   position:absolute; left:0; right:0; top:0; height:120px; z-index:1; pointer-events:none;
-  background:linear-gradient(180deg, transparent, rgba(110,240,198,0.16), transparent);
+  background:linear-gradient(180deg, transparent, rgba(58,175,232,0.22), transparent);
 }
 .id-terminal{
   font-family:"IBM Plex Mono", monospace;
@@ -521,15 +634,15 @@ html.no-hover .cursor-dot, html.no-hover .cursor-ring{ display:none; }
 .project-card[data-world]{ transition:border-color 0.4s ease; }
 [data-world-visual="control"]{
   background:
-    repeating-linear-gradient(0deg, rgba(110,240,198,0.08) 0 1px, transparent 1px 22px),
-    repeating-linear-gradient(90deg, rgba(110,240,198,0.08) 0 1px, transparent 1px 22px),
-    linear-gradient(160deg, rgba(110,240,198,0.10), rgba(5,7,10,0.4));
+    repeating-linear-gradient(0deg, rgba(111,232,255,0.08) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba(111,232,255,0.08) 0 1px, transparent 1px 22px),
+    linear-gradient(160deg, rgba(111,232,255,0.10), rgba(5,7,10,0.4));
 }
 [data-world-visual="control"]::before{ content:"● LIVE"; position:absolute; top:12px; right:12px; font-family:"IBM Plex Mono",monospace; font-size:0.62rem; color:var(--accent); letter-spacing:0.08em; }
 [data-world-visual="bot"]{
   background:
-    repeating-linear-gradient(135deg, rgba(140,123,255,0.09) 0 2px, transparent 2px 14px),
-    linear-gradient(160deg, rgba(140,123,255,0.14), rgba(5,7,10,0.5));
+    repeating-linear-gradient(135deg, rgba(58,175,232,0.09) 0 2px, transparent 2px 14px),
+    linear-gradient(160deg, rgba(58,175,232,0.14), rgba(5,7,10,0.5));
 }
 [data-world-visual="bot"]::before{ content:"WORKERS: 5 · QUEUE: ACTIVE"; position:absolute; bottom:12px; right:12px; font-family:"IBM Plex Mono",monospace; font-size:0.6rem; color:var(--accent-2); letter-spacing:0.04em; }
 [data-world-visual="report"]{

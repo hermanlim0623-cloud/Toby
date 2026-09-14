@@ -114,9 +114,15 @@ const pipelineStats = [
 <body>
 
 <div class="atmosphere" aria-hidden="true"></div>
+<div class="caustics" aria-hidden="true"></div>
+<div class="bubbles" id="bubbles" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <div class="toby-stage" aria-hidden="true">
   <canvas id="hero-canvas"></canvas>
+</div>
+<div class="depth-hud" aria-hidden="true">
+  <span>DEPTH</span>
+  <strong data-depth-meters>0m</strong>
 </div>
 
 <nav class="nav">
@@ -145,7 +151,7 @@ const pipelineStats = [
 
 <main id="top">
 
-  <section class="hero" aria-label="Introduction">
+  <section class="hero theme-light" aria-label="Introduction">
     <div class="hero-fallback" aria-hidden="true"></div>
     <div class="wrap hero-content">
       <div class="eyebrow">TOBY — Creative Technologist</div>
@@ -169,7 +175,7 @@ const pipelineStats = [
     </div>
   </section>
 
-  <section id="intro" class="identity-section" data-identity>
+  <section id="intro" class="identity-section theme-light" data-identity>
     <div class="id-scanline" aria-hidden="true"></div>
     <div class="id-grid" aria-hidden="true"></div>
     <div class="wrap">
@@ -188,7 +194,7 @@ const pipelineStats = [
     </div>
   </section>
 
-  <section id="expertise" class="skills-section">
+  <section id="expertise" class="skills-section theme-light">
     <div class="wrap">
       <div class="section-head">
         <h2 data-split>The skill matrix</h2>
@@ -253,7 +259,7 @@ const pipelineStats = [
 
       <svg class="pipeline-svg" viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
         <path data-flow-path d="M 40 100 C 200 100, 200 40, 340 40 C 480 40, 480 160, 620 160 C 760 160, 760 100, 960 100" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" stroke-dasharray="2 8" stroke-linecap="round" />
-        {[0,1,2,3,4,5].map(() => <circle data-flow-dot r="3.2" fill="#6EF0C6" />)}
+        {[0,1,2,3,4,5].map(() => <circle data-flow-dot r="3.2" fill="#6FE8FF" />)}
       </svg>
 
       <div class="pipeline-stages">
@@ -328,13 +334,14 @@ const pipelineStats = [
     </div>
   </section>
 
-  <section class="final-cta shutdown-section" data-shutdown>
+  <section class="final-cta shutdown-section theme-light" data-shutdown>
     <div class="shutdown-world" data-shutdown-world aria-hidden="true">
       <span></span><span></span><span></span><span></span><span></span>
     </div>
     <div class="wrap">
-      <p class="shutdown-line" data-shutdown-line>THANK YOU FOR VISITING.</p>
-      <p class="shutdown-line" data-shutdown-line>SYSTEM STATUS — SESSION COMPLETE</p>
+      <div class="eyebrow" style="justify-content:center;">Surface reached</div>
+      <p class="shutdown-line" data-shutdown-line style="margin-top:18px;">THANK YOU FOR DIVING IN.</p>
+      <p class="shutdown-line" data-shutdown-line>RETURNING TO SURFACE — COMPLETE</p>
       <h2 data-shutdown-closing class="shutdown-closing">TOBY<br /><em>Build. Break. Rebuild.</em></h2>
     </div>
   </section>
