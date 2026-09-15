@@ -1,13 +1,34 @@
-// The opening beat: before the dive is revealed, the screen holds on a
-// black plate that counts depth up from zero while TOBY resolves out of
-// it, then lifts away. It doubles as honest loading cover — the counter
-// tracks real progress (fonts + the dive footage), and the curtain only
-// lifts once those are actually ready, so nobody lands on a half-painted
-// page or a video that hasn't decoded its first frame yet.
+// The opening beat: a black plate that counts depth up from zero while TOBY
+// resolves out of it, then lifts away.
+//
+// Two-tier readiness. The counter used to wait for every signal to land,
+// which meant the visitor sat on a loading plate while things they could
+// not yet see finished arriving. Instead the work is split:
+//
+//   blocking     — what must genuinely exist before the page can be looked
+//                  at: the fonts the headings are set in, and a real first
+//                  frame out of the abyss renderer (which includes shader
+//                  compilation — the long pole, and the one thing that
+//                  cannot be deferred without showing a black screen).
+//   non-blocking — marine snow, and anything else that enriches a picture
+//                  that is already complete. These are started here but
+//                  never gate the curtain; they fade in underneath a
+//                  visitor who is already scrolling.
+//
+// In practice the curtain lifts at roughly four-fifths of the total work,
+// which is the point of the split. What makes it safe is that the boundary
+// is drawn around *what has to be on screen*, not around a percentage —
+// gating on a raw 80% would happily lift the curtain mid shader-compile and
+// reveal a black rectangle, which is worse than the wait it saved.
 const MIN_DURATION = 1400; // never flash by too fast to read
-const MAX_WAIT = 3000; // never hold the page hostage to a slow asset
+const MAX_WAIT = 6000; // never hold the page hostage to a slow GPU
 
-export function createPreloader(gsap, prefersReducedMotion) {
+/**
+ * @param {object} gsap
+ * @param {boolean} prefersReducedMotion
+ * @param {Promise<unknown>[]} blocking extra signals to wait on, beyond fonts
+ */
+export function createPreloader(gsap, prefersReducedMotion, blocking = []) {
   const root = document.querySelector('[data-preloader]');
   if (!root) return Promise.resolve();
 
@@ -40,34 +61,26 @@ export function createPreloader(gsap, prefersReducedMotion) {
   }
 
   const started = performance.now();
-  const readiness = { value: 0 }; // 0..1, what's actually loaded
+  const readiness = { value: 0 }; // 0..1 across the blocking set only
   const shown = { value: 0 }; // 0..1, what the counter has caught up to
 
-  // Real signals, not a fake timer. Deliberately NOT waiting on the dive
-  // video's first frame: that's multiple megabytes, and the poster frame
-  // behind the curtain covers the gap until it decodes. Holding the
-  // visitor on a loading plate for a whole video download would be the
-  // worse trade.
   const signals = [];
+  // Heading font: a swap after the curtain lifts would reflow the hero in
+  // front of the visitor, which is exactly what the plate exists to hide.
   if (document.fonts?.ready) signals.push(document.fonts.ready);
-  signals.push(new Promise((resolve) => {
-    const poster = new Image();
-    poster.onload = resolve;
-    poster.onerror = resolve;
-    poster.src = '/videos/dive-poster.jpg';
-  }));
-  signals.push(new Promise((resolve) => {
-    if (document.readyState === 'complete') resolve();
-    else window.addEventListener('load', resolve, { once: true });
-  }));
+  signals.push(...blocking);
+  // `load` is intentionally NOT here. With the footage gone there is no
+  // large media left to wait on, and holding for every deferred subresource
+  // would put the page back behind the same wall the split removes.
 
-  const total = signals.length;
+  const total = Math.max(signals.length, 1);
   let done = 0;
   signals.forEach((p) => {
     Promise.resolve(p)
       .catch(() => {})
       .then(() => { done += 1; readiness.value = done / total; });
   });
+  if (!signals.length) readiness.value = 1;
 
   const entrance = gsap.timeline();
   entrance.from('.preloader-letter', {
@@ -83,7 +96,7 @@ export function createPreloader(gsap, prefersReducedMotion) {
     function tick() {
       const elapsed = performance.now() - started;
       // The counter chases real readiness, but is also floored by elapsed
-      // time so it always visibly moves even when everything loads instantly.
+      // time so it always visibly moves even when everything is instant.
       const timeFloor = Math.min(elapsed / MIN_DURATION, 1);
       const target = Math.min(readiness.value, timeFloor);
       shown.value += (target - shown.value) * 0.08;

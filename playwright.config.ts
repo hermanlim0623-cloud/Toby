@@ -23,20 +23,18 @@ export default defineConfig({
     launchOptions,
   },
   projects: [
-    // Pure logic, no browser and no server — the seek rules cover a failure
-    // that only appears over a real network with a partially-buffered file,
-    // which a headless run cannot reproduce.
-    { name: 'unit', testMatch: /seekPolicy\.spec\.ts/ },
-    { name: 'chromium', testIgnore: /seekPolicy\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    // The `unit` project used to carry the video seek rules. The generated
+    // dive has no playhead to seek, so those rules — and the project that
+    // ran them without a browser — are gone with the footage.
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     {
       // Reduced motion is a supported mode here, not an afterthought — the
       // preloader, the dive and the palette all branch on it, so it gets
       // its own run rather than being assumed to work.
       name: 'reduced-motion',
-      testIgnore: /seekPolicy\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], reducedMotion: 'reduce' },
     },
-    { name: 'mobile', testIgnore: /seekPolicy\.spec\.ts/, use: { ...devices['Pixel 7'] } },
+    { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
     // A plain static server over dist/ rather than `astro preview`, which

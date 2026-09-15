@@ -20,9 +20,28 @@ test.describe('home', () => {
 
   test('the preloader lifts instead of covering the page forever', async ({ page }) => {
     await page.goto('/');
-    // The cover has a hard timeout in cinema.js precisely so a video that
-    // never reports itself loaded cannot trap the visitor behind it.
+    // The plate waits on a real first frame from the renderer, so it has a
+    // hard timeout in preloader.js precisely so a GPU that never finishes
+    // compiling cannot trap the visitor behind it.
     await expect(page.locator('.preloader')).toBeHidden({ timeout: 15_000 });
+  });
+
+  test('the dive resolves to either a live scene or the static fallback', async ({ page }) => {
+    await page.goto('/');
+    const stage = page.locator('[data-cinema]');
+    // The one outcome that must never happen is neither: a canvas that was
+    // created but is not being painted leaves the whole page on a dead
+    // black rectangle, which is worse than not having tried at all.
+    await expect(stage).toHaveClass(/is-live|is-unsupported/, { timeout: 20_000 });
+    const resolved = await stage.evaluate((el) => ({
+      live: el.classList.contains('is-live') && !el.classList.contains('is-unsupported'),
+      degraded: el.classList.contains('is-unsupported'),
+    }));
+    expect(resolved.live || resolved.degraded).toBe(true);
+    // Either way the stage carries a painted background, so the copy on top
+    // of it is legible rather than sitting on whatever the browser defaults to.
+    const bg = await stage.evaluate((el) => getComputedStyle(el).backgroundImage);
+    expect(bg).toContain('gradient');
   });
 
   test('a project card navigates to its case study', async ({ page }) => {

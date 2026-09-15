@@ -137,38 +137,30 @@ html.is-loading{ overflow:hidden; }
 
 /* ---------- cinematic video environment ----------
    A single full-viewport <video> whose currentTime is driven by scroll
-   position (src/scripts/cinema.js); this IS the site's background now —
-   the dark fallback stays visible until the first frame is ready. */
+   position (src/scripts/abyss/); this IS the site's background now — the
+   gradient below stays visible until the first frame is ready, and stays
+   forever on devices with no backend at all. */
 .cinema-stage{
   position:fixed; inset:0;
   z-index:0;
-  background:var(--deep-abyss);
+  /* The static gradient below is not decoration — it is the entire dive for
+     anyone whose device cannot give us a rendering backend, so it has to be
+     a presentable image on its own, not a placeholder colour. */
+  background:
+    linear-gradient(180deg, #0a2b3a 0%, #051a2c 26%, #020c18 58%, var(--deep-abyss) 100%);
   overflow:hidden;
 }
-.cinema-video{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit:cover;
-}
-/* When the water shader is running, the <video> stays in the DOM purely as
-   the texture source — the canvas is what's actually seen. Kept at a hair
-   above zero opacity rather than display:none, because a fully hidden
-   video is allowed to stop decoding frames in some browsers, which would
-   freeze the texture. */
 .cinema-gl{
   position:absolute; inset:0;
   width:100%; height:100%;
-  display:none;
+  display:block;
+  opacity:0;
+  transition:opacity 1.2s ease;
 }
-.cinema-stage.is-shaded .cinema-gl{ display:block; }
-.cinema-stage.is-shaded .cinema-video{ opacity:0.01; }
-.cinema-loading{
-  position:absolute; inset:0;
-  background:var(--deep-abyss);
-  z-index:1;
-  transition:opacity 0.8s ease;
-}
-.cinema-loading.is-hidden{ opacity:0; pointer-events:none; }
+/* Set by the controller only once a real first frame has been presented, so
+   the canvas can never fade in over a frame that hasn't been drawn yet. */
+.cinema-stage.is-live .cinema-gl{ opacity:1; }
+.cinema-stage.is-unsupported .cinema-gl{ display:none; }
 
 /* ---------- boundary iris: fires once as the gallery pin releases
    (sectionTransitions.js) — the visible cue for anyone without the water
@@ -189,9 +181,9 @@ html.is-loading{ overflow:hidden; }
 }
 
 /* A single depth-modulated vignette that keeps HTML content legible over
-   whatever the footage is doing, darkening gently as the dive deepens
+   whatever the water is doing, darkening gently as the dive deepens
    (see ocean.js) rather than ever hard-cutting to a flat color. Capped
-   well short of opaque — the footage must always read through, even at
+   well short of opaque — the dive must always read through, even at
    the abyss, or the video stops looking like the environment at all. */
 .scrim{
   position:fixed; inset:0;
@@ -286,7 +278,7 @@ main, header, footer{ position:relative; z-index:2; }
    The per-word box only clips while its letters are actually sliding in.
    Left clipping permanently it would also cut off the heading's soft
    text-shadow at the word boundary, drawing a hard rectangle behind every
-   word — visible as boxes over bright footage. */
+   word — visible as boxes over bright water. */
 .split-word{ display:inline-block; vertical-align:top; }
 .is-masking .split-word{ overflow:hidden; }
 .char{ display:inline-block; will-change:transform, opacity; }

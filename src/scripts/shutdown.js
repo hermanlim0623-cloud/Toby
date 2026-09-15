@@ -21,9 +21,9 @@ export function createShutdown(gsap, ScrollTrigger, prefersReducedMotion) {
       start: 'top 70%',
       end: 'bottom bottom',
       scrub: 0.6,
-      // Feeds the water shader's uSurfaceRush uniform (see cinema.js /
-      // waterShader.js) — the same "camera pulling back" this timeline
-      // renders in HTML also brightens and lifts the footage itself, so
+      // Feeds the scene's surfaceRush uniform (see src/scripts/abyss/) —
+      // the same "camera pulling back" this timeline
+      // renders in HTML also brightens and lifts the water itself, so
       // the dive visibly breaches rather than just fading to a wordmark.
       onUpdate: (self) => {
         window.dispatchEvent(new CustomEvent('cinema:surface-rush', { detail: { value: self.progress } }));

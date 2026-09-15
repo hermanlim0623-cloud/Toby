@@ -1,5 +1,5 @@
 // SECTION 03 — SKILL MATRIX: a floating node/edge network on a 2D canvas
-// (cheap enough to run alongside the hero's Three.js scene). Nodes drift
+// (cheap enough to run alongside the hero's raymarched scene). Nodes drift
 // slowly in place; the cursor perturbs nearby nodes and brightens their
 // connections; clicking/hovering a node surfaces its detail panel.
 export function createConstellation(canvas, nodes, { prefersReducedMotion } = {}) {

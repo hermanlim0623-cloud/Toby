@@ -26,7 +26,6 @@ import { createAutomationPipeline } from './automation.js';
 import { createTransmission } from './terminal.js';
 import { createShutdown } from './shutdown.js';
 import { createOceanAtmosphere } from './ocean.js';
-import { createCinema } from './cinema.js';
 import { createPreloader } from './preloader.js';
 import { createScrollFx } from './scrollFx.js';
 import { createPalette } from './palette.js';
@@ -51,7 +50,7 @@ const lowPower = window.innerWidth < 760
 document.documentElement.classList.add('js-ready');
 
 // A reload or back-navigation restoring a deep scroll position would hand
-// the cinema controller a huge initial jump before anything has had a
+// the depth controller a huge initial jump before anything has had a
 // chance to load — always start the dive at the surface instead.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
@@ -83,7 +82,24 @@ function initPage() {
   const isDive = document.body.dataset.variant === 'dive';
   if (isDive) window.scrollTo(0, 0);
 
-  if (isDive) disposables.push(createCinema({ prefersReducedMotion, lowPower }));
+  // The abyss is loaded on demand rather than imported at the top: Three's
+  // WebGPU build is by far the largest thing on the site, and only the dive
+  // page has anything to do with it — statically importing it would make
+  // every case-study page download a renderer it never constructs.
+  //
+  // It still starts as early as possible, because its first frame is one of
+  // the preloader's blocking signals: the sooner the chunk is in flight,
+  // the sooner the curtain can lift.
+  let abyss = null;
+  const abyssReady = isDive
+    ? import('./abyss/index.js').then(({ createAbyss }) => {
+        // A navigation during the fetch means this page is already gone.
+        if (page?.controller.signal.aborted) return false;
+        abyss = createAbyss({ prefersReducedMotion, lowPower });
+        disposables.push(abyss);
+        return abyss.ready;
+      }).catch(() => false)
+    : null;
 
   createNav(signal);
   createCursor(gsap, signal);
@@ -114,9 +130,13 @@ function initPage() {
   createPointerFx(gsap, signal, prefersReducedMotion);
 
   if (isDive) {
-    createPreloader(gsap, prefersReducedMotion).then(() => {
+    createPreloader(gsap, prefersReducedMotion, abyssReady ? [abyssReady] : []).then(() => {
       ScrollTrigger.refresh();
       playHeroEntrance();
+      // Non-blocking detail, added once the visitor is already on the page.
+      // Building the particle field before this point would only push the
+      // curtain later for something nobody is looking at yet.
+      abyss?.addDetail();
     });
   } else {
     playPageEntrance();

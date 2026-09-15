@@ -9,7 +9,7 @@
 //
 // Neither effect adds scroll distance: both scrub across ground the page
 // already travels — the natural gap before the gallery pin engages, and the
-// pin's own release point — so cinema.js's scroll -> video-time mapping is
+// pin's own release point — so the scroll -> depth mapping in abyss/ is
 // untouched. Both are desktop-only, matching horizontal.js's own breakpoint:
 // below it the gallery is a plain scroll-snap row, so there's no axis change
 // to dramatize.
@@ -94,7 +94,7 @@ export function createAxisTurn(gsap, ScrollTrigger, prefersReducedMotion) {
  * forward. A quick iris punctuates the release — the visible cue for
  * anyone without the water shader (mobile, low-power, a lost WebGL
  * context) — and the same moment fires a decaying pressure-wave pulse
- * through the shader itself for everyone who has it (see waterShader.js).
+ * through the shader itself for everyone who has it (see abyss/scene.js).
  */
 export function createGalleryTurnabout(gsap, ScrollTrigger, prefersReducedMotion) {
   if (prefersReducedMotion) return;

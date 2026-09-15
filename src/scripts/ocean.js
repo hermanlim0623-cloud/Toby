@@ -1,8 +1,8 @@
 // Ocean atmosphere: a handful of CSS-driven rising bubbles (injected once,
 // animated purely by CSS keyframes — no per-frame JS cost), a depth-meter
 // readout, and the scrim's darkening — all three read the same scroll
-// progress as the cinema controller so the numbers, the vignette and the
-// footage always agree about how deep the dive currently is.
+// progress as the depth controller so the numbers, the vignette and the
+// water always agree about how deep the dive currently is.
 const MAX_DEPTH_M = 2000;
 
 export function createOceanAtmosphere(prefersReducedMotion) {
@@ -32,10 +32,10 @@ export function createOceanAtmosphere(prefersReducedMotion) {
     const progress = docHeight > 0 ? Math.min(Math.max(window.scrollY / docHeight, 0), 1) : 0;
     // Ease in — a dive accelerates: the first screens go shallow fast,
     // the abyss keeps opening up further the longer you keep scrolling.
-    // The cinematic footage itself stays linear all the way through (it
-    // has no "ascent" clip), but the depth reading — like the closing
-    // copy — recedes through the transmission/shutdown stretch so the
-    // numbers agree with "returning to surface" rather than contradicting it.
+    // The rendered column itself stays linear all the way through, but the
+    // depth reading — like the closing copy — recedes through the
+    // transmission/shutdown stretch so the numbers agree with "returning to
+    // surface" rather than contradicting it.
     let eased;
     if (progress <= 0.82) {
       eased = Math.pow(progress / 0.82, 1.35);
@@ -50,7 +50,7 @@ export function createOceanAtmosphere(prefersReducedMotion) {
 
     // The vignette darkens with depth so HTML content stays legible
     // against whatever the current clip is doing, without ever going
-    // opaque enough to hide that there's footage playing at all.
+    // opaque enough to hide that there's a scene rendering at all.
     root.style.setProperty('--scrim-a', (0.24 + eased * 0.3).toFixed(3));
 
     raf = requestAnimationFrame(tick);
