@@ -1,6 +1,6 @@
-// The water column behind everything: a raymarched volume of murk and god
-// rays, drawn first and never writing depth, so the canyon and the particles
-// sit in front of it.
+// The medium behind everything: a raymarched volume of haze and scan light,
+// drawn first and never writing depth, so the architecture and the motes sit
+// in front of it.
 //
 // It used to be the whole scene and carried a hand-rolled virtual camera. Now
 // there is a real one, so the rays are derived from its actual matrices —
@@ -22,8 +22,8 @@ import {
   mx_fractal_noise_float, mx_noise_float,
 } from 'three/tsl';
 import {
-  RAY_TINT, depthAt, daylightAt, waterTint, backdropAt,
-} from './water.js';
+  SIGNAL_TINT, depthAt, daylightAt, mediumAt, backdropAt,
+} from './field.js';
 
 /** Raymarch steps per tier. Still the single biggest cost lever in the scene. */
 const STEPS = { low: 12, mid: 20, high: 30 };
@@ -32,11 +32,11 @@ export function createAtmosphere({ tier, uniforms }) {
   const steps = STEPS[tier];
 
   /**
-   * Density of suspended murk at a world point. Two octaves at different
-   * scales and drift speeds: the coarse one is the slow body of the water,
-   * the fine one gives it a surface that catches the shafts.
+   * Density of the medium at a world point. Two octaves at different scales
+   * and drift speeds: the coarse one is the slow body of it, the fine one
+   * gives it a structure that catches the scan light.
    */
-  const murk = Fn(([p]) => {
+  const haze = Fn(([p]) => {
     const drift = uniforms.time.mul(0.035);
     const coarse = mx_fractal_noise_float(p.mul(0.045).add(vec3(0, drift.negate(), 0)), 3, 2.0, 0.5, 1.0);
     const fine = mx_noise_float(p.mul(0.19).add(vec3(drift, drift.mul(0.5), 0)));
@@ -44,11 +44,12 @@ export function createAtmosphere({ tier, uniforms }) {
   });
 
   /**
-   * God rays. Sampled in the horizontal plane only, so the shafts stay
-   * vertical as the camera falls through them instead of swimming around —
-   * sampling in full 3D here is the classic mistake that turns volumetric
-   * light into drifting fog blobs. The offsets push the noise origin well
-   * off-axis: centred on zero, a symmetric field reads as pleated fabric.
+   * Scan light: vertical beams running the height of the machine. Sampled in
+   * the horizontal plane only, so the beams stay vertical as the camera
+   * descends through them instead of swimming around — sampling in full 3D
+   * here is the classic mistake that turns volumetric light into drifting fog
+   * blobs. The offsets push the noise origin well off-axis: centred on zero,
+   * a symmetric field reads as pleated fabric rather than as instrumentation.
    */
   const shafts = Fn(([p]) => {
     const sway = sin(uniforms.time.mul(0.1).add(p.y.mul(0.025))).mul(0.3);
@@ -76,12 +77,12 @@ export function createAtmosphere({ tier, uniforms }) {
 
     const camDepth = depthAt(ro.y).toVar();
 
-    // The water behind the march. A complete image on its own: looking up
-    // toward the surface is bright, looking down is the abyss. It stays out
-    // of the integration deliberately — background light multiplied by
+    // The medium behind the march. A complete image on its own: looking up
+    // toward the entry surface is bright, looking down is the floor. It stays
+    // out of the integration deliberately — background light multiplied by
     // per-step absorption gets crushed to nothing, which is what flattens
     // most first attempts at a scene like this. The geometry's fog resolves
-    // to this same function, so rock and water meet without a seam.
+    // to this same function, so structure and medium meet without a seam.
     const bg = backdropAt(rd, camDepth).toVar();
 
     const acc = vec3(0).toVar();
@@ -97,21 +98,21 @@ export function createAtmosphere({ tier, uniforms }) {
       const p = ro.add(rd.mul(t)).toVar();
 
       const localDepth = depthAt(p.y).toVar();
-      const water = waterTint(localDepth).toVar();
+      const medium = mediumAt(localDepth).toVar();
 
       // Suspended matter thins with depth — the abyss is clearer than the
       // productive water near the surface, and it needs to be, or the deepest
       // part of the dive turns into a uniform grey wall.
-      const density = murk(p).mul(0.014).mul(mix(float(1.0), float(0.4), localDepth)).toVar();
+      const density = haze(p).mul(0.014).mul(mix(float(1.0), float(0.4), localDepth)).toVar();
 
       const absorbed = density.mul(stepLen);
-      acc.addAssign(water.mul(absorbed).mul(transmittance).mul(1.6));
+      acc.addAssign(medium.mul(absorbed).mul(transmittance).mul(1.6));
 
-      // Shaft light gets its own accumulator with its own coefficient rather
-      // than being folded into the water colour: it is light passing
-      // *through* the volume, so it should survive thin water rather than
-      // needing dense water to be visible at all. It also fades downward, or
-      // a shaft reads as a hanging curtain instead of light from above.
+      // Beam light gets its own accumulator with its own coefficient rather
+      // than being folded into the medium's colour: it is light passing
+      // *through* the volume, so it should survive thin haze rather than
+      // needing dense haze to be visible at all. It also fades downward, or a
+      // beam reads as a hanging curtain instead of light from above.
       const fromAbove = pow(clamp(rd.y.mul(0.5).add(0.62), 0.0, 1.0), float(2.2));
       beams.addAssign(
         shafts(p).mul(daylightAt(localDepth)).mul(fromAbove)
@@ -121,13 +122,13 @@ export function createAtmosphere({ tier, uniforms }) {
       transmittance.mulAssign(exp(absorbed.negate().mul(1.1)));
     });
 
-    const col = bg.mul(transmittance).add(acc).add(RAY_TINT.mul(beams)).toVar();
+    const col = bg.mul(transmittance).add(acc).add(SIGNAL_TINT.mul(beams)).toVar();
 
-    // The closing "rush to the surface" floods light back in.
-    col.addAssign(RAY_TINT.mul(pow(uniforms.surfaceRush, float(1.8))).mul(0.6));
+    // The closing sequence floods the signal back in as the cycle completes.
+    col.addAssign(SIGNAL_TINT.mul(pow(uniforms.surfaceRush, float(1.8))).mul(0.6));
 
     // Vignette — cheap, and it is what keeps the white body copy legible over
-    // the brightest part of the column.
+    // the brightest part of the field.
     const vig = smoothstep(1.3, 0.3, length(screenUV.sub(0.5).mul(vec2(uniforms.aspect, 1.0))));
     col.mulAssign(mix(float(0.5), float(1.0), vig));
 

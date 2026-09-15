@@ -1,6 +1,6 @@
 ---
 interface Props {
-  /** The depth HUD only means something on the long scroll-scrubbed dive. */
+  /** The layer readout only means something on the long scrolling descent. */
   depthHud?: boolean;
 }
 const { depthHud = false } = Astro.props;
@@ -14,7 +14,8 @@ const { depthHud = false } = Astro.props;
 <div class="progress-rail" aria-hidden="true"><span data-progress-rail></span></div>
 {depthHud && (
   <div class="depth-hud" aria-hidden="true">
-    <span>DEPTH</span>
-    <strong data-depth-meters>0m</strong>
+    <span>LAYER</span>
+    <strong data-depth-meters>01 / 7</strong>
+    <span class="depth-hud-name" data-layer-name>IDENTITY</span>
   </div>
 )}

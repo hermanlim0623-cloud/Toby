@@ -1,4 +1,4 @@
-// Scroll -> depth controller for the procedural dive.
+// Scroll -> camera controller for the descent through the machine.
 //
 // This replaces the old video cinema controller, and the interesting part is
 // what is *gone*. Driving a <video> playhead meant an all-intra encode, a
@@ -27,7 +27,7 @@ function scrollProgress() {
  * @param {{ prefersReducedMotion: boolean, lowPower: boolean }} opts
  * @returns {{ ready: Promise<boolean>, destroy(): void }}
  *   `ready` resolves true once the scene has presented a real first frame,
- *   or false if this device cannot render it. The preloader gates its
+ *   or false if this device cannot render it. The boot sequence gates its
  *   curtain on exactly this, which is why it resolves rather than rejects:
  *   a failed backend is a supported outcome, not an error path.
  */
@@ -76,7 +76,7 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
     sceneBits.resize(window.innerWidth / window.innerHeight);
   }
 
-  /** No WebGPU and no WebGL2: the stylesheet's static gradient is the dive. */
+  /** No WebGPU and no WebGL2: the stylesheet's static gradient is the world. */
   function degrade() {
     stage.classList.add('is-unsupported');
     document.documentElement.classList.add('no-abyss');
@@ -120,12 +120,12 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
     const quality = createAdaptiveQuality(renderer, { tier });
 
     // Compile before the first renderAsync so the shader cost lands here,
-    // inside the preloader's blocking window, instead of as a multi-hundred
+    // inside the boot sequence's blocking window, instead of as a multi-hundred
     // millisecond stall on the first frame the visitor is actually watching.
     try {
       await renderer.compileAsync(sceneBits.scene, sceneBits.camera);
       // The first frame goes through whichever path the loop will use, so
-      // the post chain's own shaders are compiled inside the preloader's
+      // the post chain's own shaders are compiled inside the boot sequence's
       // blocking window too. Compiling only the scene here would move a
       // visible stall to the first frame the visitor is actually watching —
       // which is the exact thing the blocking window exists to prevent.
@@ -211,7 +211,7 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
      * The marine snow is deliberately not part of `ready`. The water column
      * on its own is a finished image, so the visitor gets the page as soon
      * as that is up and the particles arrive underneath them — see the
-     * two-tier note in preloader.js.
+     * two-tier note in bootSequence.js.
      */
     addDetail() { sceneBits?.addMarineSnow(); },
     destroy,

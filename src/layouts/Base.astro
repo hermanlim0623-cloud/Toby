@@ -1,5 +1,5 @@
 ---
-import '@fontsource-variable/fraunces';
+import '@fontsource-variable/space-grotesk';
 import '@fontsource-variable/ibm-plex-sans';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
@@ -18,8 +18,8 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
   schema?: Record<string, unknown>;
-  /** `dive` mounts the generated abyss; `page` is the lighter shell. */
-  variant?: 'dive' | 'page';
+  /** `descent` mounts the generated environment; `page` is the lighter shell. */
+  variant?: 'descent' | 'page';
 }
 
 const {
@@ -57,7 +57,7 @@ const {
 
 <slot name="prelude" />
 
-<Atmosphere depthHud={variant === 'dive'} />
+<Atmosphere depthHud={variant === 'descent'} />
 <Nav />
 <CommandPalette />
 

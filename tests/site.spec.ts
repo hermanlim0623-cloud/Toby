@@ -18,15 +18,40 @@ test.describe('home', () => {
     await expect(page.locator('a.project-card')).toHaveCount(CASE_STUDIES.length);
   });
 
-  test('the preloader lifts instead of covering the page forever', async ({ page }) => {
+  test('the boot sequence hands over instead of covering the page forever', async ({ page }) => {
     await page.goto('/');
-    // The plate waits on a real first frame from the renderer, so it has a
-    // hard timeout in preloader.js precisely so a GPU that never finishes
+    // The sequence waits on a real first frame from the renderer, so it has a
+    // backstop in bootSequence.js precisely so a GPU that never finishes
     // compiling cannot trap the visitor behind it.
-    await expect(page.locator('.preloader')).toBeHidden({ timeout: 15_000 });
+    await expect(page.locator('.boot')).toBeHidden({ timeout: 15_000 });
   });
 
-  test('the dive resolves to either a live scene or the static fallback', async ({ page }) => {
+  test('the boot checks resolve rather than sitting on a fake counter', async ({ page }) => {
+    await page.goto('/');
+
+    const reduced = await page.evaluate(
+      () => matchMedia('(prefers-reduced-motion: reduce)').matches,
+    );
+    // Reduced motion skips the sequence entirely rather than playing it
+    // faster — holding someone who asked for stillness behind a timed
+    // opening is the exact thing the preference is asking us not to do. So
+    // there are deliberately no checks to resolve there.
+    if (reduced) {
+      await expect(page.locator('[data-boot]')).toHaveCount(0);
+      return;
+    }
+
+    // Each check names something the page genuinely waits on, and every one
+    // has to reach a settled state — a check that can hang is worse than no
+    // check, because it reports a failure that is not happening.
+    const total = await page.locator('[data-boot-check]').count();
+    expect(total).toBeGreaterThan(0);
+    await expect(page.locator('[data-boot-check].is-ready')).toHaveCount(total, {
+      timeout: 15_000,
+    });
+  });
+
+  test('the environment resolves to either a live scene or the static fallback', async ({ page }) => {
     await page.goto('/');
     const stage = page.locator('[data-cinema]');
     // The one outcome that must never happen is neither: a canvas that was
@@ -39,7 +64,9 @@ test.describe('home', () => {
     }));
     expect(resolved.live || resolved.degraded).toBe(true);
     // Either way the stage carries a painted background, so the copy on top
-    // of it is legible rather than sitting on whatever the browser defaults to.
+    // of it is legible rather than sitting on whatever the browser defaults
+    // to. This also catches a dangling custom property: one bad var() voids
+    // the whole declaration, and the fallback silently becomes `none`.
     const bg = await stage.evaluate((el) => getComputedStyle(el).backgroundImage);
     expect(bg).toContain('gradient');
   });

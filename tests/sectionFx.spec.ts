@@ -10,8 +10,8 @@ test.describe('section motion', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    // Past the preloader, which holds for up to 3s.
-    await expect(page.locator('.preloader')).toBeHidden({ timeout: 15_000 });
+    // Past the boot sequence, which holds until the environment is ready.
+    await expect(page.locator('.boot')).toBeHidden({ timeout: 15_000 });
   });
 
   test('tech chips settle back into the layout', async ({ page }) => {

@@ -64,7 +64,7 @@ export function createTechAssemble(gsap, ScrollTrigger, prefersReducedMotion) {
   //
   // `fromTo` rather than `from`, and with immediateRender off. A `from`
   // tween re-applies its start values on every ScrollTrigger.refresh() —
-  // and this page refreshes after the preloader and again on load — which
+  // and this page refreshes after the boot sequence and again on load — which
   // left the chips parked at the scattered state with the tween reporting
   // itself complete. Naming both ends removes the ambiguity.
   gsap.fromTo(chips,

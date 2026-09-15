@@ -1,5 +1,5 @@
-// The life in the water: marine snow carried on a flow field, and a school of
-// fish that decides where to go by looking at its neighbours.
+// What moves through the machine: data motes carried on a flow field, and a
+// swarm of packets that decides where to go by looking at its neighbours.
 //
 // Both are simulated on the GPU. Position and velocity live in storage
 // buffers that never travel back to JavaScript; a compute pass advances them
@@ -10,9 +10,9 @@
 //
 // WebGL2 has no compute shaders at all, so it gets an analytic fallback: the
 // same look, derived from time and a per-particle seed, with no simulation
-// behind it. Fish are dropped there entirely — a school that cannot see its
-// neighbours is just drifting confetti, and drifting confetti shaped like
-// fish is worse than no fish.
+// behind it. The swarm is dropped there entirely — packets that cannot see
+// their neighbours are just drifting confetti, and confetti that claims to be
+// a routing swarm is worse than no swarm.
 import {
   Points, BufferGeometry, BufferAttribute, AdditiveBlending, Vector3,
 } from 'three';
@@ -22,22 +22,22 @@ import {
   mix, smoothstep, clamp, pow, sin, cos, fract, length,
   attribute, positionLocal, If, Loop, mx_noise_vec3,
 } from 'three/tsl';
-import { RAY_TINT, daylightAt } from './water.js';
+import { SIGNAL_TINT, daylightAt } from './field.js';
 
-const SNOW = { low: 1200, mid: 4000, high: 9000 };
-const FISH = { low: 0, mid: 260, high: 520 };
+const MOTES = { low: 1200, mid: 4000, high: 9000 };
+const SWARM = { low: 0, mid: 260, high: 520 };
 
-// The slab the snow occupies. It travels with the camera and particles wrap
-// inside it, so a few thousand of them cover an infinite descent.
+// The slab the motes occupy. It travels with the camera and they wrap inside
+// it, so a few thousand cover the whole descent.
 const FIELD = new Vector3(70, 46, 70);
 
 /**
  * Curl of a noise field — a velocity field that is divergence-free by
- * construction, which is what makes it look like water rather than like
- * particles sliding down a gradient. Straight noise has sources and sinks:
- * particles pile up in its valleys and thin out on its peaks, and the field
- * reads as wind over terrain. Curl has neither, so the snow swirls and
- * tumbles without ever collecting into clumps.
+ * construction, which is what makes it look like something circulating
+ * rather than like particles sliding down a gradient. Straight noise has
+ * sources and sinks: particles pile up in its valleys and thin out on its
+ * peaks, and the field reads as wind over terrain. Curl has neither, so the
+ * motes circulate without ever collecting into clumps.
  */
 const curl = Fn(([p]) => {
   const e = float(0.35);
@@ -59,7 +59,7 @@ const curl = Fn(([p]) => {
 /** Wraps a coordinate into [-half, half] so the field is seamless. */
 const wrap = Fn(([v, half]) => fract(v.div(half.mul(2.0)).add(0.5)).sub(0.5).mul(half.mul(2.0)));
 
-function createSnow({ count, uniforms, hasCompute }) {
+function createMotes({ count, uniforms, hasCompute }) {
   const material = new PointsNodeMaterial();
   material.transparent = true;
   material.depthWrite = false;
@@ -89,9 +89,9 @@ function createSnow({ count, uniforms, hasCompute }) {
       const p = positions.element(instanceIndex);
       const seed = seedBuffer.element(instanceIndex);
 
-      // Advection by the flow field, plus the particle's own slow sink. Snow
-      // is heavier than water; without the sink the field alone would keep it
-      // suspended forever and the descent would lose its direction.
+      // Advection by the flow field, plus a steady downward bias. Without it
+      // the field alone would hold everything in place forever and the
+      // descent would lose its direction — motes should be *going* somewhere.
       const flow = curl(p.mul(0.035).add(vec3(0, uniforms.time.mul(0.04), 0)));
       const drift = flow.mul(seed.mul(0.5).add(0.5)).mul(0.5);
       const sink = vec3(0, seed.mul(-0.35).sub(0.12), 0);
@@ -111,7 +111,7 @@ function createSnow({ count, uniforms, hasCompute }) {
     material.sizeNode = pow(seedBuffer.element(instanceIndex), float(2.2)).mul(9.0).add(1.0);
 
     const seedN = seedBuffer.element(instanceIndex);
-    material.colorNode = snowColor(seedN, uniforms);
+    material.colorNode = moteColor(seedN, uniforms);
     // A Points draw still needs vertices to iterate; the positions come from
     // the storage buffer, so the attribute is only a count.
     geometry.setAttribute('position', new BufferAttribute(new Float32Array(count * 3), 3));
@@ -135,7 +135,7 @@ function createSnow({ count, uniforms, hasCompute }) {
 
     material.positionNode = vec3(positionLocal.x.add(swayX), y, positionLocal.z.add(swayZ));
     material.sizeNode = pow(seed, float(2.2)).mul(9.0).add(1.0);
-    material.colorNode = snowColor(seed, uniforms);
+    material.colorNode = moteColor(seed, uniforms);
   }
 
   const points = new Points(geometry, material);
@@ -144,28 +144,28 @@ function createSnow({ count, uniforms, hasCompute }) {
 }
 
 /**
- * Snow is lit by whatever daylight is left, with a floor so the deepest part
- * of the dive still has something moving in it. `pointUV` — not `uv()` — is
+ * Motes are lit by whatever signal is left, with a floor so the deepest part
+ * of the descent still has something moving in it. `pointUV` — not `uv()` — is
  * the sprite-local coordinate: `uv()` on a Points geometry resolves to the
  * vertex attribute, which for one vertex per particle is constant, and every
  * sprite then samples a single value and the whole field silently vanishes.
  */
-function snowColor(seed, uniforms) {
+function moteColor(seed, uniforms) {
   const lit = daylightAt(uniforms.depth).mul(0.6).add(0.14);
   const twinkle = sin(uniforms.time.mul(1.4).add(seed.mul(20.0))).mul(0.25).add(0.75);
   const falloff = smoothstep(0.5, 0.08, pointUV.sub(0.5).length());
-  return vec4(RAY_TINT, seed.mul(0.5).add(0.25).mul(lit).mul(twinkle).mul(falloff));
+  return vec4(SIGNAL_TINT, seed.mul(0.5).add(0.25).mul(lit).mul(twinkle).mul(falloff));
 }
 
 /**
- * The school. Three rules, evaluated against every other fish: keep away from
- * the ones that are too close, match the heading of the ones nearby, and
+ * The swarm. Three rules, evaluated against every other packet: keep away
+ * from the ones that are too close, match the heading of the ones nearby, and
  * steer toward where the group's centre is. The O(n^2) neighbour loop is the
  * honest version and is affordable at these counts precisely because it never
  * leaves the GPU; a spatial hash would be the right answer at ten times this
  * many, and would cost more code than it saves here.
  */
-function createFish({ count, uniforms }) {
+function createSwarm({ count, uniforms }) {
   const initialPos = new Float32Array(count * 3);
   const initialVel = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
@@ -220,7 +220,7 @@ function createFish({ count, uniforms }) {
     });
     steer.addAssign(separate.mul(5.0));
 
-    // A slow wandering attractor keeps the school travelling instead of
+    // A slow wandering attractor keeps the swarm travelling instead of
     // settling into a stable ball, and keeps it near the camera's descent.
     const target = vec3(
       sin(uniforms.time.mul(0.11)).mul(16.0),
@@ -244,19 +244,19 @@ function createFish({ count, uniforms }) {
   material.fog = false;
 
   material.positionNode = positions.element(instanceIndex);
-  // Fish read as flecks, not as models. At the distance the camera keeps from
-  // the school, a modelled fish would be three pixels of detail nobody sees;
-  // what actually sells a school is the coherent motion, which is exactly
-  // what the simulation above provides.
+  // Packets read as flecks, not as objects. At the distance the camera keeps,
+  // a modelled one would be three pixels of detail nobody sees; what actually
+  // sells a swarm is the coherent motion, which is exactly what the
+  // simulation above provides.
   material.sizeNode = float(5.0);
   material.colorNode = Fn(() => {
     const speed = clamp(length(velocities.element(instanceIndex)).div(MAX_SPEED), 0.0, 1.0);
     const lit = daylightAt(uniforms.depth).mul(0.8).add(0.06);
     const falloff = smoothstep(0.5, 0.1, pointUV.sub(0.5).length());
-    // Flanks catch the light as they turn, so the school flickers silver the
-    // way a real one does.
+    // They brighten as they accelerate, so the swarm reads as carrying
+    // something rather than as drifting.
     const flash = mix(float(0.35), float(1.0), speed);
-    return vec4(mix(RAY_TINT, vec3(0.8, 0.92, 1.0), speed), flash.mul(lit).mul(falloff));
+    return vec4(mix(SIGNAL_TINT, vec3(0.8, 0.92, 1.0), speed), flash.mul(lit).mul(falloff));
   })();
 
   const geometry = new BufferGeometry();
@@ -273,23 +273,23 @@ export function createParticles({ tier, uniforms, hasCompute, prefersReducedMoti
   const parts = [];
   const computes = [];
 
-  const snow = createSnow({ count: SNOW[tier], uniforms, hasCompute });
-  parts.push(snow);
-  if (snow.compute) computes.push(snow.compute);
+  const motes = createMotes({ count: MOTES[tier], uniforms, hasCompute });
+  parts.push(motes);
+  if (motes.compute) computes.push(motes.compute);
 
-  const fishCount = hasCompute ? FISH[tier] : 0;
-  if (fishCount > 0) {
-    const fish = createFish({ count: fishCount, uniforms });
-    parts.push(fish);
-    computes.push(fish.compute);
+  const swarmCount = hasCompute ? SWARM[tier] : 0;
+  if (swarmCount > 0) {
+    const swarm = createSwarm({ count: swarmCount, uniforms });
+    parts.push(swarm);
+    computes.push(swarm.compute);
   }
 
   return {
     objects: parts.map((p) => p.points),
     computes,
-    /** The snow slab rides with the camera so it is always where the eye is. */
+    /** The mote slab rides with the camera so it is always where the eye is. */
     follow(cameraPosition) {
-      snow.points.position.copy(cameraPosition);
+      motes.points.position.copy(cameraPosition);
     },
     dispose() {
       parts.forEach((p) => { p.geometry.dispose(); p.material.dispose(); });

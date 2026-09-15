@@ -25,8 +25,8 @@ import { createConstellation } from './constellation.js';
 import { createAutomationPipeline } from './automation.js';
 import { createTransmission } from './terminal.js';
 import { createShutdown } from './shutdown.js';
-import { createOceanAtmosphere } from './ocean.js';
-import { createPreloader } from './preloader.js';
+import { createTelemetry } from './telemetry.js';
+import { createBootSequence } from './bootSequence.js';
 import { createScrollFx } from './scrollFx.js';
 import { createPalette } from './palette.js';
 import {
@@ -79,8 +79,8 @@ function initPage() {
   const disposables = [];
   page = { controller, disposables };
 
-  const isDive = document.body.dataset.variant === 'dive';
-  if (isDive) window.scrollTo(0, 0);
+  const isDescent = document.body.dataset.variant === 'descent';
+  if (isDescent) window.scrollTo(0, 0);
 
   // The abyss is loaded on demand rather than imported at the top: Three's
   // WebGPU build is by far the largest thing on the site, and only the dive
@@ -88,10 +88,10 @@ function initPage() {
   // every case-study page download a renderer it never constructs.
   //
   // It still starts as early as possible, because its first frame is one of
-  // the preloader's blocking signals: the sooner the chunk is in flight,
+  // the boot sequence's blocking signals: the sooner the chunk is in flight,
   // the sooner the curtain can lift.
   let abyss = null;
-  const abyssReady = isDive
+  const abyssReady = isDescent
     ? import('./abyss/index.js').then(({ createAbyss }) => {
         // A navigation during the fetch means this page is already gone.
         if (page?.controller.signal.aborted) return false;
@@ -113,7 +113,7 @@ function initPage() {
   disposables.push(createAutomationPipeline(gsap, ScrollTrigger, prefersReducedMotion));
   createTransmission(gsap, ScrollTrigger, prefersReducedMotion);
   createShutdown(gsap, ScrollTrigger, prefersReducedMotion);
-  disposables.push(createOceanAtmosphere(prefersReducedMotion));
+  disposables.push(createTelemetry(prefersReducedMotion));
 
   const skillCanvas = document.querySelector('#skill-canvas');
   if (skillCanvas) disposables.push(createConstellation(skillCanvas, SKILL_NODES, { prefersReducedMotion }));
@@ -129,8 +129,14 @@ function initPage() {
   createOdometers(gsap, ScrollTrigger, prefersReducedMotion);
   createPointerFx(gsap, signal, prefersReducedMotion);
 
-  if (isDive) {
-    createPreloader(gsap, prefersReducedMotion, abyssReady ? [abyssReady] : []).then(() => {
+  if (isDescent) {
+    createBootSequence(gsap, prefersReducedMotion, {
+      // The renderer check resolves when a backend exists and has presented
+      // a real first frame; the field check follows it, because the detail
+      // it adds is only meaningful once there is something to add it to.
+      renderer: abyssReady ?? true,
+      field: abyssReady ?? true,
+    }).then(() => {
       ScrollTrigger.refresh();
       playHeroEntrance();
       // Non-blocking detail, added once the visitor is already on the page.
@@ -145,7 +151,7 @@ function initPage() {
 }
 
 // Hero entrance: a controlled reveal, not everything at once — and held
-// back until the preloader's curtain has lifted, so the two sequences read
+// back until the boot sequence's shutter has lifted, so the two read
 // as one continuous opening instead of the hero animating behind a cover
 // that nobody has seen through yet.
 function playHeroEntrance() {

@@ -4,16 +4,16 @@
 // changed. Here scroll moves a real camera down a real canyon, which buys
 // the two things a fullscreen shader can never fake: parallax (the near wall
 // slides past faster than the far one) and occlusion (things get in front of
-// other things). It also means the framing can be *authored* — the descent
-// is a sequence of shots, not one continuous fall at one continuous speed.
+// other things). It also means the framing can be *authored* — the descent is
+// a sequence of shots, not one continuous fall at one continuous speed.
 import { PerspectiveCamera, CatmullRomCurve3, Vector3 } from 'three';
-import { WORLD_DEPTH } from './water.js';
+import { WORLD_DEPTH } from './field.js';
 
 /**
  * The path itself. It descends the whole world height while drifting across
- * the canyon, so the walls change which side they crowd — a straight vertical
- * drop reads as a lift shaft, and the drift is most of what sells this as
- * swimming rather than falling.
+ * the corridor, so the walls change which side they crowd — a straight
+ * vertical drop reads as a lift shaft, and the drift is most of what sells
+ * this as travelling through something rather than falling past it.
  */
 const PATH = new CatmullRomCurve3([
   new Vector3(0, 4, 26), // above the surface line, looking down into it
@@ -22,7 +22,7 @@ const PATH = new CatmullRomCurve3([
   new Vector3(-8, -112, -2),
   new Vector3(4, -158, -8),
   new Vector3(-3, -206, -6),
-  new Vector3(0, -WORLD_DEPTH + 16, 2), // settling onto the seafloor
+  new Vector3(0, -WORLD_DEPTH + 16, 2), // settling onto the output floor
 ], false, 'catmullrom', 0.5);
 
 /**
@@ -34,11 +34,11 @@ const PATH = new CatmullRomCurve3([
  * which is how a shot is actually framed.
  *
  * The aim swings from wall to wall while staying only a little below the
- * camera, so the descent looks *across* the canyon rather than down it. The
+ * camera, so the descent looks *across* the corridor rather than down it. The
  * obvious placement — a curve sitting directly under the path — points the
  * camera at its own feet: the walls never enter frame, the parallax that
  * justifies the geometry is invisible, and the whole dive becomes a long
- * look at the floor. Only the last point tips down, to land on the seabed.
+ * look at the floor. Only the last point tips down, to land on the floor.
  */
 const AIM = new CatmullRomCurve3([
   new Vector3(10, -14, -16),

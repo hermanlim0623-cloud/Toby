@@ -31,7 +31,7 @@ export function detectTier({ lowPower } = {}) {
  * fullscreen raymarch and then present it at a fraction of a frame per
  * second — it does not fail, it just produces a page that never repaints,
  * and because rAF is starved along with everything else, the page's own
- * escape hatches (the adaptive sampler here, the preloader's timeout) tick
+ * escape hatches (the adaptive sampler here, the boot sequence's backstop) tick
  * at that same useless rate. Asking first and never starting is the only
  * answer that works.
  *

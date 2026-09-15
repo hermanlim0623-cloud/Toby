@@ -1,5 +1,5 @@
-// Assembly: the camera rig, the water column behind everything, the canyon
-// in front of it, and the life moving through both.
+// Assembly: the camera rig, the medium behind everything, the architecture in
+// front of it, and what moves through both.
 //
 // Each piece owns its own look; this file owns what they share. The uniforms
 // created here are the only mutable state the shaders can see, and every
@@ -9,9 +9,9 @@ import { Scene, Matrix3, Vector3 } from 'three';
 import { uniform } from 'three/tsl';
 import { createCameraRig } from './camera.js';
 import { createAtmosphere } from './atmosphere.js';
-import { createTerrain } from './terrain.js';
+import { createArchitecture } from './architecture.js';
 import { createParticles } from './particles.js';
-import { WORLD_DEPTH } from './water.js';
+import { WORLD_DEPTH } from './field.js';
 
 export function createAbyssScene({ tier, aspect, hasCompute, prefersReducedMotion }) {
   const scene = new Scene();
@@ -38,8 +38,8 @@ export function createAbyssScene({ tier, aspect, hasCompute, prefersReducedMotio
   const atmosphere = createAtmosphere({ tier, uniforms });
   scene.backgroundNode = atmosphere.node;
 
-  const terrain = createTerrain({ tier });
-  scene.add(terrain.group);
+  const architecture = createArchitecture({ tier, uniforms });
+  scene.add(architecture.group);
 
   const particles = createParticles({ tier, uniforms, hasCompute, prefersReducedMotion });
   particles?.objects.forEach((o) => scene.add(o));
@@ -82,7 +82,7 @@ export function createAbyssScene({ tier, aspect, hasCompute, prefersReducedMotio
     },
 
     dispose() {
-      terrain.dispose();
+      architecture.dispose();
       particles?.dispose();
     },
   };

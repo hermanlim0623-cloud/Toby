@@ -72,17 +72,25 @@ const schema = {
 };
 ---
 
-<Base title={SITE.title} description={SITE.description} variant="dive" schema={schema}>
+<Base title={SITE.title} description={SITE.description} variant="descent" schema={schema}>
 
   <Fragment slot="prelude">
-    <div class="preloader" data-preloader>
-      <div class="preloader-inner">
-        <div class="preloader-mark" data-preloader-mark>TOBY</div>
-        <div class="preloader-meta">
-          <span>Entering the dive</span>
-          <span class="preloader-count"><b data-preloader-count>000</b>%</span>
+    <div class="boot" data-boot>
+      <div class="boot-inner">
+        <!-- The checklist is the progress indicator. Each line is a real
+             signal the page is genuinely waiting on, so "still booting"
+             always names the thing it is waiting for rather than showing a
+             percentage that means nothing to anyone. -->
+        <ol class="boot-checks" data-boot-checks>
+          <li data-boot-check="signal"><span class="boot-dot"></span><span class="boot-label">Signal</span><span class="boot-state">····</span></li>
+          <li data-boot-check="renderer"><span class="boot-dot"></span><span class="boot-label">Renderer</span><span class="boot-state">····</span></li>
+          <li data-boot-check="field"><span class="boot-dot"></span><span class="boot-label">Field</span><span class="boot-state">····</span></li>
+        </ol>
+        <div class="boot-mark" data-boot-mark>TOBY</div>
+        <div class="boot-role" data-boot-role>
+          <span>Creative Technologist</span>
+          <span class="boot-role-sub">Digital systems · Automation · Experiences</span>
         </div>
-        <div class="preloader-track"><div class="preloader-bar" data-preloader-bar></div></div>
       </div>
     </div>
 
@@ -234,7 +242,7 @@ const schema = {
   <section id="tech" class="systems-section">
     <div class="wrap">
       <div class="section-head">
-        <h2 data-split>Under the surface</h2>
+        <h2 data-split>Inside the machine</h2>
         <div class="eyebrow">05 — Systems &amp; stack</div>
       </div>
       <p class="tech-note" data-reveal style="margin-bottom:30px;">TOBY doesn't only design what you see. Every interface here sits on a stack that has to be understood layer by layer — UI, network, API, data, automation, output.</p>
@@ -294,9 +302,9 @@ const schema = {
       <span></span><span></span><span></span><span></span><span></span>
     </div>
     <div class="wrap">
-      <div class="eyebrow" style="justify-content:center;">Surface reached</div>
+      <div class="eyebrow" style="justify-content:center;">Cycle complete</div>
       <p class="shutdown-line" data-shutdown-line style="margin-top:18px;">THANK YOU FOR DIVING IN.</p>
-      <p class="shutdown-line" data-shutdown-line>RETURNING TO SURFACE — COMPLETE</p>
+      <p class="shutdown-line" data-shutdown-line>OUTPUT DELIVERED — READY FOR THE NEXT SYSTEM</p>
       <h2 data-shutdown-closing class="shutdown-closing">TOBY<br /><em>Build. Break. Rebuild.</em></h2>
     </div>
   </section>
