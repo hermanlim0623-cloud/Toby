@@ -1,0 +1,40 @@
+---
+import { SITE } from '../consts';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Site-relative or absolute; resolved against `site` for the social card. */
+  image?: string;
+  type?: 'website' | 'article';
+  /** Emitted as-is inside the JSON-LD script tag. */
+  schema?: Record<string, unknown>;
+}
+
+const { title, description, image = SITE.ogImage, type = 'website', schema } = Astro.props;
+
+// Social scrapers do not resolve relative image paths — they need absolute
+// URLs, which is the whole reason `site` is configured.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(image, Astro.site).href;
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content={SITE.name} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+{schema && <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />}

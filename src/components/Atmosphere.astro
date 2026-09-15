@@ -1,0 +1,20 @@
+---
+interface Props {
+  /** The depth HUD only means something on the long scroll-scrubbed dive. */
+  depthHud?: boolean;
+}
+const { depthHud = false } = Astro.props;
+---
+
+<div class="scrim" aria-hidden="true"></div>
+<div class="atmosphere" aria-hidden="true"></div>
+<div class="caustics" aria-hidden="true"></div>
+<div class="bubbles" id="bubbles" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress-rail" aria-hidden="true"><span data-progress-rail></span></div>
+{depthHud && (
+  <div class="depth-hud" aria-hidden="true">
+    <span>DEPTH</span>
+    <strong data-depth-meters>0m</strong>
+  </div>
+)}

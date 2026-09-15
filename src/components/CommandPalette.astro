@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import { NAV_LINKS, SITE } from '../consts';
+
+const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+
+// The command index is built at build time and serialized into the page, so
+// the palette opens instantly with no fetch — it is meant to feel like a
+// keyboard shortcut, not like a search page.
+const commands = [
+  ...NAV_LINKS.map((l) => ({ id: l.href, label: l.label, group: 'Navigate', href: l.href, hint: 'Section' })),
+  ...work.map((p) => ({
+    id: p.id,
+    label: p.data.title,
+    group: 'Work',
+    href: `/work/${p.id}/`,
+    hint: p.data.tag,
+  })),
+  { id: 'contact', label: 'Get in touch', group: 'Actions', href: `mailto:${SITE.email}`, hint: 'Email' },
+  { id: 'top', label: 'Back to the surface', group: 'Actions', href: '/#top', hint: 'Top' },
+];
+---
+
+<div class="palette" data-palette hidden>
+  <div class="palette-backdrop" data-palette-backdrop></div>
+  <div
+    class="palette-panel glass"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="palette-label"
+  >
+    <label class="sr-only" id="palette-label" for="palette-input">Search sections and projects</label>
+    <div class="palette-field">
+      <span class="palette-prompt" aria-hidden="true">›</span>
+      <input
+        id="palette-input"
+        class="palette-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Jump to a section or project…"
+        data-palette-input
+      />
+      <kbd class="palette-esc">ESC</kbd>
+    </div>
+    <ul class="palette-list" role="listbox" aria-label="Results" data-palette-list></ul>
+    <p class="palette-empty" data-palette-empty hidden>No match. Try “dashboard”, “bot” or “report”.</p>
+    <div class="palette-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ commands }}>
+  window.__TOBY_COMMANDS__ = commands;
+</script>

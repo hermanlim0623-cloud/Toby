@@ -1,0 +1,13 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist", "node_modules", "test-results", "playwright-report"],
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "allowJs": true,
+    // The animation modules are plain JS on purpose — they are DOM-heavy and
+    // read better without annotations — but they still get checked against
+    // inferred and JSDoc types rather than being an unchecked blind spot.
+    "checkJs": false
+  }
+}

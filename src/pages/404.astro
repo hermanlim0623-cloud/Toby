@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../consts';
+---
+
+<Base title={`Lost at sea — ${SITE.name}`} description="That page isn't at this depth.">
+  <section class="lost">
+    <div class="wrap" data-page-header>
+      <div class="eyebrow">Sonar returned nothing</div>
+      <h1 class="lost-code">404</h1>
+      <p class="lost-copy">
+        Whatever was here has drifted off. The dive still starts at the surface,
+        and everything worth finding is one keystroke away.
+      </p>
+      <div class="lost-actions">
+        <a class="contact-link magnetic" href="/">← Back to the surface</a>
+        <button class="lost-key" data-palette-open>
+          Search with <kbd>⌘</kbd><kbd>K</kbd>
+        </button>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import '../scripts/boot.js';
+</script>

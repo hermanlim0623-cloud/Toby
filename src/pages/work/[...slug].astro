@@ -1,0 +1,101 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProjectVisual from '../../components/ProjectVisual.astro';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+  return work.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      // Precomputed so the page can offer "next" without re-querying the
+      // collection, and so the last study wraps back to the first rather
+      // than dead-ending the reader.
+      next: work[(i + 1) % work.length],
+      index: i + 1,
+      total: work.length,
+    },
+  }));
+}
+
+const { entry, next, index, total } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: d.title,
+  description: d.summary,
+  about: d.tag,
+  author: { '@type': 'Person', name: 'Toby', url: SITE.url },
+  keywords: d.stack.join(', '),
+};
+---
+
+<Base
+  title={`${d.title} — ${SITE.name}`}
+  description={d.summary}
+  type="article"
+  schema={schema}
+>
+  <article class="case">
+    <header class="case-head wrap" data-page-header>
+      <a class="case-back" href="/#work">← All work</a>
+      <div class="eyebrow">
+        {String(index).padStart(2, '0')} / {String(total).padStart(2, '0')} — {d.tag}
+      </div>
+      <h1>{d.title}</h1>
+      <p class="case-summary">{d.summary}</p>
+
+      <dl class="case-facts">
+        <div><dt>Role</dt><dd>{d.role}</dd></div>
+        <div><dt>Timeframe</dt><dd>{d.timeframe}</dd></div>
+        <div><dt>Status</dt><dd>{d.status}</dd></div>
+        <div><dt>Stack</dt><dd>{d.stack.join(' · ')}</dd></div>
+      </dl>
+    </header>
+
+    <div class="case-visual wrap" aria-hidden="true">
+      <ProjectVisual world={d.world} />
+    </div>
+
+    {d.metrics.length > 0 && (
+      <div class="wrap">
+        <ul class="case-metrics" data-reveal-group>
+          {d.metrics.map((m) => (
+            <li>
+              <strong>{m.value}</strong>
+              <span>{m.label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <div class="case-body wrap">
+      <Content />
+    </div>
+
+    <nav class="case-next wrap" aria-label="Next case study">
+      <span class="eyebrow">Next</span>
+      <a href={`/work/${next.id}/`} class="case-next-link magnetic" data-cursor="Open">
+        <span>{next.data.title}</span>
+        <em>{next.data.tag}</em>
+      </a>
+    </nav>
+
+    <div class="wrap case-cta">
+      <p>Got a recurring manual task that should not exist?</p>
+      <a class="contact-link magnetic" data-cursor="Send" href={`mailto:${SITE.email}`}>
+        INITIATE TRANSMISSION → {SITE.email}
+      </a>
+    </div>
+  </article>
+</Base>
+
+<script>
+  import '../../scripts/boot.js';
+</script>

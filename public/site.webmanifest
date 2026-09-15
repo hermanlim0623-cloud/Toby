@@ -1,0 +1,13 @@
+{
+  "name": "TOBY — Creative Technologist",
+  "short_name": "TOBY",
+  "description": "I build digital systems & experiences.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#021827",
+  "theme_color": "#021827",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

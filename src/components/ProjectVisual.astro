@@ -1,0 +1,97 @@
+---
+// A small piece of interface art per project world, replacing the previous
+// empty "Screenshot" placeholder box. Built as markup rather than images so
+// it stays sharp at any resolution, weighs nothing, and can animate — each
+// one is a miniature of what that project actually is.
+const { world } = Astro.props;
+
+// A fixed (not random) sparkline so the render is deterministic between
+// server and client and doesn't shift between builds.
+const spark = [12, 18, 14, 22, 19, 28, 24, 33, 30, 38, 34, 44];
+const sparkPoints = spark
+  .map((v, i) => `${(i / (spark.length - 1)) * 100},${40 - (v / 48) * 34}`)
+  .join(' ');
+---
+
+<div class="pv" data-world-visual={world} aria-hidden="true">
+  {world === 'control' && (
+    <div class="pv-body pv-control">
+      <div class="pv-head">
+        <span class="pv-dot"></span>
+        <span class="pv-label">DAILY SALES</span>
+        <span class="pv-live">LIVE</span>
+      </div>
+      <svg class="pv-spark" viewBox="0 0 100 44" preserveAspectRatio="none">
+        <polyline points={sparkPoints} fill="none" stroke="currentColor" stroke-width="1.4" vector-effect="non-scaling-stroke" />
+      </svg>
+      <div class="pv-stats">
+        <div><b>+18%</b><span>vs last week</span></div>
+        <div><b>00:00</b><span>recap time</span></div>
+      </div>
+    </div>
+  )}
+
+  {world === 'bot' && (
+    <div class="pv-body pv-bot">
+      <div class="pv-head"><span class="pv-label">TASK QUEUE</span><span class="pv-live">5 WORKERS</span></div>
+      <div class="pv-queue">
+        {['ADJ-4821', 'ADJ-4822', 'ADJ-4823', 'ADJ-4824'].map((id, i) => (
+          <div class="pv-row" style={`--i:${i}`}>
+            <span class="pv-id">{id}</span>
+            <span class="pv-bar"><i></i></span>
+            <span class="pv-state">{i === 3 ? 'QUEUED' : 'DONE'}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {world === 'report' && (
+    <div class="pv-body pv-report">
+      <div class="pv-head"><span class="pv-label">BACK OFFICE</span><span class="pv-live">WEEKLY</span></div>
+      <div class="pv-doc">
+        {[92, 68, 84, 54, 76].map((w, i) => (
+          <div class="pv-line" style={`--w:${w}%; --i:${i}`}></div>
+        ))}
+        <div class="pv-table">
+          {[1, 2, 3].map(() => <span></span>)}
+          {[1, 2, 3].map(() => <span></span>)}
+        </div>
+      </div>
+    </div>
+  )}
+
+  {world === 'tracker' && (
+    <div class="pv-body pv-tracker">
+      <div class="pv-head"><span class="pv-label">MISTAKE LOG</span><span class="pv-live">TRACKING</span></div>
+      <div class="pv-count"><b>03</b><span>this week</span></div>
+      <div class="pv-grid">
+        {Array.from({ length: 28 }).map((_, i) => (
+          <span class={i === 6 || i === 13 || i === 22 ? 'is-hit' : ''}></span>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {world === 'system' && (
+    <div class="pv-body pv-system">
+      <div class="pv-head"><span class="pv-label">WITHDRAWALS</span><span class="pv-live">LOGGED</span></div>
+      <div class="pv-records">
+        {['#0421', '#0422', '#0423'].map((id) => (
+          <div class="pv-record"><span>{id}</span><i></i><b>OK</b></div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {world === 'editorial' && (
+    <div class="pv-body pv-editorial">
+      <div class="pv-menu-head">MENU &amp; OPERATIONS</div>
+      <div class="pv-menu">
+        {['Signature', 'Kitchen', 'Pricing'].map((t) => (
+          <div class="pv-menu-row"><span>{t}</span><i></i></div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
