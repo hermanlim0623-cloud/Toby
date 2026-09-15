@@ -157,18 +157,28 @@ const schema = {
       </div>
     </div>
     <div class="skill-stage">
-      <canvas id="skill-canvas"></canvas>
-      <div class="skill-panel" data-skill-panel>
+      <div class="skill-field" data-skill-stage>
+        <canvas id="skill-canvas" aria-hidden="true"></canvas>
+        <!-- The nodes are injected here as buttons so the network is
+             reachable by keyboard and announced by a screen reader. The
+             canvas behind them only draws the connections. -->
+        <div class="skill-nodes" data-skill-nodes role="group" aria-label="Skill network"></div>
+      </div>
+      <div class="skill-panel" data-skill-panel id="skill-readout" role="status">
         <div class="eyebrow" style="margin-bottom:10px;">Skill</div>
         <h3 data-skill-name>—</h3>
-        <p data-skill-desc>Hover a node to inspect it.</p>
+        <p data-skill-desc>Focus a node to inspect how it connects.</p>
         <div class="skill-related">
           <span class="eyebrow" style="margin-bottom:6px;">Related work</span>
           <p data-skill-related></p>
         </div>
+        <div class="skill-related">
+          <span class="eyebrow" style="margin-bottom:6px;">Connects to</span>
+          <p data-skill-links></p>
+        </div>
       </div>
     </div>
-    <p class="tech-note wrap" style="margin-top:28px;">A live constellation of what I actually work with — hover a node on desktop, or tap on touch, to see how it connects to real projects below.</p>
+    <p class="tech-note wrap" style="margin-top:28px;">A map of where the work actually concentrates — node size is how load-bearing a skill is across the projects below, not a proficiency score. Point at one, or tab to it, to see what it connects to.</p>
   </section>
 
   <section id="work" style="padding-inline:0;">

@@ -893,28 +893,106 @@ html.no-hover .cursor-dot, html.no-hover .cursor-ring{ display:none; }
    SECTION 03 — SKILL MATRIX: canvas node network
    ============================================================ */
 .skill-stage{
-  position:relative;
+  /* Two columns, so the network and its readout never share space. An
+     overlaid panel was tried first and the problem is structural rather
+     than positional: wherever it sits, the nodes are laid out across the
+     whole stage, so it covers some of them — and moving it only changes
+     which ones. Often including the node it was describing. */
+  display:grid;
+  grid-template-columns:1fr minmax(240px, 300px);
+  gap:32px;
+  align-items:center;
   height:min(78vh, 620px);
   margin-top:8px;
+  padding-inline:24px;
   border-top:1px solid var(--line);
   border-bottom:1px solid var(--line);
 }
-.skill-stage canvas{ position:absolute; inset:0; width:100%; height:100%; cursor:crosshair; }
+.skill-field{ position:relative; height:100%; }
+@media (max-width:900px){
+  .skill-stage{ grid-template-columns:1fr; height:auto; padding-block:24px; }
+  .skill-field{ height:min(60vh, 420px); }
+}
+.skill-stage canvas{ position:absolute; inset:0; width:100%; height:100%; }
+
+/* ---------- the network's nodes ----------
+   Real buttons over the canvas. The layer itself is transparent to the
+   pointer so that only the nodes are targets, and the stage behind them
+   stays free for the environment to show through. ---- */
+.skill-nodes{ position:absolute; inset:0; pointer-events:none; }
+.skill-node{
+  position:absolute; top:0; left:0;
+  /* A real hit area, not just a dot. The visual node is as small as 8px, and
+     a control that size is unusable with a finger and fiddly with a mouse —
+     so the button is a 44px box (the WCAG target-size floor) centred on the
+     point, with the dot drawn in the middle of it. */
+  width:44px; height:44px;
+  margin-left:-22px; margin-top:-22px;
+  padding:0; border:0; background:none;
+  pointer-events:auto;
+  cursor:pointer;
+  font:inherit; color:inherit;
+  will-change:transform;
+}
+.skill-node-dot{
+  position:absolute; left:50%; top:50%;
+  width:var(--node-size); height:var(--node-size);
+  transform:translate(-50%, -50%);
+  border-radius:50%;
+  background:rgba(238,242,246,0.82);
+  box-shadow:0 0 0 0 rgba(124,228,245,0.5);
+  transition:
+    background-color 0.35s var(--ease-move),
+    box-shadow 0.45s var(--ease-move),
+    opacity 0.35s var(--ease-move);
+}
+.skill-node-label{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%, calc(-50% - var(--node-size) - 16px));
+  white-space:nowrap;
+  font-family:var(--font-mono);
+  font-size:0.66rem; letter-spacing:0.13em;
+  color:var(--ink-soft);
+  text-shadow:0 2px 12px rgba(5,7,11,0.95);
+  transition:color 0.35s var(--ease-move), opacity 0.35s var(--ease-move);
+}
+/* Three states, and the dimming is the one doing the real work: a brighter
+   node says "this one", but only the others receding answers "and these are
+   what it connects to". */
+.skill-node.is-focused .skill-node-dot{
+  background:var(--signal);
+  box-shadow:0 0 0 7px rgba(124,228,245,0.14), 0 0 22px rgba(124,228,245,0.55);
+}
+.skill-node.is-focused .skill-node-label{ color:var(--ink); }
+.skill-node.is-related .skill-node-dot{ background:var(--signal); }
+.skill-node.is-related .skill-node-label{ color:var(--ink-soft); }
+.skill-node.is-dimmed .skill-node-dot{ opacity:0.22; }
+.skill-node.is-dimmed .skill-node-label{ opacity:0.22; }
+.skill-node:focus-visible{ outline:none; }
+.skill-node:focus-visible .skill-node-dot{
+  box-shadow:0 0 0 3px var(--void), 0 0 0 5px var(--signal), 0 0 24px rgba(124,228,245,0.6);
+}
+@media (prefers-reduced-motion: reduce){
+  .skill-node-dot, .skill-node-label{ transition:none; }
+}
 .skill-panel{
-  position:absolute; top:24px; right:24px; z-index:3;
-  width:min(280px, 80vw);
+  /* Its own column — see .skill-stage. */
+  position:relative; z-index:3;
   background:rgba(8,10,14,0.78); backdrop-filter:blur(10px);
   border:1px solid var(--line-strong); border-radius:14px;
   padding:20px;
-  opacity:0; transform:translateY(-8px);
-  transition:opacity 0.3s ease, transform 0.3s ease;
+  opacity:0; transform:translateY(8px);
+  transition:opacity 0.3s var(--ease-move), transform 0.3s var(--ease-move);
   pointer-events:none;
 }
 .skill-panel.is-visible{ opacity:1; transform:translateY(0); }
-.skill-panel h3{ font-size:1.1rem; font-weight:500; margin-bottom:8px; font-family:"IBM Plex Sans",sans-serif; }
+
+.skill-panel h3{ font-size:1.05rem; font-weight:600; margin-bottom:8px; letter-spacing:-0.01em; }
 .skill-panel p{ font-size:0.85rem; color:var(--ink-soft); line-height:1.5; }
 .skill-related{ margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
-@media (max-width:700px){ .skill-panel{ display:none; } }
+/* The readout stays on small screens. It is the only place the network's
+   relationships are stated in words, so hiding it there would leave touch
+   users with a diagram and no key to it. */
 
 /* ---------- 02 -> 03 axis turn (sectionTransitions.js) ----------
    .skill-stage and .gallery-viewport (below) are the two panels; this is

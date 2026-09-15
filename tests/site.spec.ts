@@ -71,6 +71,52 @@ test.describe('home', () => {
     expect(bg).toContain('gradient');
   });
 
+  test('the skill network is reachable and answerable by keyboard', async ({ page }) => {
+    await page.goto('/');
+    const nodes = page.locator('[data-skill-node]');
+    const total = await nodes.count();
+    expect(total).toBeGreaterThan(0);
+
+    // The network is the section that argues the work connects up, and drawn
+    // into a canvas it would not exist for anyone not using a mouse. These
+    // are real controls, so focus has to reach them and say something useful.
+    const first = nodes.first();
+    await first.focus();
+    await expect(first).toBeFocused();
+    const name = await first.getAttribute('aria-label');
+    expect(name).toBeTruthy();
+    // The name must carry the explanation, not just repeat the visible label.
+    expect(name!.length).toBeGreaterThan(20);
+
+    // Focus, not just hover, drives the readout — otherwise the keyboard
+    // path is a second, lesser experience rather than the same one.
+    await expect(page.locator('[data-skill-panel]')).toHaveClass(/is-visible/);
+    await expect(page.locator('.skill-node.is-dimmed').first()).toBeVisible();
+
+    await page.keyboard.press('Tab');
+    await expect(first).not.toBeFocused();
+  });
+
+  test('the readout never sits on top of the network', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('[data-skill-node]').first().focus();
+    const panel = await page.locator('[data-skill-panel]').boundingBox();
+    expect(panel).not.toBeNull();
+
+    // Whichever node the readout is describing must not be the node it is
+    // covering. The overlaid version of this panel reliably hid one of the
+    // nodes it had just lit up, which is why it has its own column now.
+    const boxes = await page.locator('[data-skill-node]').evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect()).map((r) => ({
+        left: r.left, right: r.right, top: r.top, bottom: r.bottom,
+      })),
+    );
+    const overlapping = boxes.filter((b) =>
+      b.left < panel!.x + panel!.width && b.right > panel!.x
+      && b.top < panel!.y + panel!.height && b.bottom > panel!.y);
+    expect(overlapping).toHaveLength(0);
+  });
+
   test('a project card navigates to its case study', async ({ page }) => {
     await page.goto('/');
     const card = page.locator('a.project-card').first();

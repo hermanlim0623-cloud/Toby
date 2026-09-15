@@ -21,7 +21,7 @@ import { createMagnetic } from './magnetic.js';
 import { createHorizontalGallery } from './horizontal.js';
 import { createAxisTurn, createGalleryTurnabout } from './sectionTransitions.js';
 import { createIdentityScan } from './identity.js';
-import { createConstellation } from './constellation.js';
+import { createSkillNetwork } from './skillNetwork.js';
 import { createAutomationPipeline } from './automation.js';
 import { createTransmission } from './terminal.js';
 import { createShutdown } from './shutdown.js';
@@ -115,8 +115,10 @@ function initPage() {
   createShutdown(gsap, ScrollTrigger, prefersReducedMotion);
   disposables.push(createTelemetry(prefersReducedMotion));
 
-  const skillCanvas = document.querySelector('#skill-canvas');
-  if (skillCanvas) disposables.push(createConstellation(skillCanvas, SKILL_NODES, { prefersReducedMotion }));
+  const skillStage = document.querySelector('[data-skill-stage]');
+  if (skillStage) {
+    disposables.push(createSkillNetwork(skillStage, SKILL_NODES, { prefersReducedMotion, signal }));
+  }
 
   createScrollFx(gsap, ScrollTrigger, prefersReducedMotion);
 
