@@ -16,6 +16,11 @@ metrics:
     value: Whole floor team
   - label: Device
     value: Phone-first
+machine:
+  input: Menus, prices and notes, scattered
+  process: Consolidate into one internal site
+  decision: Which copy is the current one
+  output: One reference the whole team reads
 ---
 
 ## The problem

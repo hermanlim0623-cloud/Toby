@@ -16,6 +16,11 @@ metrics:
     value: Auditable
   - label: Surface
     value: Deliberately small
+machine:
+  input: Withdrawal records
+  process: One format, enforced on entry
+  decision: Uniform over personal preference
+  output: A trail that reconciles
 ---
 
 ## The problem

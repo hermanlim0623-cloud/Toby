@@ -16,6 +16,11 @@ metrics:
     value: Flags, never guesses
   - label: Runs
     value: Unattended
+machine:
+  input: Repetitive adjustment entries
+  process: Apply the rules in a fixed order
+  decision: Apply, or flag — never guess
+  output: Adjusted records, unattended
 ---
 
 ## The problem

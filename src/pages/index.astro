@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import ProjectVisual from '../components/ProjectVisual.astro';
 import { SITE } from '../consts';
 
 const projects = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
@@ -197,9 +196,25 @@ const schema = {
                 <span class="project-num">{String(i + 1).padStart(2, "0")}</span>
                 <span class="project-tag">{p.data.tag}</span>
               </div>
-              <div class="project-visual"><ProjectVisual world={p.data.world} /></div>
               <h3>{p.data.title}</h3>
               <p>{p.data.summary}</p>
+              <!-- The project stated as a machine. This replaced a decorative
+                   generative visual: the diagram is what the section is
+                   arguing, and a graphic that says nothing was taking the
+                   space the argument needed. -->
+              <ol class="machine" aria-label={`How ${p.data.title} works`}>
+                {[
+                  { k: "Input", v: p.data.machine.input },
+                  { k: "Process", v: p.data.machine.process },
+                  { k: "Decision", v: p.data.machine.decision },
+                  { k: "Output", v: p.data.machine.output },
+                ].map((stage, si) => (
+                  <li class="machine-stage" style={`--stage:${si}`}>
+                    <span class="machine-key">{stage.k}</span>
+                    <span class="machine-value">{stage.v}</span>
+                  </li>
+                ))}
+              </ol>
               <div class="project-impact">↳ {p.data.impact}</div>
               <div class="project-stack">
                 {p.data.stack.map((s) => <span>{s}</span>)}

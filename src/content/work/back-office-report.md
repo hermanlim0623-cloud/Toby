@@ -16,6 +16,11 @@ metrics:
     value: Automated
   - label: Cadence
     value: Weekly
+machine:
+  input: A week of operational data
+  process: Assemble to a fixed shape
+  decision: The layout is settled, not re-chosen
+  output: Reports that read side by side
 ---
 
 ## The problem

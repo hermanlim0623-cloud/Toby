@@ -25,6 +25,25 @@ const work = defineCollection({
       .array(z.object({ label: z.string(), value: z.string() }))
       .max(3)
       .default([]),
+    /**
+     * The project stated as a machine: what goes in, what happens to it, what
+     * the system decides, what comes out.
+     *
+     * Required rather than optional on purpose. The gallery renders every
+     * project as this diagram, and a card with an empty one would be a hole
+     * in the middle of the section making the argument — better that the
+     * build fails than that a project quietly renders as a blank frame.
+     *
+     * Each line is deliberately short. These are read at a glance across
+     * seven cards; a sentence that needs two lines is a sentence that belongs
+     * in the case study body instead.
+     */
+    machine: z.object({
+      input: z.string().max(60),
+      process: z.string().max(60),
+      decision: z.string().max(60),
+      output: z.string().max(60),
+    }),
   }),
 });
 

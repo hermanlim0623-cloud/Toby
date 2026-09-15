@@ -16,6 +16,11 @@ metrics:
     value: One metric, done right
   - label: Method
     value: Fixed, auditable
+machine:
+  input: Source figures
+  process: One calculation, one method
+  decision: The method is explicit, not a special case
+  output: The same number every time
 ---
 
 ## The problem

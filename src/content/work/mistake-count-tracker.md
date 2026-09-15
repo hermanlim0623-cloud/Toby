@@ -16,6 +16,11 @@ metrics:
     value: Patterns, not blame
   - label: Horizon
     value: Trend over time
+machine:
+  input: Mistakes logged in seconds
+  process: Count and group by kind
+  decision: Frequency over drama
+  output: Recurring patterns, surfaced early
 ---
 
 ## The problem

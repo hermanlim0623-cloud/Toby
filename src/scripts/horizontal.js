@@ -6,6 +6,10 @@
 // centre of the viewport: the one being looked at sits forward, sharp and
 // full-contrast, and the rest recede. That turns the pinned scroll into a
 // camera passing objects at depth rather than a strip sliding sideways.
+//
+// The card content is a dense diagram, so "the centre card is sharp" is a
+// legibility requirement, not a nicety — see the note on where grade() is
+// hooked up.
 export function createHorizontalGallery(gsap, ScrollTrigger, prefersReducedMotion) {
   const pin = document.querySelector('.gallery-pin');
   const track = document.querySelector('.gallery-track');
@@ -44,6 +48,17 @@ export function createHorizontalGallery(gsap, ScrollTrigger, prefersReducedMotio
       const tween = gsap.to(track, {
         x: () => -distance(),
         ease: 'none',
+        // Grading belongs here, on the tween, not on the ScrollTrigger.
+        //
+        // `scrub` means the track keeps gliding for a beat after the scroll
+        // itself stops. ScrollTrigger's onUpdate fires on scroll position, so
+        // it goes quiet while the track is still moving — and every card ends
+        // up graded for where it used to be. The symptom is the opposite of
+        // subtle: stop scrolling and the card now dead centre is the most
+        // blurred one on screen, because it was off-screen when grading last
+        // ran. The tween's own onUpdate fires on every frame GSAP actually
+        // moves the track, which is the thing the grading depends on.
+        onUpdate: grade,
         scrollTrigger: {
           trigger: pin,
           start: 'top top',
@@ -53,7 +68,6 @@ export function createHorizontalGallery(gsap, ScrollTrigger, prefersReducedMotio
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             if (bar) bar.style.width = (self.progress * 100) + '%';
-            grade();
           },
           onRefresh: grade,
         },

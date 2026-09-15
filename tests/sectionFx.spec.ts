@@ -176,7 +176,7 @@ test('the shutdown pull-back deepens as the dive breaches the surface', async ({
   // it runs on mobile too, so this test isn't scoped to the desktop-only
   // describe block above.
   await page.goto('/');
-  await expect(page.locator('.preloader')).toBeHidden({ timeout: 15_000 });
+  await expect(page.locator('.boot')).toBeHidden({ timeout: 15_000 });
   await page.locator('[data-shutdown]').scrollIntoViewIfNeeded();
   await page.waitForTimeout(600);
 
@@ -193,7 +193,7 @@ test('the hero submerges as it exits into the identity section, where supported'
   test.skip(test.info().project.name === 'reduced-motion');
 
   await page.goto('/');
-  await expect(page.locator('.preloader')).toBeHidden({ timeout: 15_000 });
+  await expect(page.locator('.boot')).toBeHidden({ timeout: 15_000 });
 
   const supportsViewTimeline = await page.evaluate(() => CSS.supports('animation-timeline', 'view()'));
   test.skip(!supportsViewTimeline, 'animation-timeline: view() unsupported in this engine — plain scroll stands in');
@@ -236,7 +236,7 @@ test('reduced motion never turns the axis, fires the iris, or amplifies the shut
   });
   const p = await context.newPage();
   await p.goto('/');
-  await expect(p.locator('.preloader')).toBeHidden({ timeout: 15_000 });
+  await expect(p.locator('.boot')).toBeHidden({ timeout: 15_000 });
 
   for (let i = 0; i < 60; i++) {
     await p.mouse.wheel(0, 600);
@@ -259,4 +259,43 @@ test('reduced motion never turns the axis, fires the iris, or amplifies the shut
   expect(state.worldTransform).toBe('none');
 
   await context.close();
+});
+
+test('the gallery card at the centre is the sharp one', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.boot')).toBeHidden({ timeout: 15_000 });
+
+  const top = await page.evaluate(
+    () => document.querySelector('#work')!.getBoundingClientRect().top + scrollY,
+  );
+
+  // The grading used to run on scroll position while the track itself was
+  // still gliding under `scrub`, so it went quiet mid-movement and left every
+  // card graded for where it used to be — with the result that the card now
+  // dead centre was the most blurred thing on screen. Silent, and exactly
+  // backwards. The card content is a dense diagram now, so this is a
+  // legibility guarantee rather than a nicety.
+  for (const frac of [0.6, 1.4, 2.2]) {
+    await page.evaluate(([t, f]) => window.scrollTo(0, t + innerHeight * f), [top, frac]);
+    await page.waitForTimeout(1200);
+
+    const cards = await page.evaluate(() => {
+      const mid = innerWidth / 2;
+      return [...document.querySelectorAll('.project-card')]
+        .map((c) => {
+          const r = c.getBoundingClientRect();
+          if (r.right < 0 || r.left > innerWidth) return null;
+          const filter = getComputedStyle(c).filter;
+          const px = filter === 'none' ? 0 : Number(filter.match(/blur\(([\d.]+)px\)/)?.[1] ?? 0);
+          return { offset: Math.abs((r.left + r.right) / 2 - mid), blur: px };
+        })
+        .filter((c): c is { offset: number; blur: number } => c !== null);
+    });
+    if (cards.length < 2) continue;
+
+    const nearest = cards.reduce((a, b) => (b.offset < a.offset ? b : a));
+    const furthest = cards.reduce((a, b) => (b.offset > a.offset ? b : a));
+    expect(nearest.blur).toBeLessThan(1);
+    expect(nearest.blur).toBeLessThanOrEqual(furthest.blur);
+  }
 });

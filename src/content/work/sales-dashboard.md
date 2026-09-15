@@ -16,6 +16,11 @@ metrics:
     value: Removed
   - label: Refresh
     value: Daily + monthly
+machine:
+  input: Raw order records
+  process: Normalise and aggregate in Python
+  decision: Which period a row belongs to
+  output: The team's existing sheet, written not typed
 ---
 
 ## The problem

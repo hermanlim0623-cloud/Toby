@@ -666,6 +666,95 @@ footer.site-foot{ background:var(--void); }
   font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase;
   color:var(--accent); background:rgba(124,228,245,0.09); padding:5px 10px; border-radius:999px; width:fit-content;
 }
+/* ---------- the machine diagram ----------
+   Every project is stated as input -> process -> decision -> output, and the
+   whole thing wakes in sequence on hover or keyboard focus.
+
+   It is pure CSS. The sequencing is a per-stage transition-delay driven by a
+   --stage index set in the markup, so the "system coming alive" costs one
+   class change and no JavaScript at all — nothing to schedule, nothing to
+   tear down between view transitions, and it keeps working if the bundle
+   never arrives. ---- */
+.machine{
+  list-style:none; margin:0; padding:0;
+  display:flex; flex-direction:column; gap:0;
+  position:relative;
+}
+.machine-stage{
+  display:grid;
+  grid-template-columns:82px 1fr;
+  gap:14px; align-items:baseline;
+  padding:9px 0 9px 18px;
+  position:relative;
+}
+/* The spine: one line running the height of the diagram, with each stage's
+   node sitting on it. Drawn per stage rather than as one element so the
+   travelling highlight can be staggered down it. */
+.machine-stage::before{
+  content:""; position:absolute;
+  left:3px; top:0; bottom:0;
+  width:1px;
+  background:var(--line-strong);
+}
+.machine-stage:first-child::before{ top:50%; }
+.machine-stage:last-child::before{ bottom:50%; }
+.machine-stage::after{
+  content:""; position:absolute;
+  left:0; top:calc(50% - 3.5px);
+  width:7px; height:7px; border-radius:50%;
+  background:var(--slate);
+  border:1px solid var(--line-strong);
+  transition:
+    background-color 0.4s var(--ease-move),
+    border-color 0.4s var(--ease-move),
+    box-shadow 0.4s var(--ease-move);
+  /* Staggered: the signal reaches each stage in turn rather than the whole
+     diagram lighting at once, which is the difference between "a system
+     running" and "a hover state". */
+  transition-delay:calc(var(--stage) * 90ms);
+}
+.machine-key{
+  font-family:var(--font-mono);
+  font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase;
+  color:var(--ink-faint);
+  transition:color 0.4s var(--ease-move);
+  transition-delay:calc(var(--stage) * 90ms);
+}
+.machine-value{
+  font-size:0.86rem; line-height:1.45;
+  color:var(--ink-soft);
+  transition:color 0.4s var(--ease-move);
+  transition-delay:calc(var(--stage) * 90ms);
+}
+/* Focus-within, not just hover: the cards are links, so a keyboard user
+   reaching one gets the same behaviour rather than a static version of it. */
+.project-card:hover .machine-stage::after,
+.project-card:focus-within .machine-stage::after{
+  background:var(--signal);
+  border-color:var(--signal);
+  box-shadow:0 0 0 4px rgba(124,228,245,0.12);
+}
+.project-card:hover .machine-key,
+.project-card:focus-within .machine-key{ color:var(--signal-dim); }
+.project-card:hover .machine-value,
+.project-card:focus-within .machine-value{ color:var(--ink); }
+
+/* The decision stage is the one that says something about judgement rather
+   than plumbing, so it is the only one that gets the warm accent — reserved
+   for exactly this across the whole palette. */
+.project-card:hover .machine-stage:nth-child(3)::after,
+.project-card:focus-within .machine-stage:nth-child(3)::after{
+  background:var(--signal-warm);
+  border-color:var(--signal-warm);
+  box-shadow:0 0 0 4px rgba(245,217,124,0.12);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .machine-stage::after, .machine-key, .machine-value{
+    transition:none; transition-delay:0s;
+  }
+}
+
 .project-visual{
   aspect-ratio:16/10; border-radius:14px;
   border:1px solid var(--line-strong);
