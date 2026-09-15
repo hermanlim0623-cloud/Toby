@@ -62,6 +62,16 @@ export function isSoftwareRenderer() {
   return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name);
 }
 
+/**
+ * Whether this renderer can run compute shaders.
+ *
+ * WebGL2 has none, and the fallback backend is a real possibility here rather
+ * than a corner case, so the simulation has to ask rather than assume.
+ */
+export function supportsCompute(renderer) {
+  return renderer?.backend?.isWebGPUBackend === true;
+}
+
 /** Pixel ratio ceiling per tier — the dominant cost in a fullscreen raymarch. */
 const DPR_CAP = { low: 1, mid: 1.35, high: 1.75 };
 

@@ -6,8 +6,11 @@
 // download that could still judder on a fast scroll. A generated scene has
 // no playhead: scroll maps to a float, the float goes to the GPU, and every
 // frame is reachable at the same cost. There is nothing left to seek.
-import { createRenderer, createAdaptiveQuality, detectTier, isSoftwareRenderer } from './renderer.js';
+import {
+  createRenderer, createAdaptiveQuality, detectTier, isSoftwareRenderer, supportsCompute,
+} from './renderer.js';
 import { createAbyssScene } from './scene.js';
+import { createPost } from './post.js';
 
 // Per-frame easing at 60fps, scaled by real delta time below so the feel is
 // identical on 60Hz, 90Hz and 120Hz displays. Carried over from the video
@@ -38,6 +41,7 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
   let raf = null;
   let renderer = null;
   let sceneBits = null;
+  let post = null;
 
   // Pointer parallax targets, eased toward on the ticker.
   let pointerX = 0, pointerY = 0;
@@ -60,13 +64,16 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
 
   function onSurfaceRush(e) { surfaceRush = e.detail?.value ?? 0; }
   function onPointer(e) {
-    pointerX = (e.clientX / window.innerWidth - 0.5) * 0.09;
-    pointerY = (e.clientY / window.innerHeight - 0.5) * -0.09;
+    // Radians now, not a screen offset: these feed a camera rotation rather
+    // than a shader-space nudge, and a little goes a long way once the walls
+    // have real parallax to swing.
+    pointerX = (e.clientX / window.innerWidth - 0.5) * -0.16;
+    pointerY = (e.clientY / window.innerHeight - 0.5) * -0.10;
   }
   function onResize() {
     if (!renderer || !sceneBits) return;
     renderer.setSize(window.innerWidth, window.innerHeight, false);
-    sceneBits.uniforms.aspect.value = window.innerWidth / window.innerHeight;
+    sceneBits.resize(window.innerWidth / window.innerHeight);
   }
 
   /** No WebGPU and no WebGL2: the stylesheet's static gradient is the dive. */
@@ -92,9 +99,23 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
     }
     if (disposed) { renderer.dispose?.(); return false; }
 
-    sceneBits = createAbyssScene({ tier, prefersReducedMotion });
-    sceneBits.uniforms.aspect.value = window.innerWidth / window.innerHeight;
-    sceneBits.uniforms.depth.value = scrollProgress();
+    sceneBits = createAbyssScene({
+      tier,
+      prefersReducedMotion,
+      hasCompute: supportsCompute(renderer),
+      aspect: window.innerWidth / window.innerHeight,
+    });
+    // Put the camera where the scroll already is before the first frame is
+    // compiled, so a reload part-way down the page opens on the right shot
+    // rather than snapping to it once the loop starts.
+    sceneBits.update(scrollProgress(), 0, { x: 0, y: 0 });
+
+    // The graded path, where the tier can afford one. It renders the scene
+    // into its own target and composites, so the controller must call either
+    // this or the plain render — never both.
+    post = createPost({
+      renderer, scene: sceneBits.scene, camera: sceneBits.camera, tier,
+    });
 
     const quality = createAdaptiveQuality(renderer, { tier });
 
@@ -103,7 +124,13 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
     // millisecond stall on the first frame the visitor is actually watching.
     try {
       await renderer.compileAsync(sceneBits.scene, sceneBits.camera);
-      await renderer.renderAsync(sceneBits.scene, sceneBits.camera);
+      // The first frame goes through whichever path the loop will use, so
+      // the post chain's own shaders are compiled inside the preloader's
+      // blocking window too. Compiling only the scene here would move a
+      // visible stall to the first frame the visitor is actually watching —
+      // which is the exact thing the blocking window exists to prevent.
+      if (post) post.render();
+      else await renderer.renderAsync(sceneBits.scene, sceneBits.camera);
     } catch {
       degrade();
       return false;
@@ -142,13 +169,14 @@ export function createAbyss({ prefersReducedMotion, lowPower } = {}) {
         parY += (pointerY - parY) * k;
       }
 
-      const u = sceneBits.uniforms;
-      u.depth.value = smoothedDepth;
-      u.time.value = now / 1000;
-      u.surfaceRush.value = surfaceRush;
-      u.parallax.value.set(parX, parY);
+      sceneBits.uniforms.surfaceRush.value = surfaceRush;
+      sceneBits.update(smoothedDepth, now / 1000, { x: parX, y: parY }, dt / 1000);
 
-      renderer.render(sceneBits.scene, sceneBits.camera);
+      // Simulation first, then draw: the vertex stage reads the same buffers
+      // the compute pass just wrote, so the order is not optional.
+      for (const pass of sceneBits.computes) renderer.compute(pass);
+      if (post) post.render();
+      else renderer.render(sceneBits.scene, sceneBits.camera);
 
       if (skipSamples > 0) skipSamples -= 1;
       else if (quality.sample(raw) === 'abandon') {
