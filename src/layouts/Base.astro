@@ -84,6 +84,14 @@ const year = new Date().getFullYear();
 </main>
 
 <footer class="foot on-dark" data-cursor-theme="dark">
+  <!-- The footer's hidden field: a full plate of accent carrying the
+       repeated wordmark, masked to nothing and found by dragging across it.
+       Decorative and inert, and behind the content at every point: the
+       wordmark is already the page's h1, so repeating it to a screen reader
+       would only read the name a hundred more times. -->
+  <div class="foot-fx" data-foot-ink aria-hidden="true">
+    <canvas class="foot-fx-canvas" data-foot-ink-canvas></canvas>
+  </div>
   <div class="bleed">
     <div class="grid foot-top">
       <div style="--c:4;">

@@ -22,6 +22,7 @@ import { createTransitions } from './transition.js';
 import { createWorkSort } from './workSort.js';
 import { createTechPartition } from './techPartition.js';
 import { createProse } from './prose.js';
+import { createFooterInk } from './footerInk.js';
 import { createProgress } from './progress.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -61,6 +62,7 @@ function initPage() {
   disposables.push(createProse(gsap, ScrollTrigger, reduced));
   disposables.push(createCursor(signal, reduced));
   disposables.push(createHeroSlash(signal, reduced));
+  disposables.push(createFooterInk(signal, reduced));
   createReveals(gsap, ScrollTrigger, reduced);
   createFigureReveals(gsap, ScrollTrigger, reduced);
   createSectionMotion(gsap, ScrollTrigger, reduced,

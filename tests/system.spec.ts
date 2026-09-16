@@ -1368,3 +1368,154 @@ test.describe('prose measure', () => {
     await ctx.close();
   });
 });
+
+test.describe('footer field', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
+
+  /**
+   * What the brush has laid down: the strongest alpha anywhere on the
+   * footer canvas, and how much of it carries any at all.
+   *
+   * Both are needed. Coverage alone cannot see the ink fading, because a
+   * stroke keeps its footprint while it weakens; strength alone cannot see
+   * it reach empty, because the last of it is a hair above zero.
+   */
+  const inked = (page: import('@playwright/test').Page) => page.evaluate(() => {
+    const c = document.querySelector('[data-foot-ink-canvas]') as HTMLCanvasElement | null;
+    if (!c) return { peak: -1, area: -1 };
+    const { data } = c.getContext('2d')!.getImageData(0, 0, c.width, c.height);
+    let peak = 0;
+    let area = 0;
+    for (let i = 3; i < data.length; i += 4 * 97) {
+      if (data[i] > peak) peak = data[i];
+      if (data[i] > 4) area += 1;
+    }
+    return { peak, area };
+  });
+
+  /** Drags across the footer, which is the only way anything here appears. */
+  const drag = async (page: import('@playwright/test').Page) => {
+    const box = (await page.locator('.foot').boundingBox())!;
+    const y = box.y + box.height * 0.45;
+    for (let i = 0; i <= 24; i += 1) {
+      await page.mouse.move(box.x + 30 + ((box.width - 60) * i) / 24, y);
+    }
+    return box;
+  };
+
+  test('nothing is there until the pointer finds it', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'needs a fine pointer');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('.foot').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(900);
+    // The field is painted and then masked to nothing. Untouched, it is not
+    // faint, it is absent, which is what makes finding it worth anything.
+    expect((await inked(page)).area, 'footer starts clean').toBe(0);
+
+    await drag(page);
+    await page.waitForTimeout(120);
+    expect((await inked(page)).area, 'the drag marked it').toBeGreaterThan(0);
+  });
+
+  test('the ink fades back on its own', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'needs a fine pointer');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('.foot').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(900);
+    await drag(page);
+    await page.waitForTimeout(120);
+    const wet = await inked(page);
+    await page.waitForTimeout(1200);
+    const fading = await inked(page);
+    expect(fading.peak, `wet ${wet.peak}`).toBeLessThan(wet.peak);
+
+    // And all the way back to empty, not to a faint permanent stain. An
+    // 8-bit alpha buffer cannot decay to nothing on proportional removal
+    // alone: taking 2.7% of an alpha of 16 truncates to zero and the stroke
+    // stops fading, so the residue has to be wiped rather than waited out.
+    await page.waitForTimeout(3400);
+    expect((await inked(page)).area, 'footer returned to clean').toBe(0);
+  });
+
+  test('whatever is revealed, the footer stays readable on it', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'needs a fine pointer');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('.foot').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(900);
+
+    // Saturate it, then measure what the footer's own text is standing on.
+    // Set in white, the wordmark's glyphs would be the brightest thing here
+    // and would take the email address to roughly 1.2:1.
+    const box = (await page.locator('.foot').boundingBox())!;
+    for (let row = 0; row <= 8; row += 1) {
+      const y = box.y + (box.height * row) / 8;
+      for (let i = 0; i <= 28; i += 1) {
+        await page.mouse.move(box.x + 8 + ((box.width - 16) * i) / 28, y);
+      }
+    }
+    const worst = await page.evaluate(() => {
+      const c = document.querySelector('[data-foot-ink-canvas]') as HTMLCanvasElement;
+      const g = c.getContext('2d')!;
+      const { data } = g.getImageData(0, 0, c.width, c.height);
+      const dark = [22, 24, 25];
+      const lin = (v: number) => {
+        const x = v / 255;
+        return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+      };
+      let top = -1;
+      for (let i = 0; i < data.length; i += 4 * 31) {
+        const a = data[i + 3] / 255;
+        // What the visitor sees is the canvas composited over the footer.
+        const r = data[i] * a + dark[0] * (1 - a);
+        const gg = data[i + 1] * a + dark[1] * (1 - a);
+        const b = data[i + 2] * a + dark[2] * (1 - a);
+        const l = 0.2126 * lin(r) + 0.7152 * lin(gg) + 0.0722 * lin(b);
+        if (l > top) top = l;
+      }
+      const text = 0.2126 * lin(244) + 0.7152 * lin(244) + 0.0722 * lin(244);
+      return (text + 0.05) / (top + 0.05);
+    });
+    expect(worst, `footer text measured ${worst.toFixed(2)}:1 on the field`)
+      .toBeGreaterThanOrEqual(4.5);
+  });
+
+  test('it sits behind the footer and takes no clicks', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'needs a fine pointer');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('.foot').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    const fx = page.locator('[data-foot-ink]');
+    expect(await fx.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+    const zs = await page.evaluate(() => ({
+      fx: +getComputedStyle(document.querySelector('[data-foot-ink]')!).zIndex,
+      content: +getComputedStyle(document.querySelector('.foot > .bleed')!).zIndex,
+    }));
+    expect(zs.fx).toBeLessThan(zs.content);
+    // The email is still the thing a click lands on.
+    const mail = page.locator('.foot a[href^="mailto:"]');
+    await expect(mail).toBeVisible();
+    expect(await mail.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return el.contains(hit) || hit === el;
+    })).toBe(true);
+  });
+
+  test('is not mounted where there is no pointer to paint with', async ({ browser }) => {
+    for (const opts of [
+      { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true },
+      { viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' as const },
+    ]) {
+      const ctx = await browser.newContext(opts);
+      const page = await ctx.newPage();
+      await page.goto('/');
+      await page.waitForTimeout(1800);
+      expect(await page.locator('[data-foot-ink]').count()).toBe(0);
+      await ctx.close();
+    }
+  });
+});

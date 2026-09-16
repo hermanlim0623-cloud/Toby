@@ -368,10 +368,27 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 /* ---------- footer ----------
    The footer restates the hero's mark at the other end of the document, in
    the inverted block, so the page closes where it opened. */
-.foot{ padding-block:clamp(60px, 10vh, 120px) clamp(20px, 3vh, 32px); }
+.foot{
+  position:relative;
+  padding-block:clamp(60px, 10vh, 120px) clamp(20px, 3vh, 32px);
+}
+/* The hidden field sits behind everything the footer says. */
+.foot-fx{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.foot-fx-canvas{ width:100%; height:100%; display:block; }
+.foot > .bleed{ position:relative; z-index:1; }
+
+/* Reduced motion never mounts it, and the footer's default state is already
+   the clean one, so there is nothing to fall back to. */
+@media (prefers-reduced-motion: reduce){
+  .foot-fx{ display:none; }
+}
 .foot-top{ row-gap:clamp(32px, 6vh, 64px); align-items:start; }
 .foot-cols{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:clamp(20px, 3vw, 40px); }
 .foot-cols p:first-child{ margin-bottom:6px; }
+/* The footer's labels are set at full strength rather than muted: the
+   hidden field means they may be read against accent as well as against
+   the dark, and muted clears neither comfortably. */
+.foot .t-tiny{ color:var(--text); }
 .foot-bottom{ margin-top:clamp(48px, 8vh, 96px); border-top:1px solid var(--line); padding-top:14px; }
 .foot-sign{ text-align:right; }
 
