@@ -1,0 +1,70 @@
+---
+import { SITE, NAV_LINKS } from '../consts';
+
+/** The two digits the page signs itself with, everywhere. */
+const year = String(new Date().getFullYear()).slice(-2);
+---
+
+<!-- The header is a readout, not a navbar: who this is, where you are in
+     the document, what time it is where they are, and a way in. Everything
+     in it is either an index or a control — there is no branding furniture. -->
+<header class="hdr bleed" data-header>
+  <a class="hdr-mark" href="/#top" aria-label={`${SITE.name} — home`}>{SITE.name}</a>
+
+  <!-- Current section. Written by the scroll spy, and pre-filled so it is
+       never briefly empty on a cold load. -->
+  <p class="hdr-where t-label" aria-hidden="true">
+    <span class="t-muted">/</span>
+    <span data-where-num>00</span>
+    <span data-where-name>INDEX</span>
+  </p>
+
+  <nav class="hdr-nav" aria-label="Sections">
+    <ul>
+      {NAV_LINKS.map((l, i) => (
+        <li>
+          <a class="link t-label" href={l.href} data-nav-link>
+            <span class="t-muted">{String(i + 1).padStart(2, '0')}</span>
+            <span>{l.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <div class="hdr-end">
+    <!-- Local time, the visitor's own. It is the one live thing in the
+         header, and it is what makes the page read as a running system
+         rather than as a printed page. -->
+    <p class="hdr-clock t-label" aria-hidden="true">
+      <span class="t-muted">LOCAL</span>
+      <time data-clock>--:--:--</time>
+    </p>
+    <span class="hdr-year t-label t-muted" aria-hidden="true">/{year}</span>
+    <button class="hdr-menu t-label link" data-menu-open aria-expanded="false" aria-controls="menu">
+      <span>MENU</span><i>&gt;</i>
+    </button>
+  </div>
+</header>
+
+<!-- Full-screen menu. `inert` while closed keeps it out of the tab order
+     entirely rather than merely off-screen. -->
+<div class="menu on-dark" id="menu" data-menu inert>
+  <div class="menu-inner bleed">
+    <p class="t-tiny">NAVIGATION</p>
+    <ul class="menu-list">
+      {NAV_LINKS.map((l, i) => (
+        <li>
+          <a href={l.href} data-menu-link>
+            <span class="menu-num t-label t-muted">{String(i + 1).padStart(2, '0')}</span>
+            <span class="menu-word t-lg">{l.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="menu-foot">
+      <a class="link t-label" href={`mailto:${SITE.email}`}><span>{SITE.email}</span><i>&gt;</i></a>
+      <button class="t-label link" data-menu-close><span>CLOSE</span><i>&times;</i></button>
+    </div>
+  </div>
+</div>

@@ -1,27 +1,23 @@
 ---
 import Base from '../layouts/Base.astro';
+import SectionLabel from '../components/SectionLabel.astro';
 import { SITE } from '../consts';
 ---
 
-<Base title={`Lost at sea — ${SITE.name}`} description="That page isn't at this depth.">
-  <section class="lost">
-    <div class="wrap" data-page-header>
-      <div class="eyebrow">Sonar returned nothing</div>
-      <h1 class="lost-code">404</h1>
-      <p class="lost-copy">
-        Whatever was here has drifted off. The dive still starts at the surface,
-        and everything worth finding is one keystroke away.
-      </p>
-      <div class="lost-actions">
-        <a class="contact-link magnetic" href="/">← Back to the surface</a>
-        <button class="lost-key" data-palette-open>
-          Search with <kbd>⌘</kbd><kbd>K</kbd>
-        </button>
+<Base title={`404 — ${SITE.name}`} description="That page does not exist.">
+  <section class="section bleed" data-section="404" data-section-name="NOT FOUND">
+    <SectionLabel num="/" name="Not found" slash />
+    <div class="grid">
+      <p class="t-hero" style="--c:6;">404</p>
+      <div style="--c:5; --s:8;">
+        <p class="t-body" data-reveal>
+          Whatever was here has moved or never existed. The index is one click away,
+          and every project is listed on it.
+        </p>
+        <p style="margin-top:20px;">
+          <a class="link t-label" href="/"><span>RETURN TO INDEX</span><i>&gt;</i></a>
+        </p>
       </div>
     </div>
   </section>
 </Base>
-
-<script>
-  import '../scripts/boot.js';
-</script>

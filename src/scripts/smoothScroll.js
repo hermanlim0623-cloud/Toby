@@ -1,30 +1,29 @@
+// Smooth scroll, driven off the GSAP ticker so scroll-linked animation and
+// the scroll position are never a frame apart.
+//
+// Interpolated, not hijacked: no section snapping, no stolen wheel events,
+// and anchors still jump the way a browser's own anchors do.
 import Lenis from 'lenis';
 
-// Wires Lenis smooth-scroll into GSAP's ticker so ScrollTrigger stays in
-// sync. Skipped entirely under prefers-reduced-motion — native scroll only.
-export function createSmoothScroll(gsap, prefersReducedMotion) {
-  if (prefersReducedMotion) return null;
+export function createSmoothScroll(gsap, ScrollTrigger, reduced) {
+  if (reduced) return null;
 
-  // lerp-based rather than duration-based: Lenis then converges on the
-  // target every frame instead of running a fixed-length tween per wheel
-  // event, which reads as one continuous glide when someone scrolls in
-  // quick bursts — the way a trackpad or a mouse wheel actually behaves.
   const lenis = new Lenis({
-    lerp: 0.085,
-    smoothWheel: true,
-    wheelMultiplier: 0.9,
-    syncTouch: true,
-    syncTouchLerp: 0.075,
+    duration: 1.05,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    // Touch devices already interpolate their own scroll; doubling it makes
+    // a phone feel like it is running behind the finger.
+    smoothTouch: false,
+    prevent: (node) => node.tagName === 'IFRAME',
   });
 
-  lenis.on('scroll', () => {
-    if (window.ScrollTrigger) window.ScrollTrigger.update();
-  });
-
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
+  lenis.on('scroll', ScrollTrigger.update);
+  const tick = (time) => lenis.raf(time * 1000);
+  gsap.ticker.add(tick);
   gsap.ticker.lagSmoothing(0);
 
-  return lenis;
+  return () => {
+    gsap.ticker.remove(tick);
+    lenis.destroy();
+  };
 }

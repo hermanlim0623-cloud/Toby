@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import ProjectVisual from '../../components/ProjectVisual.astro';
+import SectionLabel from '../../components/SectionLabel.astro';
 import { SITE } from '../../consts';
 
 export async function getStaticPaths() {
@@ -23,6 +23,14 @@ export async function getStaticPaths() {
 const { entry, next, index, total } = Astro.props;
 const { Content } = await render(entry);
 const d = entry.data;
+const num = String(index).padStart(2, '0');
+
+const facts = [
+  { k: 'ROLE', v: d.role },
+  { k: 'YEAR', v: d.timeframe },
+  { k: 'STATUS', v: d.status },
+  { k: 'CATEGORY', v: d.tag },
+];
 
 const schema = {
   '@context': 'https://schema.org',
@@ -35,67 +43,82 @@ const schema = {
 };
 ---
 
-<Base
-  title={`${d.title} — ${SITE.name}`}
-  description={d.summary}
-  type="article"
-  schema={schema}
->
-  <article class="case">
-    <header class="case-head wrap" data-page-header>
-      <a class="case-back" href="/#work">← All work</a>
-      <div class="eyebrow">
-        {String(index).padStart(2, '0')} / {String(total).padStart(2, '0')} — {d.tag}
-      </div>
-      <h1>{d.title}</h1>
-      <p class="case-summary">{d.summary}</p>
+<Base title={`${d.title} — ${SITE.name}`} description={d.summary} type="article" schema={schema}>
+  <article class="case" data-section={num} data-section-name={d.tag.toUpperCase()}>
 
-      <dl class="case-facts">
-        <div><dt>Role</dt><dd>{d.role}</dd></div>
-        <div><dt>Timeframe</dt><dd>{d.timeframe}</dd></div>
-        <div><dt>Status</dt><dd>{d.status}</dd></div>
-        <div><dt>Stack</dt><dd>{d.stack.join(' · ')}</dd></div>
+    <header class="section bleed case-head">
+      <SectionLabel num={num} name="Project" />
+      <div class="grid case-head-grid">
+        <p class="case-index t-counter" style="--c:2;">{num}<span class="t-muted"> / {String(total).padStart(2, '0')}</span></p>
+        <h1 class="t-lg" style="--c:8; --s:5;" data-split>{d.title}</h1>
+        <p class="t-body case-summary" style="--c:6; --s:5;" data-reveal>{d.summary}</p>
+      </div>
+
+      <dl class="grid case-facts">
+        {facts.map((f) => (
+          <div style="--c:3;" data-reveal>
+            <dt class="t-tiny">{f.k}</dt>
+            <dd class="t-label">{f.v}</dd>
+          </div>
+        ))}
       </dl>
+      <hr class="rule" data-rule />
     </header>
 
-    <div class="case-visual wrap" aria-hidden="true">
-      <ProjectVisual world={d.world} />
-    </div>
+    <!-- The project stated as a machine: what goes in, what happens to it,
+         what it decides, what comes out. -->
+    <section class="section bleed" aria-label="How it works">
+      <SectionLabel num="/" name="The machine" slash />
+      <ol class="grid machine">
+        {[
+          { k: 'INPUT', v: d.machine.input },
+          { k: 'PROCESS', v: d.machine.process },
+          { k: 'DECISION', v: d.machine.decision },
+          { k: 'OUTPUT', v: d.machine.output },
+        ].map((stage, i) => (
+          <li class="machine-stage" style="--c:3;" data-reveal>
+            <hr class="rule" data-rule />
+            <span class="t-tiny">{String(i + 1).padStart(2, '0')} / {stage.k}</span>
+            <p class="t-label">{stage.v}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
 
     {d.metrics.length > 0 && (
-      <div class="wrap">
-        <ul class="case-metrics" data-reveal-group>
+      <section class="section bleed" aria-label="Results">
+        <SectionLabel num="/" name="Results" slash />
+        <ul class="grid stats">
           {d.metrics.map((m) => (
-            <li>
-              <strong>{m.value}</strong>
-              <span>{m.label}</span>
+            <li class="stat" style="--c:4;" data-reveal>
+              <p class="t-counter">{m.value}</p>
+              <p class="t-tiny">{m.label}</p>
             </li>
           ))}
         </ul>
-      </div>
+      </section>
     )}
 
-    <div class="case-body wrap">
-      <Content />
-    </div>
+    <section class="section bleed" aria-label="Case study">
+      <div class="grid">
+        <div class="case-body t-body" style="--c:6; --s:5;">
+          <Content />
+        </div>
+        <aside class="case-stack" style="--c:3; --s:12;">
+          <p class="t-tiny">STACK</p>
+          <ul>{d.stack.map((s) => <li class="t-label">{s}</li>)}</ul>
+        </aside>
+      </div>
+    </section>
 
-    <nav class="case-next wrap" aria-label="Next case study">
-      <span class="eyebrow">Next</span>
-      <a href={`/work/${next.id}/`} class="case-next-link magnetic" data-cursor="Open">
-        <span>{next.data.title}</span>
-        <em>{next.data.tag}</em>
+    <nav class="section bleed case-next" aria-label="Next project">
+      <hr class="rule" data-rule />
+      <a href={`/work/${next.id}/`} data-cursor="VIEW">
+        <span class="t-tiny">NEXT PROJECT</span>
+        <span class="t-lg case-next-title" data-split>{next.data.title}</span>
+        <span class="t-label t-muted">{next.data.tag}</span>
       </a>
     </nav>
 
-    <div class="wrap case-cta">
-      <p>Got a recurring manual task that should not exist?</p>
-      <a class="contact-link magnetic" data-cursor="Send" href={`mailto:${SITE.email}`}>
-        INITIATE TRANSMISSION → {SITE.email}
-      </a>
-    </div>
   </article>
 </Base>
-
-<script>
-  import '../../scripts/boot.js';
-</script>

@@ -11,10 +11,14 @@ export const SITE = {
   ogImage: '/og.jpg',
 } as const;
 
+/** The document's sections, in document order. The header index, the menu
+ *  and the scroll spy all read from this, so there is one place where the
+ *  page's table of contents is defined. */
 export const NAV_LINKS = [
-  { href: '/#intro', label: 'Identity' },
-  { href: '/#expertise', label: 'Skills' },
-  { href: '/#work', label: 'Work' },
-  { href: '/#tech', label: 'Tech' },
+  { href: '/#about', label: 'About' },
+  { href: '/#work', label: 'Selected Work' },
   { href: '/#experience', label: 'Experience' },
+  { href: '/#skills', label: 'Skills' },
+  { href: '/#technology', label: 'Technology' },
+  { href: '/#contact', label: 'Contact' },
 ] as const;

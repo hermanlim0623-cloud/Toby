@@ -1,0 +1,18 @@
+---
+interface Props {
+  /** The section's index in the document, e.g. "01". */
+  num: string;
+  name: string;
+  /** Contact is titled `/ CONTACT` rather than numbered — it is the end of
+   *  the document, not another entry in it. */
+  slash?: boolean;
+}
+const { num, name, slash = false } = Astro.props;
+---
+
+<div class="section-label" data-reveal>
+  <b class="t-label">{slash ? '/' : num}</b>
+  {!slash && <span class="t-label t-muted">/</span>}
+  <span class="t-label">{name}</span>
+  <hr class="rule section-rule" data-rule />
+</div>

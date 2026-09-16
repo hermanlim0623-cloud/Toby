@@ -1,51 +1,44 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import SectionLabel from '../components/SectionLabel.astro';
 import { SITE } from '../consts';
 
 const projects = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
 
-const stack = [
-  "Python", "JavaScript / TypeScript", "Astro", "GSAP + ScrollTrigger",
-  "Lenis", "WebGL / GLSL", "Google Sheets API", "REST APIs", "Automation scripting",
+// Every number on this page is derived from the content collection rather
+// than typed in, so a new project updates the counters and nothing here can
+// quietly drift out of date.
+const allStack = [...new Set(projects.flatMap((p) => p.data.stack))];
+const live = projects.filter((p) => p.data.status !== 'Retired');
+
+const stats = [
+  { n: projects.length, suffix: '', label: 'Projects shipped' },
+  { n: live.length, suffix: '', label: 'Systems in use' },
+  { n: allStack.length, suffix: '+', label: 'Tools in rotation' },
+  { n: new Date().getFullYear(), suffix: '', label: 'Active', plain: true },
+];
+
+const skills = [
+  { name: 'Automation', note: 'Scripts that remove a recurring manual step' },
+  { name: 'Web Development', note: 'Astro, TypeScript, the front of the system' },
+  { name: 'Backend & APIs', note: 'Python services, REST, scheduled jobs' },
+  { name: 'Data & Reporting', note: 'Sheets, dashboards, the daily recap' },
+  { name: 'Bots', note: 'Order handling and operational alerting' },
+  { name: 'UI / UX', note: 'Interfaces built for people mid-service' },
+  { name: 'Creative Development', note: 'Motion, WebGL, interactive work' },
+  { name: 'AI', note: 'Applied where a rule would be too brittle' },
 ];
 
 const experience = [
   {
-    when: "Ongoing",
-    title: "Operations & Automation",
-    desc: "Embedded in day-to-day operations, building the dashboards, bots and reporting tools the team relies on to run service without manual bottlenecks.",
+    year: 'Ongoing',
+    org: 'Operations & Automation',
+    role: 'Creative Technologist',
+    note: 'Embedded in day-to-day operations, building the dashboards, bots and reporting tools the team runs service on.',
   },
 ];
 
-const identityLines = [
-  "> SCANNING SOURCE...",
-  "> IDENTITY FOUND",
-  "> DESIGNATION: TOBY",
-  "> ROLE: CREATIVE TECHNOLOGIST",
-  "> CORE: SYSTEMS · AUTOMATION · AI",
-  "> DECLARED CAPABILITIES: 9",
-];
-const identityTags = [
-  "AUTOMATION", "WEB DEVELOPMENT", "AI", "3D WEB", "UI/UX",
-  "API & SYSTEMS", "CREATIVE TECHNOLOGY", "BOTS", "INTERACTIVE EXPERIENCES",
-];
-
-const pipelineStages = [
-  { k: "INPUT", d: "Raw daily orders, recap numbers, recurring manual entries." },
-  { k: "PROCESS", d: "Scripts normalize, validate and transform the incoming data." },
-  { k: "DECISION", d: "Rules and thresholds decide what needs a human, what doesn't." },
-  { k: "ACTION", d: "The system writes, flags, or files the result automatically." },
-  { k: "OUTPUT", d: "A dashboard, a report, or a completed record — no manual step." },
-];
-const pipelineStats = [
-  { n: 1000, label: "Tasks handled / month" },
-  { n: 5, label: "Parallel workers" },
-  { n: 30, label: "Minutes saved / recap" },
-];
-
-// Structured data: this is what lets a search engine render the name, role
-// and links as an entity rather than as an anonymous blue link.
 const schema = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -57,7 +50,7 @@ const schema = {
       email: `mailto:${SITE.email}`,
       description: SITE.description,
       address: { '@type': 'PostalAddress', addressCountry: SITE.location },
-      knowsAbout: stack,
+      knowsAbout: allStack,
     },
     {
       '@type': 'WebSite',
@@ -71,284 +64,198 @@ const schema = {
 };
 ---
 
-<Base title={SITE.title} description={SITE.description} variant="descent" schema={schema}>
-
-  <Fragment slot="prelude">
-    <div class="boot" data-boot>
-      <div class="boot-inner">
-        <!-- The checklist is the progress indicator. Each line is a real
-             signal the page is genuinely waiting on, so "still booting"
-             always names the thing it is waiting for rather than showing a
-             percentage that means nothing to anyone. -->
-        <ol class="boot-checks" data-boot-checks>
-          <li data-boot-check="signal"><span class="boot-dot"></span><span class="boot-label">Signal</span><span class="boot-state">····</span></li>
-          <li data-boot-check="renderer"><span class="boot-dot"></span><span class="boot-label">Renderer</span><span class="boot-state">····</span></li>
-          <li data-boot-check="field"><span class="boot-dot"></span><span class="boot-label">Field</span><span class="boot-state">····</span></li>
-        </ol>
-        <div class="boot-mark" data-boot-mark>TOBY</div>
-        <div class="boot-role" data-boot-role>
-          <span>Creative Technologist</span>
-          <span class="boot-role-sub">Digital systems · Automation · Experiences</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="cinema-stage" data-cinema aria-hidden="true">
-      <canvas class="cinema-gl" data-cinema-gl></canvas>
-    </div>
-
-    <div class="boundary-iris" data-boundary-iris aria-hidden="true"></div>
-  </Fragment>
+<Base title={SITE.title} description={SITE.description} schema={schema}>
 
   <span id="top"></span>
 
-  <section class="hero" aria-label="Introduction">
-    <div class="hero-fallback" aria-hidden="true"></div>
-    <!-- The ink reveal: two plates of the same wordmark, white over black,
-         with the pointer as the brush. It removes itself if either plate is
-         missing, so the hero never depends on it. See public/images/. -->
-    <div
-      class="hero-ink"
+  <!-- ==================== HERO ==================== -->
+  <section class="hero bleed" aria-label="Introduction" data-section="00" data-section-name="INDEX">
+    <div class="grid hero-top">
+      <h1 style="--c:6;">
+        <span class="hero-slash" aria-hidden="true">/</span>
+        <span class="hero-mark t-hero" data-hero-mark>
+          <span class="hero-row"><span class="hero-char">T</span><span class="hero-char">O</span></span>
+          <span class="hero-row"><span class="hero-char">B</span><span class="hero-char">Y</span></span>
+        </span>
+        <span class="sr-only">Toby — creative technologist</span>
+      </h1>
+
+      <div class="hero-say t-label" style="--c:4; --s:8;" data-hero-say>
+        <p>CREATIVE TECHNOLOGIST</p>
+        <p>DIGITAL SYSTEMS</p>
+        <p>AUTOMATION &amp; TOOLING</p>
+      </div>
+    </div>
+
+    <div class="grid hero-foot" data-hero-foot>
+      <div class="hero-meta" style="--c:4;">
+        <p class="t-tiny">CURRENTLY</p>
+        <p class="t-label">Building operational tools in {SITE.location}</p>
+      </div>
+      <div class="hero-meta" style="--c:3; --s:6;">
+        <p class="t-tiny">INDEX</p>
+        <p class="hero-index">
+          <span class="t-counter" data-counter={projects.length}>00</span>
+          <span class="unit t-muted">/ PROJECTS</span>
+        </p>
+      </div>
+      <a class="hero-scroll link t-label" style="--c:3; --s:10;" href="#about">
+        <span>SCROLL DOWN</span><i class="arrow">↓</i>
+      </a>
+    </div>
+  </section>
+
+  <!-- ==================== 01 / ABOUT ==================== -->
+  <section id="about" class="section bleed" data-section="01" data-section-name="ABOUT">
+    <SectionLabel num="01" name="About" />
+    <div class="grid about">
+      <p class="t-lg" style="--c:7; --s:5;" data-split>
+        Creative technologist building the machinery a business runs on.
+      </p>
+      <div class="about-body" style="--c:5; --s:5;">
+        <p class="t-body" data-reveal>
+          I work close to the ground — inside the actual workflow of a food business, not from a
+          spec document. The tools I build get judged the same way the kitchen does: does it work
+          today, under pressure, without anyone babysitting it.
+        </p>
+        <p class="t-body" data-reveal>
+          That means dashboards people read mid-service, bots that handle the orders nobody has
+          time to retype, and reports that file themselves. Front to back, the same hands.
+        </p>
+      </div>
+      <div class="about-meta" style="--c:3; --s:10;">
+        <div data-reveal>
+          <p class="t-tiny">ROLE</p>
+          <p class="t-label">Creative Technologist</p>
+        </div>
+        <div data-reveal>
+          <p class="t-tiny">BASED IN</p>
+          <p class="t-label">{SITE.location}</p>
+        </div>
+        <div data-reveal>
+          <p class="t-tiny">STATUS</p>
+          <p class="t-label t-accent">Available for work</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- The ink plates, moved here from the hero: an editorial image with a
+         cursor interaction, which is what they were always better suited to. -->
+    <figure
+      class="about-figure"
       data-hero-ink
       data-plate-top="/images/hero-plate-top.webp"
       data-plate-under="/images/hero-plate-under.webp"
-      data-plate-top-invert
-      aria-hidden="true"
+      data-plate-top-invert="false"
+      data-plate-rest="1"
+      data-cursor="DRAG"
     >
-      <canvas class="hero-ink-canvas" data-hero-ink-canvas></canvas>
-    </div>
-    <div class="wrap hero-content">
-      <div class="eyebrow">TOBY — Creative Technologist</div>
-      <h1>
-        <span class="split-line"><span>I build digital</span></span>
-        <span class="split-line"><span>systems &amp;</span></span>
-        <span class="split-line"><span><em>experiences.</em></span></span>
-      </h1>
-      <div class="hero-sub glass">
-        <p>Dashboards, automations and backend tools built inside a business's day-to-day operations — the invisible machinery behind a kitchen that runs on time.</p>
-        <div class="hero-meta">
-          <div><strong>Based in</strong> — Indonesia</div>
-          <div><strong>Focus</strong> — Full-stack + automation</div>
-          <div><strong>Stack</strong> — Python, JavaScript, Astro</div>
-        </div>
-      </div>
-    </div>
-    <div class="scroll-indicator">
-      <span>Scroll</span>
-      <span class="rail"></span>
-    </div>
+      <canvas class="about-figure-canvas" data-hero-ink-canvas></canvas>
+      <figcaption class="t-tiny">DRAG TO DEVELOP — THE MARK OVER THE MACHINERY</figcaption>
+    </figure>
+
+    <ul class="grid stats">
+      {stats.map((s) => (
+        <li class="stat" style="--c:3;" data-reveal>
+          <p class="t-counter">
+            <span data-counter={s.n} data-counter-plain={s.plain ? '' : undefined}>0</span>{s.suffix}
+          </p>
+          <p class="t-tiny">{s.label}</p>
+        </li>
+      ))}
+    </ul>
   </section>
 
-  <section id="intro" class="identity-section" data-identity>
-    <div class="id-scanline" aria-hidden="true"></div>
-    <div class="id-surface-bloom" aria-hidden="true"></div>
-    <div class="id-grid" aria-hidden="true" data-parallax="0.22"></div>
-    <div class="wrap">
-      <div class="eyebrow" data-textfx="wipe">01 — Identity · Who is behind the system</div>
-      <div class="id-console glass" style="margin-top:26px;">
-        <div class="id-terminal">
-          {identityLines.map((line) => (
-            <p class="id-line" data-id-line={line}>{line}</p>
-          ))}
-        </div>
-        <div class="id-tags" aria-label="Capabilities">
-          {identityTags.map((t) => <span class="id-tag" data-id-tag>{t}</span>)}
-        </div>
-      </div>
-      <div class="intro-copy glass" data-reveal>
-        <p data-textfx="scramble">I work close to the ground — inside the actual workflow of a food business, not from a spec document. The tools I build get judged the same way the kitchen does: does it work today, under pressure, without babysitting.</p>
-      </div>
-    </div>
+  <!-- ==================== 02 / SELECTED WORK ==================== -->
+  <section id="work" class="section bleed" data-section="02" data-section-name="SELECTED WORK">
+    <SectionLabel num="02" name="Selected Work" />
+    <ul class="work-list" data-work-list>
+      {projects.map((p, i) => (
+        <li class="work-row">
+          <a href={`/work/${p.id}/`} data-work-row data-cursor="VIEW">
+            <span class="work-num t-counter">{String(i + 1).padStart(2, '0')}</span>
+            <span class="work-title t-lg">{p.data.title}</span>
+            <span class="work-cat t-label t-muted">{p.data.tag}</span>
+            <span class="work-year t-label t-muted">{p.data.timeframe}</span>
+            <span class="work-go t-label" aria-hidden="true">&gt;</span>
+          </a>
+          <hr class="rule" data-rule />
+        </li>
+      ))}
+    </ul>
   </section>
 
-  <section id="expertise" class="skills-section">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 data-split>The skill matrix</h2>
-        <div class="eyebrow" data-textfx="wipe">02 — Network, not a list</div>
-      </div>
-    </div>
-    <div class="skill-stage">
-      <div class="skill-field" data-skill-stage>
-        <canvas id="skill-canvas" aria-hidden="true"></canvas>
-        <!-- The nodes are injected here as buttons so the network is
-             reachable by keyboard and announced by a screen reader. The
-             canvas behind them only draws the connections. -->
-        <div class="skill-nodes" data-skill-nodes role="group" aria-label="Skill network"></div>
-      </div>
-      <div class="skill-panel" data-skill-panel id="skill-readout" role="status">
-        <div class="eyebrow" style="margin-bottom:10px;">Skill</div>
-        <h3 data-skill-name>—</h3>
-        <p data-skill-desc>Focus a node to inspect how it connects.</p>
-        <div class="skill-related">
-          <span class="eyebrow" style="margin-bottom:6px;">Related work</span>
-          <p data-skill-related></p>
-        </div>
-        <div class="skill-related">
-          <span class="eyebrow" style="margin-bottom:6px;">Connects to</span>
-          <p data-skill-links></p>
-        </div>
-      </div>
-    </div>
-    <p class="tech-note wrap" data-textfx="blur" style="margin-top:28px;">A map of where the work actually concentrates — node size is how load-bearing a skill is across the projects below, not a proficiency score. Point at one, or tab to it, to see what it connects to.</p>
-  </section>
-
-  <section id="work" style="padding-inline:0;">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 data-textfx="chars">Selected work</h2>
-        <div class="eyebrow" data-textfx="wipe">03 — Featured projects</div>
-      </div>
-    </div>
-    <div class="gallery-pin">
-      <div class="gallery-viewport">
-        <div class="gallery-track wrap">
-          {projects.map((p, i) => (
-            <a class="project-card" href={`/work/${p.id}/`} data-world={p.data.world} data-cursor="Case study">
-              <div class="project-top">
-                <span class="project-num">{String(i + 1).padStart(2, "0")}</span>
-                <span class="project-tag">{p.data.tag}</span>
-              </div>
-              <h3>{p.data.title}</h3>
-              <p>{p.data.summary}</p>
-              <!-- The project stated as a machine. This replaced a decorative
-                   generative visual: the diagram is what the section is
-                   arguing, and a graphic that says nothing was taking the
-                   space the argument needed. -->
-              <ol class="machine" aria-label={`How ${p.data.title} works`}>
-                {[
-                  { k: "Input", v: p.data.machine.input },
-                  { k: "Process", v: p.data.machine.process },
-                  { k: "Decision", v: p.data.machine.decision },
-                  { k: "Output", v: p.data.machine.output },
-                ].map((stage, si) => (
-                  <li class="machine-stage" style={`--stage:${si}`}>
-                    <span class="machine-key">{stage.k}</span>
-                    <span class="machine-value">{stage.v}</span>
-                  </li>
-                ))}
-              </ol>
-              <div class="project-impact">↳ {p.data.impact}</div>
-              <div class="project-stack">
-                {p.data.stack.map((s) => <span>{s}</span>)}
-              </div>
-              <span class="project-more">Read the case study →</span>
-              <span class="project-sheen" aria-hidden="true"></span>
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-    <div class="gallery-progress wrap">
-      <div class="gallery-progress-bar"></div>
-    </div>
-  </section>
-
-  <section aria-label="Automation pipeline" class="automation-section" data-automation>
-    <div class="wrap">
-      <div class="section-head">
-        <h2 data-split>Machines I build</h2>
-        <div class="eyebrow" data-textfx="wipe">04 — The automation factory</div>
-      </div>
-      <p class="tech-note" data-textfx="typewrite" style="margin-bottom:44px;">The business used to close each day with a manual recap, typed by hand. Here's the shape of what replaced it: data goes in one end, a decision happens in the middle, and a finished result comes out the other side — no one babysitting it.</p>
-
-      <svg class="pipeline-svg" viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-        <path data-flow-path d="M 40 100 C 200 100, 200 40, 340 40 C 480 40, 480 160, 620 160 C 760 160, 760 100, 960 100" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" stroke-dasharray="2 8" stroke-linecap="round" />
-        {[0,1,2,3,4,5].map(() => <circle data-flow-dot r="3.2" fill="#FFFFFF" />)}
-      </svg>
-
-      <div class="pipeline-stages">
-        {pipelineStages.map((s) => (
-          <div class="pipeline-stage" data-stage>
-            <div class="pipeline-k">{s.k}</div>
-            <p>{s.d}</p>
+  <!-- ==================== 03 / EXPERIENCE ==================== -->
+  <section id="experience" class="section bleed" data-section="03" data-section-name="EXPERIENCE">
+    <SectionLabel num="03" name="Experience" />
+    <ul class="exp-list">
+      {experience.map((e) => (
+        <li class="exp-row">
+          <hr class="rule" data-rule />
+          <div class="exp-inner" data-reveal>
+            <span class="t-counter exp-year">{e.year}</span>
+            <span class="t-lg exp-org">{e.org}</span>
+            <span class="t-label t-muted exp-role">{e.role}</span>
+            <p class="t-body exp-note">{e.note}</p>
           </div>
-        ))}
-      </div>
+        </li>
+      ))}
+    </ul>
+  </section>
 
-      <div class="pipeline-stats">
-        {pipelineStats.map((s) => (
-          <div class="pipeline-stat">
-            <div class="pipeline-stat-n"><span data-counter={s.n}>0</span>{s.label.includes('Minutes') ? '' : '+'}</div>
-            <div class="pipeline-stat-l" data-textfx="flicker">{s.label}</div>
+  <!-- ==================== 04 / SKILLS ==================== -->
+  <section id="skills" class="section bleed" data-section="04" data-section-name="SKILLS">
+    <SectionLabel num="04" name="Skills" />
+    <ul class="skill-list">
+      {skills.map((s, i) => (
+        <li class="skill-row" data-reveal>
+          <hr class="rule" data-rule />
+          <div class="skill-inner">
+            <span class="t-label t-muted skill-num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="t-label skill-name">{s.name}</span>
+            <span class="t-label t-muted skill-note">{s.note}</span>
+            <span class="t-label skill-go" aria-hidden="true">&gt;</span>
           </div>
-        ))}
-      </div>
-    </div>
+        </li>
+      ))}
+    </ul>
   </section>
 
-  <section id="tech" class="systems-section">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 data-split>Inside the machine</h2>
-        <div class="eyebrow" data-textfx="wipe">05 — Systems &amp; stack</div>
-      </div>
-      <p class="tech-note" data-textfx="lines" style="margin-bottom:30px;">TOBY doesn't only design what you see. Every interface here sits on a stack that has to be understood layer by layer — UI, network, API, data, automation, output.</p>
-      <div class="tech-cloud" data-tech-cloud>
-        {stack.map((t) => <span class="tech-chip">{t}</span>)}
-      </div>
-      <p class="tech-note" data-textfx="lines">This site is one of the experiments — built in Astro, animated with GSAP and ScrollTrigger, scrolled with Lenis, and rendered through a hand-written GLSL water shader on an OGL canvas. Reduced-motion and low-power devices get a simplified, static version automatically.</p>
-    </div>
+  <!-- ==================== 05 / TECHNOLOGY ==================== -->
+  <section id="technology" class="section bleed" data-section="05" data-section-name="TECHNOLOGY">
+    <SectionLabel num="05" name="Technology" />
+    <ul class="grid tech-list">
+      {allStack.map((t, i) => (
+        <li class="tech-item" style="--c:3;" data-reveal>
+          <span class="t-tiny">{String(i + 1).padStart(2, '0')} /</span>
+          <span class="t-label">{t}</span>
+        </li>
+      ))}
+    </ul>
   </section>
 
-  <section id="experience" class="evolution-section">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 data-split>The evolution</h2>
-        <div class="eyebrow" data-textfx="wipe">06 — Timeline</div>
+  <!-- ==================== / CONTACT ==================== -->
+  <section id="contact" class="section bleed contact" data-section="06" data-section-name="CONTACT">
+    <SectionLabel num="06" name="Contact" slash />
+    <h2 class="t-md contact-head" data-split>/ CONTACT</h2>
+    <div class="grid contact-grid">
+      <div style="--c:5;">
+        <p class="t-tiny">EMAIL</p>
+        <a class="link t-lg contact-mail" href={`mailto:${SITE.email}`} data-cursor="OPEN">
+          <span>{SITE.email}</span><i>&gt;</i>
+        </a>
       </div>
-      <div class="timeline" data-timeline>
-        <div class="timeline-spine" aria-hidden="true">
-          <span class="timeline-fill" data-timeline-fill></span>
+      <div class="contact-cols" style="--c:5; --s:8;">
+        <div>
+          <p class="t-tiny">GITHUB</p>
+          <a class="link t-label" href="https://github.com/hermanlim0623-cloud"><span>@hermanlim0623</span><i>&gt;</i></a>
         </div>
-        {experience.map((e) => (
-          <div class="timeline-row" data-reveal>
-            <span class="timeline-node" aria-hidden="true"></span>
-            <div class="timeline-when" data-textfx="wipe">{e.when}</div>
-            <div>
-              <h3 data-textfx="skew">{e.title}</h3>
-              <p data-textfx="lines">{e.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section id="contact" class="transmission-section" data-transmission>
-    <div class="wrap contact">
-      <div class="eyebrow" data-textfx="wipe" style="justify-content:center;">07 — Transmission</div>
-      <div class="transmission-console glass">
-        <div class="transmission-status" data-transmission-status>ESTABLISHING CONNECTION…</div>
-        <div class="transmission-bar-track"><div class="transmission-bar" data-transmission-bar></div></div>
-        <div class="transmission-pct" data-transmission-pct>0%</div>
-      </div>
-
-      <h2 data-split data-transmission-reveal style="margin-top:32px;">Let's fix the next bottleneck together.</h2>
-      <div class="transmission-tags" data-transmission-reveal>
-        <span class="eyebrow" data-textfx="wipe" style="justify-content:center; margin-bottom:12px;">Available for</span>
-        <div class="id-tags" style="justify-content:center;">
-          {["WEB", "AUTOMATION", "AI", "3D", "SYSTEMS", "CREATIVE DEVELOPMENT"].map((t) => <span class="id-tag">{t}</span>)}
+        <div>
+          <p class="t-tiny">LOCATION</p>
+          <p class="t-label">{SITE.location}</p>
         </div>
       </div>
-      <a class="contact-link magnetic" data-cursor="Send" data-transmission-reveal href={`mailto:${SITE.email}`}>INITIATE TRANSMISSION → {SITE.email}</a>
-    </div>
-  </section>
-
-  <section class="final-cta shutdown-section" data-shutdown>
-    <div class="shutdown-world" data-shutdown-world aria-hidden="true">
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-    <div class="wrap">
-      <div class="eyebrow" style="justify-content:center;">Cycle complete</div>
-      <p class="shutdown-line" data-shutdown-line style="margin-top:18px;">THANK YOU FOR DIVING IN.</p>
-      <p class="shutdown-line" data-shutdown-line>OUTPUT DELIVERED — READY FOR THE NEXT SYSTEM</p>
-      <h2 data-shutdown-closing class="shutdown-closing">TOBY<br /><em>Build. Break. Rebuild.</em></h2>
     </div>
   </section>
 
 </Base>
-
-<script>
-  import '../scripts/boot.js';
-</script>

@@ -1,15 +1,12 @@
 ---
-import '@fontsource-variable/space-grotesk';
-import '@fontsource-variable/ibm-plex-sans';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/martian-mono';
 import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/500.css';
 import '../styles/global.css';
 
 import { ClientRouter } from 'astro:transitions';
 import Seo from '../components/Seo.astro';
-import Nav from '../components/Nav.astro';
-import Atmosphere from '../components/Atmosphere.astro';
-import CommandPalette from '../components/CommandPalette.astro';
+import Header from '../components/Header.astro';
 import { SITE } from '../consts';
 
 interface Props {
@@ -18,18 +15,10 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
   schema?: Record<string, unknown>;
-  /** `descent` mounts the generated environment; `page` is the lighter shell. */
-  variant?: 'descent' | 'page';
 }
 
-const {
-  title,
-  description = SITE.description,
-  image,
-  type,
-  schema,
-  variant = 'page',
-} = Astro.props;
+const { title, description = SITE.description, image, type, schema } = Astro.props;
+const year = new Date().getFullYear();
 ---
 
 <!DOCTYPE html>
@@ -44,33 +33,49 @@ const {
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#F4F4F4" />
   <link rel="sitemap" href="/sitemap-index.xml" />
 
   <ClientRouter />
 </head>
-<body data-variant={variant}>
+<body>
 
-<!-- A keyboard visitor should not have to tab through the entire nav and
-     an atmosphere of decorative layers before reaching the content. -->
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link t-label" href="#main">SKIP TO CONTENT</a>
 
-<slot name="prelude" />
-
-<Atmosphere depthHud={variant === 'descent'} />
-<Nav />
-<CommandPalette />
+<Header />
 
 <main id="main">
   <slot />
 </main>
 
-<footer class="site-foot">
-  <div class="wrap site-foot-inner">
-    <span>Toby — Operations &amp; Automation</span>
-    <span>Built for real operations</span>
+<footer class="foot on-dark">
+  <div class="bleed">
+    <div class="grid foot-top">
+      <div style="--c:4;">
+        <span class="hero-slash" aria-hidden="true">/</span>
+        <p class="t-md">TO<br />BY</p>
+      </div>
+      <div class="foot-cols" style="--c:5; --s:7;">
+        <div>
+          <p class="t-tiny">EMAIL</p>
+          <a class="link t-label" href={`mailto:${SITE.email}`}><span>{SITE.email}</span><i>&gt;</i></a>
+        </div>
+        <div>
+          <p class="t-tiny">BASED IN</p>
+          <p class="t-label">{SITE.location}</p>
+        </div>
+      </div>
+    </div>
+    <div class="grid foot-bottom">
+      <p class="t-tiny" style="--c:6;">© {year} {SITE.name} — ALL RIGHTS RESERVED</p>
+      <p class="t-tiny foot-sign" style="--c:6;">/{String(year).slice(-2)}</p>
+    </div>
   </div>
 </footer>
+
+<script>
+  import '../scripts/main.js';
+</script>
 
 </body>
 </html>

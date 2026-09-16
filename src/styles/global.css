@@ -1,1812 +1,541 @@
 /* ============================================================
-   TOBY — creative technologist
-   Visual system: a dark technical environment, not a dashboard.
-   The whole site is one descent through a machine, and the palette
-   is built so that the environment carries the atmosphere while the
-   interface stays almost entirely type and negative space.
+   TOBY — editorial / technical
+   ------------------------------------------------------------
+   A Swiss grid, a brutalist type scale, and a 1px rule system.
+   The page is built out of alignment and whitespace: there are
+   no cards, no gradients, no glass and no shadows anywhere in
+   this file, and adding one is how this design stops working.
+
+   Everything positional resolves through the 12-column grid
+   below, so "where does this sit" always has one answer.
    ============================================================ */
 
 :root{
-  /* ---- the environment ----
-     Pure monochrome. No hue anywhere: the whole site is built out of a
-     single black-to-white ramp, so contrast, weight and negative space
-     are the only things carrying hierarchy. Black is genuinely black
-     here — the depth comes from the film grain, the vignette and the
-     light sweeps, not from a blue bias in the greys. */
-  --void: #000000;        /* the deepest layer, behind everything */
-  --graphite: #060606;    /* the working background */
-  --slate: #0E0E0E;       /* raised surfaces, section separation */
-  --navy: #161616;        /* the grey that survives at depth */
+  /* ---- colour ----
+     Six values, and that is the whole system. Hierarchy is carried by
+     the three greys; the accent is a signal, not a decoration, and any
+     screen where it appears more than once is a screen doing it wrong. */
+  --bg: #F4F4F4;
+  --text: #404040;
+  --muted: #B3B3B3;
+  --dark: #161819;
+  --black: #050505;
+  --white: #FFFFFF;
+  --accent: #055DFF;
 
-  /* ---- signal ----
-     The accent is white. Everything an interface would normally say with
-     colour, this says with luminance: --signal is "on", --signal-dim is
-     "active but not focused", --signal-warm is a settled, resolved value. */
-  --signal: #FFFFFF;
-  --signal-dim: #8C8C8C;
-  --signal-warm: #D6D6D6;  /* reserved: decisions and outputs only */
-
-  --bg: var(--void);
-  --bg-1: var(--graphite);
-  --bg-2: var(--slate);
-  --surface: rgba(255,255,255,0.028);
-  --surface-strong: rgba(255,255,255,0.05);
-  --line: rgba(255,255,255,0.10);
-  --line-strong: rgba(255,255,255,0.18);
+  --line: rgba(64,64,64,0.18);   /* the 1px rule, on light */
+  --line-dark: rgba(255,255,255,0.16); /* the same rule inside a dark section */
 
   /* ---- type ----
-     Three steps of grey, spaced far enough apart to read as a hierarchy
-     without colour helping. --ink-faint is the small mono metadata and is
-     deliberately brighter than it "should" be: at 11-12px those labels are
-     exactly what a visitor squints at, and a dimmer value sits under the
-     4.5:1 contrast floor. */
-  --ink: #FFFFFF;
-  --ink-soft: #A8A8A8;
-  --ink-faint: #8E8E8E;
+     Three faces, three jobs. --font-main sets everything a person reads
+     as language; --font-mono is for anything the machine counts, indexes
+     or labels; --font-tech is the micro UI, which exists at 7-10px and
+     nowhere else.
 
-  --accent: var(--signal);
-  --accent-2: var(--signal-dim);
-  --accent-ink: var(--void);
-  --glow: 0 0 80px -20px rgba(255,255,255,0.22);
+     Substitutions, until the licensed originals are dropped in:
+       Switzer    -> Inter          (named as the fallback in the brief)
+       Orbit Mono -> Martian Mono
+       DT-sys11   -> IBM Plex Mono
+     Swapping one back is a @font-face and this one line. */
+  --font-main: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Martian Mono Variable', 'Martian Mono', ui-monospace, monospace;
+  --font-tech: 'IBM Plex Mono', ui-monospace, monospace;
 
-  /* ---- motion language ----
-     Not one easing for everything. Each has a job, and using them
-     interchangeably is what makes a site feel like it has no opinion:
-     --ease-enter  things arriving from off-screen or from nothing
-     --ease-move   things already on screen changing position
-     --ease-exit   things leaving, which should feel decided, not lazy
-     --ease-snap   state changes: toggles, focus, activation
-     --ease-film   the long, cinematic settle used by the text reveals */
-  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-move: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-exit: cubic-bezier(0.55, 0, 1, 0.45);
-  --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-film: cubic-bezier(0.16, 1, 0.3, 1);
-  /* Kept: older modules reference these names. */
-  --ease-out: var(--ease-enter);
-  --ease-soft: var(--ease-enter);
+  /* ---- scale ----
+     Fluid between the mobile and desktop values in the brief, so there is
+     no step where the page is visibly "the desktop one, shrunk". */
+  --fs-hero: clamp(72px, 11vw, 180px);
+  --fs-xl: clamp(40px, 5.6vw, 84px);
+  --fs-lg: clamp(40px, 4.4vw, 64px);
+  --fs-md: clamp(32px, 3.8vw, 56px);
+  --fs-counter: clamp(28px, 2.6vw, 36px);
+  --fs-body: clamp(14px, 1.05vw, 16px);
+  --fs-label: 10px;
+  --fs-tiny: 7px;
 
-  --font-display: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* ---- grid ----
+     One margin token and one gutter token. Every section inherits them,
+     which is what makes the left edge of the page a single unbroken line
+     from the header to the footer. */
+  --margin: clamp(20px, 4.4vw, 80px);
+  --gutter: clamp(12px, 1.5vw, 24px);
+  --cols: 12;
+
+  /* ---- motion ----
+     One editorial curve for almost everything. The brief is right that
+     this reads as deliberate where a spring reads as playful; the spring
+     is kept for the few places where a thing is genuinely being flung. */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --t-micro: 200ms;
+  --t-hover: 380ms;
+  --t-text: 650ms;
+  --t-image: 850ms;
+  --t-section: 1000ms;
 }
 
-*{ box-sizing:border-box; }
-html{ background:var(--bg); color-scheme:dark; }
+/* Tablet and mobile narrow the grid rather than rescaling the desktop one. */
+@media (max-width: 1439.98px){ :root{ --cols: 8; } }
+@media (max-width: 809.98px){ :root{ --cols: 4; } }
+
+/* ---------- reset ---------- */
+*, *::before, *::after{ box-sizing:border-box; }
+html{ background:var(--bg); color-scheme:light; -webkit-text-size-adjust:100%; }
 body{
   margin:0;
   background:var(--bg);
-  color:var(--ink);
-  font-family:var(--font-body);
-  -webkit-font-smoothing:antialiased;
-  overflow-x:clip;
-  /* text-shadow inherits to every descendant — cheap insurance so type
-     stays legible over a live, unpredictable environment rather than a
-     flat background, without needing to box every line in a panel. */
-  text-shadow:0 2px 20px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.6);
-}
-
-/* ---- glass: sparing use for the few text blocks dense enough that a
-   shadow alone isn't enough insurance against a bright video frame. ---- */
-.glass{
-  background:rgba(0,0,0,0.4);
-  backdrop-filter:blur(16px) saturate(140%);
-  -webkit-backdrop-filter:blur(16px) saturate(140%);
-  border:1px solid rgba(255,255,255,0.14);
-  border-radius:20px;
-}
-::selection{ background:var(--accent); color:var(--accent-ink); }
-a{ color:inherit; }
-img{ max-width:100%; display:block; }
-p{ margin:0; }
-h1,h2,h3,h4{
-  font-family:var(--font-display); margin:0; text-wrap:balance;
-  /* Display type is set tight and heavy. A grotesk at these sizes has to
-     be tracked in, not out: the default spacing is drawn for paragraph
-     text and reads loose and weak the moment the size passes a few rem,
-     which is exactly where this site lives. */
-  font-weight:600;
-  letter-spacing:-0.035em;
-  text-shadow:0 4px 40px rgba(0,0,0,0.85), 0 2px 10px rgba(0,0,0,0.6);
-}
-h1{ letter-spacing:-0.045em; font-weight:700; }
-/* Metadata is the counterweight: small, mono, tracked wide. The contrast
-   between the two is the typographic system — there is deliberately
-   almost nothing in between them. */
-.eyebrow{ letter-spacing:0.14em; }
-
-.eyebrow{
-  font-family:var(--font-mono);
-  font-size:0.74rem;
-  letter-spacing:0.16em;
-  text-transform:uppercase;
-  color:var(--ink-soft);
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.eyebrow::before{
-  content:"";
-  width:22px; height:1px;
-  background:var(--accent);
-  display:inline-block;
-}
-
-.wrap{ max-width:1180px; margin:0 auto; padding-inline:24px; position:relative; }
-
-/* ---------- boot: the system coming up ----------
-   Not a loading screen. The three checks are real signals the page is
-   waiting on, and the layout is built so that "still initialising" is a
-   legible state rather than a spinner. ---- */
-html.is-booting{ overflow:hidden; }
-.boot{
-  position:fixed; inset:0; z-index:100;
-  background:var(--void);
-  display:flex; align-items:center; justify-content:center;
-  clip-path:inset(0% 0% 0% 0%);
-  will-change:clip-path;
-}
-/* The field stirring: a single faint sweep, off until the score says so.
-   This is the only thing on screen for the first beat, and it is deliberately
-   almost invisible — the point is that something is alive back there, not
-   that there is a graphic. */
-.boot::after{
-  content:""; position:absolute; inset:0;
-  background:radial-gradient(120% 70% at 50% 42%, rgba(255,255,255,0.10), transparent 68%);
-  opacity:0;
-  transition:opacity 1.1s var(--ease-enter);
-  pointer-events:none;
-}
-.boot.is-stirring::after{ opacity:1; }
-
-.boot-inner{
-  width:min(620px, 84vw);
-  display:flex; flex-direction:column; align-items:center; gap:26px;
-}
-
-.boot-checks{
-  list-style:none; margin:0; padding:0;
-  display:flex; flex-direction:column; gap:7px;
-  width:100%; max-width:300px;
-  font-family:var(--font-mono);
-  font-size:0.68rem; letter-spacing:0.16em; text-transform:uppercase;
-  color:var(--ink-faint);
-  opacity:0;
-  transition:opacity 0.7s var(--ease-enter);
-}
-.boot.is-checking .boot-checks{ opacity:1; }
-.boot-checks li{
-  display:grid; grid-template-columns:8px 1fr auto; align-items:center; gap:12px;
-}
-.boot-dot{
-  width:5px; height:5px; border-radius:50%;
-  background:var(--ink-faint); opacity:0.35;
-  transition:opacity 0.4s var(--ease-snap), background-color 0.4s var(--ease-snap);
-}
-.boot-checks li.is-ready .boot-dot{ background:var(--signal); opacity:1; }
-.boot-checks li.is-ready .boot-state{ color:var(--signal); }
-.boot-state{ font-variant-numeric:tabular-nums; }
-
-.boot-mark{
-  font-family:var(--font-display);
-  font-size:clamp(3.2rem, 13vw, 8rem);
-  font-weight:700;
-  letter-spacing:-0.045em;
-  line-height:1;
-  display:flex;
-  overflow:hidden;
-  color:var(--ink);
-}
-/* Letters start displaced and blurred; the score clears them. Starting from
-   CSS rather than a gsap.from() means they are never briefly visible in
-   their final position before the timeline takes hold. */
-.boot-letter{
-  display:inline-block;
-  opacity:0;
-  transform:translateY(110%);
-  filter:blur(12px);
-  will-change:transform, opacity, filter;
-}
-.boot-role{
-  display:flex; flex-direction:column; align-items:center; gap:6px;
-  font-family:var(--font-mono);
-  font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase;
-  color:var(--ink-soft);
-  opacity:0;
-  transform:translateY(12px);
-}
-.boot-role-sub{ color:var(--ink-faint); letter-spacing:0.14em; font-size:0.64rem; }
-
-@media (prefers-reduced-motion: reduce){ .boot{ display:none; } }
-
-/* ---------- cinematic video environment ----------
-   A single full-viewport <video> whose currentTime is driven by scroll
-   position (src/scripts/abyss/); this IS the site's background now — the
-   gradient below stays visible until the first frame is ready, and stays
-   forever on devices with no backend at all. */
-.cinema-stage{
-  position:fixed; inset:0;
-  z-index:0;
-  /* The static gradient below is not decoration — it is the entire dive for
-     anyone whose device cannot give us a rendering backend, so it has to be
-     a presentable image on its own, not a placeholder colour. */
-  background:
-    linear-gradient(180deg, #1A1A1A 0%, #0D0D0D 28%, #060606 60%, var(--void) 100%);
-  overflow:hidden;
-}
-.cinema-gl{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  display:block;
-  opacity:0;
-  transition:opacity 1.2s ease;
-}
-/* Set by the controller only once a real first frame has been presented, so
-   the canvas can never fade in over a frame that hasn't been drawn yet. */
-.cinema-stage.is-live .cinema-gl{ opacity:1; }
-.cinema-stage.is-unsupported .cinema-gl{ display:none; }
-
-/* ---------- boundary iris: fires once as the gallery pin releases
-   (sectionTransitions.js) — the visible cue for anyone without the water
-   shader running, and a shared marker for the same moment when they do. -- */
-.boundary-iris{
-  position:fixed; inset:0; z-index:3; pointer-events:none;
-  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,0.55), rgba(255,255,255,0) 62%);
-  opacity:0; transform:scale(0.4);
-}
-.boundary-iris.is-firing{ animation:boundary-flash 0.9s var(--ease-out); }
-@keyframes boundary-flash{
-  0%{ opacity:0; transform:scale(0.4); }
-  35%{ opacity:0.85; transform:scale(1.05); }
-  100%{ opacity:0; transform:scale(1.55); }
-}
-@media (prefers-reduced-motion: reduce){
-  .boundary-iris{ display:none; }
-}
-
-/* A single depth-modulated vignette that keeps HTML content legible over
-   whatever the water is doing, darkening gently as the dive deepens
-   (see ocean.js) rather than ever hard-cutting to a flat color. Capped
-   well short of opaque — the dive must always read through, even at
-   the abyss, or the video stops looking like the environment at all. */
-.scrim{
-  position:fixed; inset:0;
-  z-index:0;
-  pointer-events:none;
-  background:
-    linear-gradient(180deg, rgba(0,0,0,0.46), rgba(0,0,0,var(--scrim-a, 0.34)) 45%, rgba(0,0,0, calc(var(--scrim-a, 0.34) + 0.16)));
-}
-
-/* ---------- atmosphere: a soft color-accent wash on top of the video --- */
-.atmosphere{
-  position:fixed; inset:0;
-  z-index:0;
-  pointer-events:none;
-  background:
-    radial-gradient(1200px 700px at 15% -10%, rgba(255,255,255,0.10), transparent 60%),
-    radial-gradient(900px 600px at 90% 10%, rgba(255,255,255,0.06), transparent 55%),
-    radial-gradient(1400px 900px at 50% 120%, rgba(255,255,255,0.05), transparent 60%);
-}
-
-/* ---- caustic light: a slow-drifting soft glow, like sunlight refracted
-   through a moving water surface. Cheap — one gradient, animated position. */
-.caustics{
-  position:fixed; inset:0;
-  z-index:0;
-  pointer-events:none;
-  opacity:0.22;
-  background:
-    radial-gradient(60% 40% at 30% 20%, rgba(255,255,255,0.14), transparent 60%),
-    radial-gradient(50% 35% at 75% 60%, rgba(255,255,255,0.10), transparent 65%);
-  background-size:160% 160%;
-  animation:causticDrift 26s ease-in-out infinite alternate;
-}
-@keyframes causticDrift{
-  0%{ background-position:0% 0%, 100% 100%; }
-  100%{ background-position:20% 15%, 80% 85%; }
-}
-
-/* ---- rising bubbles: a handful of fixed particles drifting upward,
-   injected once by ocean.js. Pure CSS transform/opacity — GPU-friendly. */
-.bubbles{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-.bubble{
-  position:absolute; bottom:-8%;
-  width:var(--bs, 6px); height:var(--bs, 6px);
-  border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 70%, transparent 75%);
-  animation:bubbleRise var(--bd, 18s) linear infinite;
-  animation-delay:var(--bt, 0s);
-  opacity:0;
-}
-@keyframes bubbleRise{
-  0%{ transform:translateY(0) translateX(0); opacity:0; }
-  8%{ opacity:0.55; }
-  92%{ opacity:0.4; }
-  100%{ transform:translateY(-108vh) translateX(var(--bx, 20px)); opacity:0; }
-}
-@media (prefers-reduced-motion: reduce){
-  .caustics, .bubble{ animation:none; opacity:0.15; }
-}
-/* The water shader applies grain per-pixel to the image itself, so the flat
-   CSS overlay would double up on top of it — drop it when the shader runs. */
-html.gl-active .grain{ display:none; }
-.grain{
-  position:fixed; inset:-10%;
-  z-index:1;
-  pointer-events:none;
-  opacity:0.05;
-  mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:160px 160px;
-}
-
-main, header, footer{ position:relative; z-index:2; }
-
-/* ---------- progress rail: a hairline depth gauge down the right edge --- */
-.progress-rail{
-  position:fixed; top:0; right:0; bottom:0; width:2px;
-  z-index:40;
-  background:rgba(255,255,255,0.08);
-  pointer-events:none;
-}
-.progress-rail span{
-  display:block; width:100%; height:100%;
-  transform:scaleY(0);
-  transform-origin:top center;
-  background:linear-gradient(180deg, var(--signal), var(--signal-dim) 70%, var(--navy));
-  box-shadow:0 0 12px rgba(255,255,255,0.5);
-}
-@media (max-width:700px){ .progress-rail{ width:1px; } }
-
-/* ---------- character-level text splitting ----------
-   The per-word box only clips while its letters are actually sliding in.
-   Left clipping permanently it would also cut off the heading's soft
-   text-shadow at the word boundary, drawing a hard rectangle behind every
-   word — visible as boxes over bright water. */
-.split-word{ display:inline-block; vertical-align:top; }
-.is-masking .split-word{ overflow:hidden; }
-.char{ display:inline-block; will-change:transform, opacity; }
-
-/* ---------- depth HUD ---------- */
-.depth-hud{
-  /* Bottom-right, not bottom-left: the scroll cue lives on the left, and the
-     readout grew from "0m" to a layer and a name, which is wide enough that
-     the two sat on top of each other.
-     No panel, no blur, no border — it is a readout, and the brief's "less UI"
-     is exactly right here. Type on the environment reads as instrumentation;
-     the same type in a glass box reads as a widget. */
-  position:fixed; right:22px; bottom:20px; z-index:40;
-  display:flex; align-items:baseline; gap:10px;
-  font-family:var(--font-mono);
-  pointer-events:none;
-  text-shadow:0 2px 14px rgba(0,0,0,0.9);
-}
-.depth-hud span{ font-size:0.62rem; letter-spacing:0.16em; color:var(--ink-faint); }
-.depth-hud strong{
-  font-size:0.78rem; color:var(--signal); font-weight:500;
-  font-variant-numeric:tabular-nums; letter-spacing:0.08em;
-}
-/* The name is what makes the number mean something. It changes rarely, so a
-   transition on it reads as the system reporting a state change rather than
-   as decoration. */
-.depth-hud-name{
-  font-size:0.62rem; letter-spacing:0.16em;
-  color:var(--ink-soft) !important;
-  transition:opacity 0.35s var(--ease-move);
-}
-@media (max-width:700px){ .depth-hud{ display:none; } }
-
-/* ---------- nav ---------- */
-/* The nav sits above sections that swing from pure white to near-black as
-   the page dives, so it carries its own permanent dark glass surface and
-   fixed (non-theme) text colors instead of inheriting per-section theme —
-   it needs to stay legible over every depth, not blend into one. */
-.nav{
-  position:fixed; top:0; left:0; right:0; z-index:50;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px clamp(20px, 4vw, 48px);
-  margin:12px clamp(12px, 3vw, 32px) 0;
-  border-radius:16px;
-  background:rgba(0,0,0,0.55);
-  backdrop-filter:blur(14px) saturate(140%);
-  border:1px solid rgba(255,255,255,0.14);
-  transition:background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
-}
-.nav.is-scrolled{
-  background:rgba(0,0,0,0.78);
-  border-color:rgba(255,255,255,0.22);
-  box-shadow:0 12px 40px -18px rgba(0,0,0,0.6);
-}
-.nav-brand{
-  font-family:var(--font-display);
-  font-weight:600;
-  font-size:1.1rem;
-  letter-spacing:0.01em;
-  text-decoration:none;
-  color:#FFFFFF;
-}
-.nav-brand span{ color:var(--signal); }
-.nav-links{
-  display:flex; gap:32px;
-  list-style:none; margin:0; padding:0;
-}
-.nav-links a{
-  position:relative;
-  font-family:var(--font-mono);
-  font-size:0.8rem;
-  letter-spacing:0.04em;
-  text-decoration:none;
-  color:#A8A8A8;
-  padding:4px 0;
-  transition:color 0.3s ease;
-}
-.nav-links a::after{
-  content:""; position:absolute; left:0; right:100%; bottom:0; height:1px;
-  background:var(--signal);
-  transition:right 0.35s var(--ease-out);
-}
-.nav-links a:hover, .nav-links a.is-active{ color:#FFFFFF; }
-.nav-links a:hover::after, .nav-links a.is-active::after{ right:0; }
-.nav-cta{
-  font-family:var(--font-mono);
-  font-size:0.78rem;
-  border:1px solid var(--line-strong);
-  padding:9px 16px;
-  border-radius:999px;
-  text-decoration:none;
-  transition:border-color 0.3s ease, background 0.3s ease;
-}
-.nav-cta:hover{ border-color:var(--accent); background:rgba(255,255,255,0.08); }
-.nav-toggle{
-  display:none;
-  width:36px; height:36px;
-  border:1px solid var(--line-strong);
-  border-radius:8px;
-  background:none;
-  color:var(--ink);
-  align-items:center; justify-content:center;
-  cursor:pointer;
-}
-.nav-toggle svg{ width:16px; height:16px; }
-
-@media (max-width:820px){
-  .nav-links{ display:none; }
-  a.nav-cta{ display:none; }
-  .nav-toggle{ display:inline-flex; }
-}
-
-.mobile-menu{
-  position:fixed; inset:0; z-index:49;
-  background:rgba(0,0,0,0.98);
-  display:flex; flex-direction:column;
-  justify-content:center; gap:22px;
-  padding:24px 32px;
-  transform:translateY(-100%);
-  transition:transform 0.5s var(--ease-out);
-}
-.mobile-menu.is-open{ transform:translateY(0); }
-.mobile-menu a{
-  font-family:var(--font-display);
-  font-size:2rem;
-  text-decoration:none;
-  color:var(--ink);
-}
-
-/* ---------- hero ---------- */
-.hero{
-  position:relative;
-  min-height:100svh;
-  display:flex; flex-direction:column; justify-content:center;
-  padding-top:96px;
-}
-.hero-fallback{
-  position:absolute; inset:0;
-  z-index:0;
-  pointer-events:none;
-  background:
-    radial-gradient(560px 560px at 72% 42%, rgba(255,255,255,0.28), transparent 70%),
-    radial-gradient(420px 420px at 30% 60%, rgba(255,255,255,0.20), transparent 70%);
-  filter:blur(2px);
-}
-.hero-content{ position:relative; z-index:2; }
-.hero .eyebrow{ margin-bottom:26px; }
-.hero h1{
-  font-size:clamp(2.8rem, 8.4vw, 7.4rem);
-  font-weight:500;
-  line-height:0.96;
-  letter-spacing:-0.018em;
-  max-width:17ch;
-}
-.hero h1 .split-line{ display:block; }
-.hero h1.is-masking .split-line{ overflow:hidden; }
-.hero h1 .split-line > span{ display:inline-block; letter-spacing:0.01em; }
-.hero h1 em{
-  font-style:italic; font-weight:400;
-  color:#FFFFFF;
-  text-shadow:none;
-  filter:drop-shadow(0 0 26px rgba(255,255,255,0.45)) drop-shadow(0 3px 14px rgba(0,0,0,0.75));
-}
-.hero-sub{
-  display:grid;
-  grid-template-columns:1.1fr 1fr;
-  gap:40px;
-  margin-top:44px;
-  padding:26px clamp(20px,3vw,32px);
-  max-width:820px;
-}
-.hero-sub p{ font-size:1.05rem; line-height:1.6; color:var(--ink-soft); max-width:38ch; }
-.hero-meta{
-  display:flex; flex-direction:column; gap:10px;
-  font-family:var(--font-mono);
-  font-size:0.85rem; color:var(--ink-soft);
-}
-.hero-meta strong{ color:var(--ink); font-weight:500; }
-.scroll-indicator{
-  position:absolute; left:24px; bottom:34px; z-index:2;
-  display:flex; align-items:center; gap:12px;
-  font-family:var(--font-mono);
-  font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
-  color:var(--ink-faint);
-}
-.scroll-indicator .rail{
-  width:1px; height:38px;
-  background:var(--line-strong);
-  position:relative; overflow:hidden;
-}
-.scroll-indicator .rail::after{
-  content:""; position:absolute; top:-100%; left:0; width:100%; height:100%;
-  background:var(--accent);
-  animation:railDrop 2.2s ease-in-out infinite;
-}
-@keyframes railDrop{
-  0%{ top:-100%; } 60%{ top:100%; } 100%{ top:100%; }
-}
-@media (max-width:700px){ .hero-sub{ grid-template-columns:1fr; } }
-
-/* ---------- hero -> 01 handoff: the first scroll of the dive ----------
-   Pure CSS, driven by animation-timeline: view() rather than a scroll
-   listener — the hero submerges (tips and sinks away in 3D) across exactly
-   the scroll distance it takes to leave the viewport, and the identity
-   section blooms as it surfaces, both scrubbed straight off native scroll
-   position with no main-thread cost. Unsupported browsers (Safari/Firefox
-   without view() as of this writing) and reduced motion both simply keep
-   today's plain scroll — nothing here has a fallback to wire because
-   nothing is required to run. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .hero{ perspective: 1400px; }
-    .hero-content{
-      transform-origin: 50% 0%;
-      /* Longhands rather than the `animation` shorthand: the build's CSS
-         minifier folds `animation-timeline` into the shorthand as a
-         trailing `view()` value, and Chromium fails to parse the result,
-         silently dropping the whole declaration. */
-      animation-name: hero-submerge;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: view();
-      animation-range: exit;
-    }
-    @keyframes hero-submerge{
-      0%{ transform: translateY(0) scale(1) rotateX(0deg); filter: blur(0px); opacity: 1; }
-      100%{ transform: translateY(7vh) scale(0.9) rotateX(22deg); filter: blur(12px); opacity: 0.12; }
-    }
-  }
-}
-
-/* ---------- section shell ---------- */
-section{ position:relative; padding-block:min(14vw, 128px); border-top:1px solid var(--line); }
-
-/* ---------- sections sit inside the world, not on top of it ----------
-   The cinematic video is the environment now, so every section is
-   transparent — content floats over whatever depth the dive has reached,
-   with .scrim (above, depth-modulated) doing the legibility work instead
-   of a flat per-section background color. */
-section{ background:transparent; border-top-color:transparent; }
-footer.site-foot{ background:var(--void); }
-.section-head{
-  display:flex; justify-content:space-between; align-items:baseline;
-  gap:24px; margin-bottom:56px; flex-wrap:wrap;
-}
-.section-head h2{
-  font-size:clamp(1.9rem, 4vw, 3rem);
-  font-weight:500;
-}
-
-/* ---------- reveal system (JS-driven via GSAP, CSS defines rest state) --- */
-.split-line{ display:inline-block; vertical-align:top; }
-.is-masking .split-line{ overflow:hidden; }
-.split-line > span{ display:inline-block; will-change:transform, opacity; }
-.reveal-up{ opacity:0; transform:translateY(28px); }
-.reveal-mask{ clip-path:inset(0 0 100% 0); }
-@media (prefers-reduced-motion: reduce){
-  .reveal-up, .split-line > span{ opacity:1 !important; transform:none !important; }
-  .reveal-mask{ clip-path:none !important; }
-  .rail::after{ animation:none; }
-}
-
-/* ---------- intro ---------- */
-.intro-grid{ display:grid; grid-template-columns:0.9fr 1.4fr; gap:48px; align-items:start; }
-.intro-grid .lede{
-  font-family:var(--font-display);
-  font-size:clamp(1.5rem, 2.6vw, 2.1rem);
+  color:var(--text);
+  font-family:var(--font-main);
+  font-size:var(--fs-body);
+  line-height:1.4;
   font-weight:400;
-  line-height:1.35;
-  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:clip;
 }
-.intro-grid .lede em{ color:var(--accent); font-style:normal; }
-.intro-copy{ display:flex; flex-direction:column; gap:18px; color:var(--ink-soft); font-size:1rem; line-height:1.7; max-width:52ch; }
-@media (max-width:820px){ .intro-grid{ grid-template-columns:1fr; } }
+h1,h2,h3,h4,h5,h6{ margin:0; font-weight:400; font-size:inherit; line-height:1.1; }
+p{ margin:0; }
+ul,ol{ margin:0; padding:0; list-style:none; }
+a{ color:inherit; text-decoration:none; }
+img,svg,video,canvas{ display:block; max-width:100%; }
+button{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; }
+::selection{ background:var(--text); color:var(--bg); }
 
-/* ---------- horizontal project gallery ---------- */
-.gallery-pin{ height:100vh; }
-.gallery-viewport{ overflow:hidden; height:100%; display:flex; align-items:center; }
-.gallery-track{
+/* Focus is visible and it is the accent's other job. Editorial restraint
+   never extends to hiding where the keyboard is. */
+:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+/* ---------- grid ----------
+   `.grid` is the only layout primitive. A child names the columns it
+   spans with --c (span) and --s (start), and nothing in this design is
+   positioned any other way. */
+.bleed{ padding-inline:var(--margin); }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(var(--cols), minmax(0, 1fr));
+  column-gap:var(--gutter);
+}
+.grid > *{ grid-column:span var(--c, var(--cols)) / span var(--c, var(--cols)); }
+.grid > [style*="--s"]{ grid-column:var(--s) / span var(--c, 1); }
+
+/* ---------- type roles ---------- */
+.t-hero{
+  font-family:var(--font-main);
+  font-size:var(--fs-hero);
+  font-weight:700;
+  line-height:0.84;
+  letter-spacing:-0.045em;
+}
+.t-xl{ font-family:var(--font-mono); font-size:var(--fs-xl); font-weight:400; line-height:1.4; }
+.t-lg{ font-family:var(--font-main); font-size:var(--fs-lg); line-height:1.1; letter-spacing:-0.01em; }
+.t-md{ font-family:var(--font-mono); font-size:var(--fs-md); font-weight:400; line-height:1.1; letter-spacing:-0.02em; }
+.t-counter{ font-family:var(--font-mono); font-size:var(--fs-counter); font-weight:400; font-variant-numeric:tabular-nums; letter-spacing:-0.02em; }
+.t-body{ font-size:var(--fs-body); line-height:1.4; max-width:62ch; }
+
+/* Micro UI. The two smallest sizes are the reason --font-tech exists:
+   they are set in caps, tracked wide, and are never anything but metadata. */
+.t-label{
+  font-family:var(--font-tech);
+  font-size:var(--fs-label);
+  line-height:1.2;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+}
+.t-tiny{
+  font-family:var(--font-tech);
+  font-size:var(--fs-tiny);
+  line-height:1.3;
+  text-transform:uppercase;
+  letter-spacing:0.14em;
+  color:var(--muted);
+}
+.t-muted{ color:var(--muted); }
+.t-accent{ color:var(--accent); }
+
+/* ---------- the rule ----------
+   One border width exists. `.rule` is the horizontal line between
+   sections and rows; it animates from zero width on reveal. */
+.rule{
+  border:0;
+  height:1px;
+  background:var(--line);
+  width:100%;
+  transform-origin:left center;
+}
+
+/* ---------- section label ----------
+   Every section is announced the same way: number, slash, name. This is
+   the page's spine — it is how a reader always knows where they are. */
+.section{ padding-block:clamp(80px, 11vh, 160px); position:relative; }
+.section-label{
   display:flex;
-  gap:32px;
-  will-change:transform;
+  align-items:baseline;
+  gap:10px;
+  color:var(--text);
+  margin-bottom:clamp(28px, 4vh, 56px);
 }
-.project-card{
-  position:relative;
-  flex:0 0 min(78vw, 620px);
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:36px;
-  display:flex; flex-direction:column; gap:20px;
-  overflow:hidden;
-}
-.project-card::before{
-  content:""; position:absolute; inset:0;
-  background:linear-gradient(140deg, rgba(255,255,255,0.08), transparent 55%);
-  opacity:0; transition:opacity 0.5s ease;
-}
-.project-card:hover::before{ opacity:1; }
-.project-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
-.project-num{ font-family:var(--font-mono); color:var(--ink-faint); font-size:0.85rem; }
-.project-tag{
-  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase;
-  color:var(--accent); background:rgba(255,255,255,0.09); padding:5px 10px; border-radius:999px; width:fit-content;
-}
-/* ---------- the machine diagram ----------
-   Every project is stated as input -> process -> decision -> output, and the
-   whole thing wakes in sequence on hover or keyboard focus.
+.section-label b{ font-weight:400; font-family:var(--font-mono); font-size:var(--fs-label); }
 
-   It is pure CSS. The sequencing is a per-stage transition-delay driven by a
-   --stage index set in the markup, so the "system coming alive" costs one
-   class change and no JavaScript at all — nothing to schedule, nothing to
-   tear down between view transitions, and it keeps working if the bundle
-   never arrives. ---- */
-.machine{
-  list-style:none; margin:0; padding:0;
-  display:flex; flex-direction:column; gap:0;
-  position:relative;
-}
-.machine-stage{
-  display:grid;
-  grid-template-columns:82px 1fr;
-  gap:14px; align-items:baseline;
-  padding:9px 0 9px 18px;
-  position:relative;
-}
-/* The spine: one line running the height of the diagram, with each stage's
-   node sitting on it. Drawn per stage rather than as one element so the
-   travelling highlight can be staggered down it. */
-.machine-stage::before{
-  content:""; position:absolute;
-  left:3px; top:0; bottom:0;
-  width:1px;
-  background:var(--line-strong);
-}
-.machine-stage:first-child::before{ top:50%; }
-.machine-stage:last-child::before{ bottom:50%; }
-.machine-stage::after{
-  content:""; position:absolute;
-  left:0; top:calc(50% - 3.5px);
-  width:7px; height:7px; border-radius:50%;
-  background:var(--slate);
-  border:1px solid var(--line-strong);
-  transition:
-    background-color 0.4s var(--ease-move),
-    border-color 0.4s var(--ease-move),
-    box-shadow 0.4s var(--ease-move);
-  /* Staggered: the signal reaches each stage in turn rather than the whole
-     diagram lighting at once, which is the difference between "a system
-     running" and "a hover state". */
-  transition-delay:calc(var(--stage) * 90ms);
-}
-.machine-key{
-  font-family:var(--font-mono);
-  font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase;
-  color:var(--ink-faint);
-  transition:color 0.4s var(--ease-move);
-  transition-delay:calc(var(--stage) * 90ms);
-}
-.machine-value{
-  font-size:0.86rem; line-height:1.45;
-  color:var(--ink-soft);
-  transition:color 0.4s var(--ease-move);
-  transition-delay:calc(var(--stage) * 90ms);
-}
-/* Focus-within, not just hover: the cards are links, so a keyboard user
-   reaching one gets the same behaviour rather than a static version of it. */
-.project-card:hover .machine-stage::after,
-.project-card:focus-within .machine-stage::after{
-  background:var(--signal);
-  border-color:var(--signal);
-  box-shadow:0 0 0 4px rgba(255,255,255,0.12);
-}
-.project-card:hover .machine-key,
-.project-card:focus-within .machine-key{ color:var(--signal-dim); }
-.project-card:hover .machine-value,
-.project-card:focus-within .machine-value{ color:var(--ink); }
-
-/* The decision stage is the one that says something about judgement rather
-   than plumbing, so it is the only one that gets the warm accent — reserved
-   for exactly this across the whole palette. */
-.project-card:hover .machine-stage:nth-child(3)::after,
-.project-card:focus-within .machine-stage:nth-child(3)::after{
-  background:var(--signal-warm);
-  border-color:var(--signal-warm);
-  box-shadow:0 0 0 4px rgba(255,255,255,0.12);
-}
-
-@media (prefers-reduced-motion: reduce){
-  .machine-stage::after, .machine-key, .machine-value{
-    transition:none; transition-delay:0s;
-  }
-}
-
-.project-visual{
-  aspect-ratio:16/10; border-radius:14px;
-  border:1px solid var(--line-strong);
-  background:
-    repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 16px),
-    linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
-  position:relative; overflow:hidden;
-  transition:transform 0.6s var(--ease-out);
-}
-.project-card:hover .project-visual{ transform:scale(1.03); }
-.project-visual::after{
-  content:attr(data-label);
-  position:absolute; bottom:14px; left:14px;
-  font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase;
-  color:var(--ink-soft);
-  background:rgba(0,0,0,0.55); border:1px solid var(--line-strong);
-  padding:5px 10px; border-radius:6px;
-}
-.project-card h3{ font-size:1.5rem; font-weight:500; }
-.project-card p{ font-size:0.94rem; line-height:1.55; color:var(--ink-soft); max-width:46ch; }
-.project-impact{
-  font-family:var(--font-mono); font-size:0.8rem; color:var(--accent);
-  border-left:2px solid var(--accent); padding-left:10px;
-}
-.project-stack{ display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; }
-.project-stack span{
-  font-family:var(--font-mono); font-size:0.7rem; color:var(--ink-soft);
-  border:1px solid var(--line); padding:4px 9px; border-radius:999px;
-}
-.gallery-progress{
-  position:relative; height:1px; background:var(--line); margin-top:28px; max-width:1180px; margin-inline:auto;
-}
-.gallery-progress-bar{
-  position:absolute; left:0; top:0; height:100%; width:0%;
-  background:linear-gradient(90deg, var(--accent), var(--accent-2));
-}
-@media (max-width:760px){
-  .gallery-pin{ height:auto; }
-  .gallery-viewport{ height:auto; overflow-x:auto; scroll-snap-type:x mandatory; padding-block:8px; }
-  .gallery-track{ transform:none !important; }
-  .project-card{ flex:0 0 88vw; scroll-snap-align:start; }
-}
-
-/* ---------- spotlight case study ---------- */
-.spotlight{ display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
-.spotlight-visual{
-  aspect-ratio:4/3; border-radius:20px;
-  border:1px solid var(--line-strong);
-  background:linear-gradient(150deg, rgba(255,255,255,0.12), rgba(255,255,255,0.10));
-  position:relative; overflow:hidden;
-}
-.spotlight-stat{
-  position:absolute; left:24px; bottom:24px;
-  font-family:var(--font-display); font-size:2.4rem; color:var(--ink);
-}
-.spotlight-stat small{
-  display:block; font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.08em;
-  text-transform:uppercase; color:var(--ink-soft); margin-top:4px;
-}
-.spotlight-copy .eyebrow{ margin-bottom:18px; }
-.spotlight-copy h3{ font-size:clamp(1.6rem, 3vw, 2.3rem); margin-bottom:16px; font-weight:500; }
-.spotlight-copy p{ color:var(--ink-soft); line-height:1.7; max-width:48ch; }
-@media (max-width:820px){ .spotlight{ grid-template-columns:1fr; } }
-
-/* ---------- tech / experiments ---------- */
-.tech-cloud{ display:flex; flex-wrap:wrap; gap:12px; }
-.tech-chip{
-  font-family:var(--font-mono); font-size:0.82rem;
-  border:1px solid var(--line-strong); border-radius:999px;
-  padding:9px 18px;
-  transition:border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-}
-.tech-chip:hover{ border-color:var(--accent); color:var(--accent); transform:translateY(-2px); }
-.tech-note{ margin-top:32px; max-width:56ch; color:var(--ink-soft); line-height:1.7; }
-
-/* ---------- experience timeline ---------- */
-.timeline{ display:flex; flex-direction:column; }
-.timeline-row{
-  display:grid; grid-template-columns:140px 1fr; gap:28px;
-  padding-block:28px; border-top:1px solid var(--line);
-}
-.timeline-row:first-child{ border-top:none; }
-.timeline-when{ font-family:var(--font-mono); font-size:0.82rem; color:var(--ink-faint); }
-.timeline-row h3{ font-size:1.2rem; font-weight:500; margin-bottom:8px; }
-.timeline-row p{ color:var(--ink-soft); line-height:1.6; max-width:56ch; }
-@media (max-width:560px){ .timeline-row{ grid-template-columns:1fr; gap:6px; } }
-
-/* ---------- contact / final cta ---------- */
-.contact{ text-align:center; }
-.contact h2{
-  font-size:clamp(2rem, 6vw, 4rem);
-  font-weight:500; max-width:16ch; margin-inline:auto;
-}
-.contact-link{
-  display:inline-flex; align-items:center; gap:12px;
-  margin-top:36px;
-  font-family:var(--font-mono); font-size:1rem;
-  text-decoration:none; color:var(--ink);
-  border:1px solid var(--line-strong); border-radius:999px;
-  padding:16px 28px;
-}
-.contact-link:hover{ border-color:var(--accent); color:var(--accent); }
-
-.final-cta{ text-align:center; border-top:1px solid var(--line); }
-.final-cta h2{
-  font-size:clamp(2.2rem, 8vw, 5.5rem);
-  font-weight:500; line-height:1.02;
-}
-.final-cta h2 em{
-  font-style:italic; font-weight:400;
-  color:#FFFFFF;
-  text-shadow:none;
-  filter:drop-shadow(0 0 26px rgba(255,255,255,0.45)) drop-shadow(0 3px 14px rgba(0,0,0,0.75));
-}
-
-footer.site-foot{
-  padding-block:36px 48px;
-  display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;
-  font-family:var(--font-mono); font-size:0.75rem; color:var(--ink-faint);
-}
-
-/* ---------- magnetic + cursor ---------- */
-.magnetic{ display:inline-flex; will-change:transform; }
-.cursor-dot, .cursor-ring{
-  position:fixed; top:0; left:0; z-index:80;
-  pointer-events:none;
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-  transition:opacity 0.25s ease;
-}
-.cursor-dot{ width:6px; height:6px; background:var(--accent); }
-.cursor-ring{
-  width:34px; height:34px;
-  border:1px solid var(--line-strong);
-  display:flex; align-items:center; justify-content:center;
-  backdrop-filter:blur(2px);
-  transition:
-    width 0.35s var(--ease-out), height 0.35s var(--ease-out),
-    border-color 0.3s ease, background 0.3s ease, opacity 0.25s ease;
-}
-.cursor-ring.is-active{
-  width:62px; height:62px;
-  border-color:var(--accent);
-  background:rgba(255,255,255,0.07);
-}
-.cursor-ring.has-label{ width:86px; height:86px; background:rgba(255,255,255,0.12); }
-.cursor-label{
-  font-family:var(--font-mono);
-  font-size:0.56rem; letter-spacing:0.14em; text-transform:uppercase;
-  color:var(--accent);
-  opacity:0; transform:scale(0.85);
-  transition:opacity 0.25s ease, transform 0.25s var(--ease-out);
-}
-.cursor-ring.has-label .cursor-label{ opacity:1; transform:scale(1); }
-body.cursor-hidden .cursor-dot, body.cursor-hidden .cursor-ring{ opacity:0; }
-html.no-hover .cursor-dot, html.no-hover .cursor-ring{ display:none; }
-
-/* ============================================================
-   SECTION 02 — IDENTITY: shallow-water technical scanner interface
-   ============================================================ */
-.identity-section{ position:relative; overflow:hidden; }
-.id-grid{
-  position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.5;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-  background-size:42px 42px;
-  mask-image:radial-gradient(circle at 30% 30%, black, transparent 75%);
-}
-.id-scanline{
-  position:absolute; left:0; right:0; top:0; height:120px; z-index:1; pointer-events:none;
-  background:linear-gradient(180deg, transparent, rgba(255,255,255,0.16), transparent);
-}
-.id-console{ padding:clamp(20px,4vw,32px); max-width:640px; }
-.id-terminal{
-  font-family:var(--font-mono);
-  display:flex; flex-direction:column; gap:8px;
-  position:relative; z-index:2;
-}
-.id-line{
-  font-size:0.92rem; color:var(--accent);
-  min-height:1.4em;
-}
-.id-line:nth-child(2){ color:var(--ink); font-size:1.1rem; }
-.id-tags{
-  display:flex; flex-wrap:wrap; gap:10px;
-  margin-top:32px; position:relative; z-index:2;
-}
-.id-tag{
-  font-family:var(--font-mono); font-size:0.74rem; letter-spacing:0.06em;
-  color:var(--ink-soft); border:1px solid var(--line-strong); border-radius:6px;
-  padding:8px 14px; opacity:0;
-}
-.identity-section .intro-copy{
-  margin-top:36px; position:relative; z-index:2; max-width:60ch;
-  color:var(--ink-soft); line-height:1.7;
-  padding:clamp(18px,3vw,26px);
-}
-
-/* Part of the hero -> 01 handoff above: a soft light bloom that plays as
-   this section's top edge enters the viewport (animation-range: entry). */
-.id-surface-bloom{
-  position:absolute; inset:0; z-index:1; pointer-events:none;
-  background:radial-gradient(60% 50% at 50% 0%, rgba(255,255,255,0.55), transparent 70%);
-  opacity:0; transform:scale(0.5);
-}
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .id-surface-bloom{
-      animation-name: id-bloom;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: view();
-      animation-range: entry;
-    }
-    @keyframes id-bloom{
-      0%{ opacity:0; transform:scale(0.5); }
-      45%{ opacity:0.8; transform:scale(1.05); }
-      100%{ opacity:0; transform:scale(1.3); }
-    }
-  }
-}
-
-/* ============================================================
-   SECTION 03 — SKILL MATRIX: canvas node network
-   ============================================================ */
-.skill-stage{
-  /* Two columns, so the network and its readout never share space. An
-     overlaid panel was tried first and the problem is structural rather
-     than positional: wherever it sits, the nodes are laid out across the
-     whole stage, so it covers some of them — and moving it only changes
-     which ones. Often including the node it was describing. */
-  display:grid;
-  grid-template-columns:1fr minmax(240px, 300px);
-  gap:32px;
+/* ---------- link ----------
+   Text steps left, arrow steps right. The arrow is present in the DOM at
+   rest so the row never reflows on hover. */
+.link{
+  display:inline-flex;
   align-items:center;
-  height:min(78vh, 620px);
-  margin-top:8px;
-  padding-inline:24px;
-  border-top:1px solid var(--line);
-  border-bottom:1px solid var(--line);
+  gap:6px;
+  position:relative;
 }
-.skill-field{ position:relative; height:100%; }
-@media (max-width:900px){
-  .skill-stage{ grid-template-columns:1fr; height:auto; padding-block:24px; }
-  .skill-field{ height:min(60vh, 420px); }
+.link > span{ transition:transform var(--t-hover) var(--ease); }
+.link > i{
+  font-style:normal;
+  opacity:0;
+  transform:translateX(-6px);
+  transition:opacity var(--t-hover) var(--ease), transform var(--t-hover) var(--ease);
 }
-.skill-stage canvas{ position:absolute; inset:0; width:100%; height:100%; }
+.link:hover > span, .link:focus-visible > span{ transform:translateX(-4px); }
+.link:hover > i, .link:focus-visible > i{ opacity:1; transform:translateX(0); }
 
-/* ---------- the network's nodes ----------
-   Real buttons over the canvas. The layer itself is transparent to the
-   pointer so that only the nodes are targets, and the stage behind them
-   stays free for the environment to show through. ---- */
-.skill-nodes{ position:absolute; inset:0; pointer-events:none; }
-.skill-node{
-  position:absolute; top:0; left:0;
-  /* A real hit area, not just a dot. The visual node is as small as 8px, and
-     a control that size is unusable with a finger and fiddly with a mouse —
-     so the button is a 44px box (the WCAG target-size floor) centred on the
-     point, with the dot drawn in the middle of it. */
-  width:44px; height:44px;
-  margin-left:-22px; margin-top:-22px;
-  padding:0; border:0; background:none;
-  pointer-events:auto;
-  cursor:pointer;
-  font:inherit; color:inherit;
-  will-change:transform;
+/* ---------- dark section ----------
+   The one inversion in the system. Inside it the rule, the muted grey and
+   the body text all flip, so a dark block is the same design rather than a
+   second one. */
+.on-dark{
+  background:var(--dark);
+  color:var(--bg);
+  --line: var(--line-dark);
+  --muted: rgba(244,244,244,0.45);
 }
-.skill-node-dot{
-  position:absolute; left:50%; top:50%;
-  width:var(--node-size); height:var(--node-size);
-  transform:translate(-50%, -50%);
-  border-radius:50%;
-  background:rgba(255,255,255,0.82);
-  box-shadow:0 0 0 0 rgba(255,255,255,0.5);
-  transition:
-    background-color 0.35s var(--ease-move),
-    box-shadow 0.45s var(--ease-move),
-    opacity 0.35s var(--ease-move);
+
+.skip-link{
+  position:fixed; top:8px; left:8px; z-index:1000;
+  background:var(--text); color:var(--bg);
+  padding:10px 14px;
+  transform:translateY(-200%);
+  transition:transform var(--t-micro) var(--ease);
 }
-.skill-node-label{
-  position:absolute; left:50%; top:50%;
-  transform:translate(-50%, calc(-50% - var(--node-size) - 16px));
-  white-space:nowrap;
-  font-family:var(--font-mono);
-  font-size:0.66rem; letter-spacing:0.13em;
-  color:var(--ink-soft);
-  text-shadow:0 2px 12px rgba(0,0,0,0.95);
-  transition:color 0.35s var(--ease-move), opacity 0.35s var(--ease-move);
-}
-/* Three states, and the dimming is the one doing the real work: a brighter
-   node says "this one", but only the others receding answers "and these are
-   what it connects to". */
-.skill-node.is-focused .skill-node-dot{
-  background:var(--signal);
-  box-shadow:0 0 0 7px rgba(255,255,255,0.14), 0 0 22px rgba(255,255,255,0.55);
-}
-.skill-node.is-focused .skill-node-label{ color:var(--ink); }
-.skill-node.is-related .skill-node-dot{ background:var(--signal); }
-.skill-node.is-related .skill-node-label{ color:var(--ink-soft); }
-.skill-node.is-dimmed .skill-node-dot{ opacity:0.22; }
-.skill-node.is-dimmed .skill-node-label{ opacity:0.22; }
-.skill-node:focus-visible{ outline:none; }
-.skill-node:focus-visible .skill-node-dot{
-  box-shadow:0 0 0 3px var(--void), 0 0 0 5px var(--signal), 0 0 24px rgba(255,255,255,0.6);
-}
+.skip-link:focus{ transform:translateY(0); }
+
 @media (prefers-reduced-motion: reduce){
-  .skill-node-dot, .skill-node-label{ transition:none; }
-}
-.skill-panel{
-  /* Its own column — see .skill-stage. */
-  position:relative; z-index:3;
-  background:rgba(0,0,0,0.78); backdrop-filter:blur(10px);
-  border:1px solid var(--line-strong); border-radius:14px;
-  padding:20px;
-  opacity:0; transform:translateY(8px);
-  transition:opacity 0.3s var(--ease-move), transform 0.3s var(--ease-move);
-  pointer-events:none;
-}
-.skill-panel.is-visible{ opacity:1; transform:translateY(0); }
-
-.skill-panel h3{ font-size:1.05rem; font-weight:600; margin-bottom:8px; letter-spacing:-0.01em; }
-.skill-panel p{ font-size:0.85rem; color:var(--ink-soft); line-height:1.5; }
-.skill-related{ margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
-/* The readout stays on small screens. It is the only place the network's
-   relationships are stated in words, so hiding it there would leave touch
-   users with a diagram and no key to it. */
-
-/* ---------- 02 -> 03 axis turn (sectionTransitions.js) ----------
-   .skill-stage and .gallery-viewport (below) are the two panels; this is
-   the seam between them, lit only while the turn is actually happening. */
-.skill-stage.is-turning, .gallery-viewport.is-turning{ will-change: transform, filter, opacity; }
-.axis-hinge{
-  position:absolute; top:0; bottom:0; left:50%; width:2px; margin-left:-1px;
-  background:linear-gradient(180deg, transparent, var(--accent), transparent);
-  opacity:0; transform:scaleY(0); transform-origin:center;
-  pointer-events:none; z-index:3; mix-blend-mode:screen;
+  *, *::before, *::after{
+    animation-duration:0.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important;
+    scroll-behavior:auto !important;
+  }
 }
 
 /* ============================================================
-   PROJECT WORLDS: each category gets a distinct visual treatment
-   while structure/typography stay TOBY-consistent.
+   HEADER
+   Four zones on one row: mark, position, sections, controls.
+   It is fixed, it is 1px tall at the bottom, and it never grows.
    ============================================================ */
-.project-card[data-world]{ transition:border-color 0.4s ease; }
+.hdr{
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  gap:clamp(16px, 3vw, 48px);
+  height:56px;
+  background:var(--bg);
+  border-bottom:1px solid var(--line);
+  /* The header is the one element allowed to sit above the page's own
+     colour changes, so it carries its own background rather than blurring
+     whatever is behind it. */
+}
+.hdr-mark{
+  font-family:var(--font-main);
+  font-weight:700;
+  font-size:14px;
+  letter-spacing:-0.03em;
+  color:var(--text);
+}
+.hdr-where{ display:flex; gap:6px; color:var(--text); }
+.hdr-nav{ margin-left:auto; }
+.hdr-nav ul{ display:flex; gap:clamp(14px, 2vw, 32px); }
+.hdr-nav a{ color:var(--text); }
+.hdr-end{ display:flex; align-items:center; gap:clamp(12px, 1.6vw, 24px); }
+.hdr-clock{ display:flex; gap:6px; }
+.hdr-clock time{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
 
-/* Each world gets its own accent, applied through one variable so the
-   miniature interface art, the tag and the hover border all agree. */
-.pv{ position:absolute; inset:0; padding:16px; display:flex; }
-[data-world-visual="control"]{ --pv: var(--signal); }
-[data-world-visual="bot"]{ --pv: #FFFFFF; }
-[data-world-visual="report"]{ --pv: #C9C9C9; }
-[data-world-visual="tracker"]{ --pv: #9E9E9E; }
-[data-world-visual="system"]{ --pv: #E4E4E4; }
-[data-world-visual="editorial"]{ --pv: #B4B4B4; }
+/* Below the desktop breakpoint the section list collapses into the menu:
+   eight items at 10px is a line of noise, not navigation. */
+@media (max-width: 1439.98px){
+  .hdr-nav{ display:none; }
+  .hdr-end{ margin-left:auto; }
+}
+@media (max-width: 809.98px){
+  .hdr-where, .hdr-year{ display:none; }
+}
 
-.pv-body{
-  flex:1; display:flex; flex-direction:column; gap:10px;
-  color:var(--pv);
+/* ---------- menu ---------- */
+.menu{
+  position:fixed; inset:0;
+  z-index:200;
+  display:grid;
+  align-items:center;
+  /* Closed is a clip, not a display:none — the panel has to be able to
+     animate out, and inert is what keeps it unreachable meanwhile. */
+  clip-path:inset(0 0 100% 0);
+  transition:clip-path var(--t-section) var(--ease);
+}
+.menu[data-open]{ clip-path:inset(0 0 0 0); }
+.menu-inner{ width:100%; display:grid; gap:clamp(24px, 5vh, 56px); }
+.menu-list{ display:grid; gap:clamp(4px, 1vh, 12px); }
+.menu-list a{ display:flex; align-items:baseline; gap:clamp(12px, 2vw, 28px); padding-block:4px; }
+.menu-word{ transition:transform var(--t-hover) var(--ease); display:inline-block; }
+.menu-list a:hover .menu-word, .menu-list a:focus-visible .menu-word{ transform:translateX(16px); }
+.menu-foot{ display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:16px; }
+
+/* ============================================================
+   HERO
+   A stacked wordmark in the left columns, the practice stated in
+   technical labels beside it, and the scroll cue on the baseline.
+   Nothing is centred and nothing is boxed.
+   ============================================================ */
+.hero{
+  min-height:100svh;
+  padding-top:56px;
+  display:grid;
+  align-content:space-between;
+  row-gap:clamp(32px, 6vh, 80px);
+  padding-bottom:clamp(20px, 4vh, 40px);
+}
+.hero-top{ padding-top:clamp(40px, 9vh, 120px); align-items:start; row-gap:clamp(24px, 4vh, 48px); }
+
+/* The slash is the page's first mark and it is set in the accent — the one
+   place on the whole page where the accent leads rather than supports. */
+.hero-slash{
   font-family:var(--font-mono);
-  min-width:0;
+  font-size:var(--fs-xl);
+  line-height:1;
+  color:var(--accent);
+  display:block;
+  margin-bottom:clamp(8px, 1.5vh, 20px);
 }
-.pv-head{ display:flex; align-items:center; gap:8px; font-size:0.58rem; letter-spacing:0.14em; }
-.pv-label{ color:rgba(255,255,255,0.72); }
-.pv-live{ margin-left:auto; color:var(--pv); opacity:0.9; }
-.pv-dot{
-  width:6px; height:6px; border-radius:50%; background:var(--pv);
-  box-shadow:0 0 0 0 color-mix(in srgb, var(--pv) 60%, transparent);
-  animation:pvPulse 2.4s ease-out infinite;
+.hero-mark{ display:block; }
+/* Each half of the wordmark is its own mask, so the characters rise out of
+   an edge rather than sliding over the page. `nowrap` is load-bearing: the
+   row is narrower than two characters at this size, and without it the
+   browser breaks TO / BY into four stacked letters. */
+.hero-row{ display:block; overflow:hidden; white-space:nowrap; }
+.hero-char{ display:inline-block; will-change:transform; }
+
+.hero-say{ display:grid; gap:2px; align-self:start; padding-top:clamp(40px, 8vh, 110px); }
+.hero-say p{ color:var(--text); }
+
+.hero-foot{ align-items:end; border-top:1px solid var(--line); padding-top:14px; }
+.hero-meta{ display:grid; gap:3px; }
+/* The index counter: the number is the counter, the unit beside it is
+   metadata and is set as metadata. */
+.hero-index{ display:flex; align-items:baseline; gap:8px; }
+.hero-index .unit{ font-family:var(--font-tech); font-size:var(--fs-label); letter-spacing:0.1em; }
+.hero-scroll{ display:flex; align-items:center; gap:8px; justify-self:end; }
+.hero-scroll .arrow{
+  display:inline-block;
+  animation:hero-nudge 2.4s var(--ease) infinite;
 }
-@keyframes pvPulse{
-  0%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--pv) 55%, transparent); }
-  70%{ box-shadow:0 0 0 7px transparent; }
-  100%{ box-shadow:0 0 0 0 transparent; }
+@keyframes hero-nudge{
+  0%, 100%{ transform:translateY(0); opacity:1; }
+  50%{ transform:translateY(5px); opacity:0.45; }
 }
 
-/* control — a live sales readout */
-.pv-spark{ flex:1; min-height:0; width:100%; color:var(--pv); opacity:0.85; }
-.pv-spark polyline{ stroke-dasharray:220; stroke-dashoffset:220; animation:pvDraw 2.6s var(--ease-out) forwards; }
-@keyframes pvDraw{ to{ stroke-dashoffset:0; } }
-.pv-stats{ display:flex; gap:18px; }
-.pv-stats b{ display:block; font-family:var(--font-display); font-size:1.1rem; color:#fff; font-weight:500; }
-/* These mock labels are decorative on the gallery card but render at a
-   readable size on the case-study page, where they have to clear the
-   contrast floor like any other visible text. */
-.pv-stats span{ font-size:0.54rem; letter-spacing:0.1em; color:rgba(255,255,255,0.62); }
+/* ---------- footer ----------
+   The footer restates the hero's mark at the other end of the document, in
+   the inverted block, so the page closes where it opened. */
+.foot{ padding-block:clamp(60px, 10vh, 120px) clamp(20px, 3vh, 32px); }
+.foot-top{ row-gap:clamp(32px, 6vh, 64px); align-items:start; }
+.foot-cols{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:clamp(20px, 3vw, 40px); }
+.foot-cols p:first-child{ margin-bottom:6px; }
+.foot-bottom{ margin-top:clamp(48px, 8vh, 96px); border-top:1px solid var(--line); padding-top:14px; }
+.foot-sign{ text-align:right; }
 
-/* bot — a worker queue draining */
-.pv-queue{ display:flex; flex-direction:column; gap:7px; justify-content:center; flex:1; }
-.pv-row{ display:flex; align-items:center; gap:8px; font-size:0.56rem; }
-.pv-id{ color:rgba(255,255,255,0.6); }
-.pv-bar{ flex:1; height:3px; background:rgba(255,255,255,0.1); border-radius:99px; overflow:hidden; }
-.pv-bar i{
-  display:block; height:100%; width:100%; background:var(--pv); border-radius:99px;
-  transform-origin:left center; transform:scaleX(0);
-  animation:pvFill 1.1s var(--ease-out) forwards;
-  animation-delay:calc(var(--i) * 0.22s);
-}
-.pv-row:last-child .pv-bar i{ animation:pvFillPartial 1.1s var(--ease-out) forwards; animation-delay:calc(var(--i) * 0.22s); opacity:0.5; }
-@keyframes pvFill{ to{ transform:scaleX(1); } }
-@keyframes pvFillPartial{ to{ transform:scaleX(0.35); } }
-.pv-state{ color:var(--pv); opacity:0.75; min-width:44px; text-align:right; }
-
-/* report — a document assembling itself */
-.pv-doc{ flex:1; display:flex; flex-direction:column; gap:7px; justify-content:center; }
-.pv-line{
-  height:4px; width:var(--w); border-radius:99px;
-  background:linear-gradient(90deg, color-mix(in srgb, var(--pv) 55%, transparent), rgba(255,255,255,0.08));
-  transform-origin:left center; transform:scaleX(0);
-  animation:pvFill 0.9s var(--ease-out) forwards;
-  animation-delay:calc(var(--i) * 0.12s);
-}
-.pv-table{ display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin-top:6px; }
-.pv-table span{ height:12px; border:1px solid rgba(255,255,255,0.12); border-radius:3px; }
-
-/* tracker — a log grid with the caught mistakes marked */
-.pv-count{ display:flex; align-items:baseline; gap:8px; }
-.pv-count b{ font-family:var(--font-display); font-size:1.6rem; color:#fff; font-weight:500; }
-.pv-count span{ font-size:0.54rem; letter-spacing:0.1em; color:rgba(255,255,255,0.45); }
-.pv-grid{ display:grid; grid-template-columns:repeat(14, 1fr); gap:4px; margin-top:auto; }
-.pv-grid span{ aspect-ratio:1; border-radius:2px; background:rgba(255,255,255,0.07); }
-.pv-grid span.is-hit{ background:var(--pv); box-shadow:0 0 8px color-mix(in srgb, var(--pv) 50%, transparent); }
-
-/* system — an auditable record list */
-.pv-records{ display:flex; flex-direction:column; gap:8px; justify-content:center; flex:1; }
-.pv-record{ display:flex; align-items:center; gap:10px; font-size:0.58rem; color:rgba(255,255,255,0.6); }
-.pv-record i{ flex:1; height:1px; background:rgba(255,255,255,0.12); }
-.pv-record b{ color:var(--pv); font-weight:500; }
-
-/* editorial — warm, print-like, deliberately unlike the others */
-.pv-editorial{ color:var(--pv); }
-.pv-menu-head{
-  font-family:var(--font-display); font-size:0.95rem; color:#fff;
-  letter-spacing:0.02em; border-bottom:1px solid rgba(255,255,255,0.25); padding-bottom:8px;
-}
-.pv-menu{ display:flex; flex-direction:column; gap:12px; justify-content:center; flex:1; }
-.pv-menu-row{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-size:0.85rem; color:rgba(255,255,255,0.8); }
-.pv-menu-row i{ flex:1; border-bottom:1px dotted rgba(255,255,255,0.35); }
-
-.project-card[data-world="editorial"]{ background:rgba(255,255,255,0.03); }
-.project-card[data-world="editorial"] .project-tag{ color:#B4B4B4; background:rgba(255,255,255,0.1); }
-.project-card[data-world="editorial"]:hover{ border-color:rgba(255,255,255,0.4); }
-.project-card[data-world="bot"]:hover{ border-color:#FFFFFF; }
-.project-card[data-world="tracker"]:hover{ border-color:#9E9E9E; }
-.project-card[data-world="report"]:hover{ border-color:#C9C9C9; }
-.project-card[data-world="control"]:hover{ border-color:var(--signal); }
+.section-rule{ flex:1; margin-left:clamp(12px, 2vw, 28px); align-self:center; }
 
 /* ============================================================
-   SECTION 05 — AUTOMATION FACTORY
+   SPLIT TEXT
+   Characters live inside word-level masks so a headline rises out
+   of an edge. The mask is on the word, not the line: it lets a
+   headline wrap without the mask cutting the descenders of the
+   line above it.
    ============================================================ */
-.pipeline-svg{ width:100%; height:auto; display:block; margin-bottom:8px; }
-.pipeline-stages{
-  display:grid; grid-template-columns:repeat(5, 1fr); gap:16px;
-  margin-top:-18px;
-}
-.pipeline-stage{ text-align:center; padding-inline:6px; }
-.pipeline-k{
-  font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.08em;
-  color:var(--accent); margin-bottom:8px;
-}
-.pipeline-stage p{ font-size:0.82rem; color:var(--ink-soft); line-height:1.5; }
-.pipeline-stats{
-  display:flex; gap:48px; margin-top:64px; flex-wrap:wrap;
-  border-top:1px solid var(--line); padding-top:36px;
-}
-.pipeline-stat-n{
-  font-family:var(--font-display); font-size:clamp(2rem, 4vw, 3rem); color:var(--ink);
-}
-.pipeline-stat-l{ font-family:var(--font-mono); font-size:0.76rem; color:var(--ink-soft); margin-top:4px; }
-@media (max-width:820px){
-  .pipeline-stages{ grid-template-columns:1fr 1fr; }
-  .pipeline-stats{ gap:32px; }
-}
-@media (max-width:520px){ .pipeline-stages{ grid-template-columns:1fr; } }
+.word{ display:inline-block; overflow:hidden; padding-bottom:0.12em; margin-bottom:-0.12em; vertical-align:top; }
+.char{ display:inline-block; will-change:transform; }
 
-/* ============================================================
-   SECTION 11 — TRANSMISSION terminal
-   ============================================================ */
-.transmission-section{ text-align:center; }
-.transmission-console{ display:inline-block; padding:clamp(24px,4vw,36px) clamp(28px,6vw,56px); }
-.transmission-status{
-  font-family:var(--font-mono); font-size:0.8rem; letter-spacing:0.08em;
-  color:var(--accent); margin-top:8px;
-}
-.transmission-bar-track{
-  width:min(420px, 100%); margin:16px auto 0; height:4px; border-radius:99px;
-  background:var(--line); overflow:hidden;
-}
-.transmission-bar{ height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
-.transmission-pct{ font-family:var(--font-mono); font-size:0.72rem; color:var(--ink-faint); margin-top:8px; }
-.transmission-tags{ margin-top:28px; }
-
-/* ============================================================
-   SECTION 12 — SHUTDOWN
-   ============================================================ */
-.shutdown-section{ position:relative; overflow:hidden; text-align:center; min-height:80vh; display:flex; align-items:center; }
-.shutdown-world{
-  position:absolute; inset:0; z-index:0; pointer-events:none;
-}
-.shutdown-world span{
-  position:absolute; width:6px; height:6px; border-radius:50%;
-  background:var(--accent); opacity:0.5; filter:blur(1px);
-}
-.shutdown-world span:nth-child(1){ top:20%; left:15%; }
-.shutdown-world span:nth-child(2){ top:65%; left:25%; background:var(--accent-2); }
-.shutdown-world span:nth-child(3){ top:35%; left:80%; }
-.shutdown-world span:nth-child(4){ top:75%; left:70%; background:var(--accent-2); }
-.shutdown-world span:nth-child(5){ top:15%; left:55%; }
-.shutdown-line{
-  font-family:var(--font-mono); font-size:0.82rem; letter-spacing:0.06em;
-  color:var(--ink-soft); position:relative; z-index:2;
-}
-.shutdown-closing{
-  margin-top:28px; position:relative; z-index:2;
-  font-size:clamp(2.4rem, 9vw, 6rem); font-weight:500; line-height:1.05;
-}
-.shutdown-closing em{
-  font-style:italic; font-weight:400; display:block; margin-top:6px;
-  font-size:0.36em;
-  color:#FFFFFF;
-  text-shadow:none;
-  filter:drop-shadow(0 0 26px rgba(255,255,255,0.45)) drop-shadow(0 3px 14px rgba(0,0,0,0.75));
-}
-
-/* focus visibility kept accessible over dark bg */
-a:focus-visible, button:focus-visible{
-  outline:2px solid var(--accent); outline-offset:3px; border-radius:2px;
-}
-
-/* ============================================================
-   Additions: skip link, command palette, case-study pages, 404.
-   Everything below reuses the palette and type tokens declared at the
-   top of this file.
-   ============================================================ */
-
-/* The families are declared once, at the top of this file. This block used
-   to redeclare them and, being later in the cascade, quietly won — so the
-   display face could only be changed in two places at once or not at all. */
-body{ font-family:var(--font-body); }
-h1,h2,h3,h4,.nav-brand,.mobile-menu a{ font-family:var(--font-display); }
-.eyebrow,.nav-links a,.nav-cta,kbd{ font-family:var(--font-mono); }
-
-/* ---------- utilities ---------- */
 .sr-only{
   position:absolute; width:1px; height:1px;
   padding:0; margin:-1px; overflow:hidden;
   clip-path:inset(50%); white-space:nowrap; border:0;
 }
 
-/* A visible, unambiguous focus ring. The site is dark and glassy, so the
-   browser default is close to invisible over half of it. */
-:focus-visible{
-  outline:2px solid var(--accent);
-  outline-offset:3px;
-  border-radius:4px;
-}
-
-.skip-link{
-  position:fixed; top:8px; left:8px; z-index:200;
-  transform:translateY(-200%);
-  background:var(--accent); color:var(--accent-ink);
-  font-family:var(--font-mono); font-size:0.8rem;
-  padding:10px 16px; border-radius:8px; text-decoration:none;
-  text-shadow:none;
-  transition:transform 0.2s var(--ease-out);
-}
-.skip-link:focus{ transform:translateY(0); }
-
-/* The palette and the mobile menu are modal; the page behind them must not
-   scroll away underneath. */
-html.palette-open, html.menu-open{ overflow:hidden; }
-
-.site-foot-inner{
-  display:flex; justify-content:space-between;
-  flex-wrap:wrap; gap:12px; width:100%;
-}
-
-/* ---------- nav additions ---------- */
-.nav-end{ display:flex; align-items:center; gap:12px; }
-.nav-key{
-  display:inline-flex; align-items:center; gap:3px;
-  background:none; border:1px solid var(--line-strong);
-  border-radius:8px; padding:6px 9px; cursor:pointer;
-  color:var(--ink-soft);
-  transition:border-color 0.3s ease, color 0.3s ease;
-}
-.nav-key:hover{ border-color:var(--accent); color:var(--ink); }
-kbd{
-  font-size:0.68rem; line-height:1;
-  color:inherit; text-shadow:none;
-}
-@media (max-width:820px){
-  .nav-end{ display:none; }
-}
-
-/* ---------- command palette ---------- */
-.palette{ position:fixed; inset:0; z-index:150; display:grid; place-items:start center; }
-.palette[hidden]{ display:none; }
-.palette-backdrop{
-  position:absolute; inset:0;
-  background:rgba(0,0,0,0.66);
-  backdrop-filter:blur(6px);
-  animation:palette-fade 0.2s var(--ease-out);
-}
-.palette-panel{
-  position:relative;
-  width:min(560px, calc(100vw - 32px));
-  margin-top:min(18vh, 140px);
-  padding:8px;
-  box-shadow:0 40px 120px -40px rgba(0,0,0,0.9), var(--glow);
-  animation:palette-in 0.22s var(--ease-out);
-}
-@keyframes palette-fade{ from{ opacity:0; } }
-@keyframes palette-in{ from{ opacity:0; transform:translateY(-10px) scale(0.985); } }
-@media (prefers-reduced-motion: reduce){
-  .palette-backdrop, .palette-panel{ animation:none; }
-}
-
-.palette-field{
-  display:flex; align-items:center; gap:10px;
-  padding:12px 14px;
-  border-bottom:1px solid var(--line);
-}
-.palette-prompt{ color:var(--accent); font-family:var(--font-mono); }
-.palette-input{
-  flex:1; background:none; border:0; outline:none;
-  color:var(--ink); font-family:var(--font-body); font-size:1rem;
-}
-.palette-input::placeholder{ color:var(--ink-faint); }
-.palette-esc{
-  border:1px solid var(--line); border-radius:6px;
-  padding:3px 6px; color:var(--ink-faint); font-family:var(--font-mono);
-}
-
-.palette-list{ list-style:none; margin:0; padding:6px; max-height:46vh; overflow-y:auto; }
-.palette-group{
-  font-family:var(--font-mono); font-size:0.66rem;
-  letter-spacing:0.16em; text-transform:uppercase;
-  color:var(--ink-faint); padding:10px 10px 6px;
-}
-.palette-item{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:10px 12px; border-radius:10px; cursor:pointer;
-}
-.palette-item.is-active{ background:rgba(255,255,255,0.12); }
-.palette-item.is-active .palette-item-label{ color:var(--ink); }
-.palette-item-label{ color:var(--ink-soft); }
-.palette-item-hint{
-  font-family:var(--font-mono); font-size:0.7rem;
-  color:var(--ink-faint); white-space:nowrap;
-}
-.palette-empty{ padding:20px 18px; color:var(--ink-faint); font-size:0.9rem; }
-.palette-foot{
-  display:flex; gap:16px; flex-wrap:wrap;
-  padding:10px 16px; border-top:1px solid var(--line);
-  font-family:var(--font-mono); font-size:0.68rem; color:var(--ink-faint);
-}
-.palette-foot kbd{
-  border:1px solid var(--line); border-radius:4px;
-  padding:1px 5px; margin-right:3px;
-}
-
-/* ---------- project card becomes a link ---------- */
-a.project-card{ text-decoration:none; display:block; }
-.project-more{
-  display:inline-block; margin-top:16px;
-  font-family:var(--font-mono); font-size:0.72rem;
-  letter-spacing:0.08em; color:var(--accent);
-  opacity:0; transform:translateX(-6px);
-  transition:opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
-}
-a.project-card:hover .project-more,
-a.project-card:focus-visible .project-more{ opacity:1; transform:translateX(0); }
-
-/* ---------- case study ---------- */
-.case{ padding:clamp(120px, 16vh, 180px) 0 0; }
-/* The case-study column is narrower than the site-wide .wrap, so each
-   block needs its own auto margin — otherwise it anchors to the left of
-   the wrap while the centred visual sits somewhere else entirely. */
-.case-head{ max-width:760px; margin-inline:auto; }
-.case-back{
-  display:inline-block; margin-bottom:28px;
-  font-family:var(--font-mono); font-size:0.76rem;
-  letter-spacing:0.08em; color:var(--ink-soft); text-decoration:none;
-}
-.case-back:hover{ color:var(--accent); }
-.case h1{ font-size:clamp(2.4rem, 6vw, 4rem); margin:18px 0 22px; line-height:1.03; }
-.case-summary{ color:var(--ink-soft); font-size:1.12rem; line-height:1.6; }
-
-.case-facts{
-  display:grid; gap:18px 32px; margin:36px 0 0;
-  grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
-  padding-top:26px; border-top:1px solid var(--line);
-}
-.case-facts div{ margin:0; }
-.case-facts dt{
-  font-family:var(--font-mono); font-size:0.66rem;
-  letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-faint);
-}
-.case-facts dd{ margin:8px 0 0; color:var(--ink); font-size:0.94rem; }
-
-.case-visual{
-  margin:56px auto; max-width:760px;
-  aspect-ratio:16 / 9; border-radius:20px; overflow:hidden;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,0.5);
-}
-.case-visual > *{ width:100%; height:100%; }
-
-.case-metrics{
-  list-style:none; margin:0 auto 56px; padding:0; max-width:760px;
-  display:grid; gap:16px;
-  grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
-}
-.case-metrics li{
-  padding:22px; border-radius:16px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,0.03);
-}
-.case-metrics strong{
-  display:block; font-family:var(--font-display);
-  font-size:1.5rem; color:var(--accent); font-weight:500;
-}
-.case-metrics span{
-  display:block; margin-top:8px;
-  font-family:var(--font-mono); font-size:0.7rem;
-  letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint);
-}
-
-/* Prose: the case-study body is the one place on this site where someone
-   reads more than three sentences at a stretch, so it gets a real measure
-   and real vertical rhythm rather than the section spacing used elsewhere. */
-.case-body{ max-width:680px; margin-inline:auto; }
-.case-body h2{
-  font-size:1.6rem; margin:56px 0 18px;
-  padding-top:22px; border-top:1px solid var(--line);
-}
-.case-body h2:first-child{ margin-top:0; border-top:0; padding-top:0; }
-.case-body p{ margin:0 0 20px; color:var(--ink-soft); line-height:1.75; font-size:1.02rem; }
-.case-body strong{ color:var(--ink); font-weight:600; }
-.case-body ul, .case-body ol{ margin:0 0 24px; padding-left:22px; color:var(--ink-soft); line-height:1.75; }
-.case-body li{ margin-bottom:12px; }
-.case-body li::marker{ color:var(--accent); }
-.case-body a{ color:var(--accent); }
-
-.case-next{ margin:88px auto 0; max-width:680px; }
-.case-next-link{
-  display:flex; align-items:baseline; justify-content:space-between; gap:20px;
-  margin-top:14px; padding:26px 28px;
-  border:1px solid var(--line); border-radius:18px;
-  text-decoration:none;
-  transition:border-color 0.35s var(--ease-out), background 0.35s var(--ease-out);
-}
-.case-next-link:hover{ border-color:var(--accent); background:rgba(255,255,255,0.06); }
-.case-next-link span{ font-family:var(--font-display); font-size:1.5rem; }
-.case-next-link em{
-  font-family:var(--font-mono); font-style:normal;
-  font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase;
-  color:var(--ink-faint);
-}
-
-.case-cta{
-  max-width:680px; margin:88px auto 0;
-  padding:44px 0 120px; border-top:1px solid var(--line);
-  text-align:center;
-}
-.case-cta p{ color:var(--ink-soft); margin-bottom:22px; }
-
-/* ---------- 404 ---------- */
-.lost{ min-height:80svh; display:grid; place-items:center; padding:140px 0 120px; text-align:center; }
-/* .eyebrow is a flex row with a leading rule, so centring the text
-   alone leaves the row itself hanging off to the left. */
-.lost .eyebrow{ justify-content:center; }
-.lost-code{
-  font-size:clamp(5rem, 22vw, 12rem); line-height:0.9;
-  color:var(--accent); opacity:0.9; margin:18px 0;
-}
-.lost-copy{ max-width:460px; margin:0 auto; color:var(--ink-soft); line-height:1.7; }
-.lost-actions{
-  display:flex; gap:16px; flex-wrap:wrap;
-  justify-content:center; margin-top:40px;
-}
-.lost-key{
-  display:inline-flex; align-items:center; gap:6px;
-  background:none; border:1px solid var(--line-strong);
-  border-radius:999px; padding:12px 22px; cursor:pointer;
-  color:var(--ink-soft); font-family:var(--font-mono); font-size:0.78rem;
-}
-.lost-key:hover{ border-color:var(--accent); color:var(--ink); }
-.lost-key kbd{ border:1px solid var(--line); border-radius:4px; padding:1px 5px; }
-
-/* ---------- view transitions ---------- */
-/* The router cross-fades by default; this makes an arrival read as a short
-   settle rather than a flash, and sits out entirely under reduced motion. */
-@media (prefers-reduced-motion: no-preference){
-  @view-transition{ navigation:auto; }
-  ::view-transition-old(root){ animation:vt-out 0.24s var(--ease-soft) both; }
-  ::view-transition-new(root){ animation:vt-in 0.34s var(--ease-out) both; }
-}
-@keyframes vt-out{ to{ opacity:0; } }
-@keyframes vt-in{ from{ opacity:0; transform:translateY(8px); } }
-
 /* ============================================================
-   Section motion: one idea, six places.
-   The page is underwater, so light is what moves — sweeping a
-   headline, running down a timeline, igniting a stage as data
-   reaches it, catching the face of a tilted card.
+   ABOUT
    ============================================================ */
+.about{ row-gap:clamp(28px, 5vh, 56px); align-items:start; }
+.about-body{ display:grid; gap:1em; }
+.about-meta{ display:grid; gap:clamp(16px, 2.4vh, 28px); align-content:start; }
+.about-meta p:first-child{ margin-bottom:5px; }
 
-/* ---- caustic sweep across split headings ----
-   sectionFx.js tweens --lit per character; the band of light is the
-   stagger, not a second element. Glow only, never a layout property,
-   so the sweep costs nothing to composite. */
-.char{
-  --lit:0;
-  text-shadow:
-    0 0 calc(var(--lit) * 30px) rgba(255,255,255, calc(var(--lit) * 0.85)),
-    0 4px 40px rgba(0,0,0,0.85),
-    0 2px 10px rgba(0,0,0,0.6);
-}
-
-/* ---- project cards: grading x tilt, composed ----
-   horizontal.js owns --g-*, pointerFx.js owns --t-*. Neither writes
-   `transform`, so neither can erase the other. */
-.project-card{
-  --g-scale:1; --g-y:0px; --t-rx:0deg; --t-ry:0deg;
-  --mx:50%; --my:50%;
-  transform-style:preserve-3d;
-  transform:
-    perspective(900px)
-    rotateX(var(--t-rx)) rotateY(var(--t-ry))
-    scale(var(--g-scale)) translateY(var(--g-y));
-  transition:box-shadow 0.4s var(--ease-out), border-color 0.4s var(--ease-out);
-}
-.project-card.is-tilting{
-  box-shadow:0 30px 70px -32px rgba(0,0,0,0.75), 0 0 50px -24px rgba(255,255,255,0.5);
-}
-
-/* Specular highlight: a soft pool of light that tracks the pointer,
-   which is what sells the card as a surface rather than a rectangle. */
-.project-sheen{
-  position:absolute; inset:0;
-  border-radius:inherit;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0.35s var(--ease-out);
-  background:radial-gradient(
-    380px circle at var(--mx) var(--my),
-    rgba(255,255,255,0.16),
-    rgba(255,255,255,0.05) 42%,
-    transparent 68%
-  );
-}
-.project-card.is-tilting .project-sheen{ opacity:1; }
-
-/* ---- pipeline stages ignite in sequence ---- */
-.pipeline-stage{
+/* The editorial image: full-bleed within the margins, square corners, no
+   shadow. The canvas is the ink reveal — the plate develops under the
+   cursor, which is the one interactive image on the page. */
+.about-figure{
+  margin:clamp(48px, 8vh, 96px) 0 0;
   position:relative;
-  transition:color 0.45s var(--ease-out), transform 0.45s var(--ease-out);
 }
-.pipeline-stage .pipeline-k{
-  transition:color 0.45s var(--ease-out), text-shadow 0.45s var(--ease-out);
-}
-.pipeline-stage.is-live .pipeline-k{
-  color:var(--accent);
-  text-shadow:0 0 22px rgba(255,255,255,0.55);
-}
-.pipeline-stage.is-live{ transform:translateY(-3px); }
-/* A hairline that fills as the stage comes online — the visible seam
-   between "waiting" and "running". */
-.pipeline-stage::after{
-  content:"";
-  position:absolute; left:50%; bottom:-10px;
-  width:0; height:1px;
-  background:var(--accent);
-  transform:translateX(-50%);
-  transition:width 0.5s var(--ease-out);
-}
-.pipeline-stage.is-live::after{ width:64%; }
-
-/* ---- odometer digits ---- */
-.odo{ display:inline-flex; vertical-align:baseline; }
-.odo-col{
-  display:block;
-  height:1em; line-height:1em;
-  overflow:hidden;
-}
-.odo-strip{ display:block; will-change:transform; }
-/* Each digit is its own line-height-tall block: that is what makes the
-   strip a column the translation can index into. */
-.odo-digit{ display:block; height:1em; line-height:1em; }
-
-/* ---- timeline spine ---- */
-.timeline{ position:relative; padding-left:34px; }
-.timeline-spine{
-  position:absolute; left:9px; top:6px; bottom:6px;
-  width:1px;
-  background:var(--line);
-  overflow:hidden;
-}
-.timeline-fill{
-  display:block; width:100%; height:100%;
-  background:linear-gradient(to bottom, var(--accent), rgba(255,255,255,0.25));
-  transform:scaleY(0);
-  transform-origin:top;
-  box-shadow:0 0 14px rgba(255,255,255,0.7);
-}
-.timeline-row{ position:relative; }
-.timeline-node{
-  position:absolute; left:-30px; top:34px;
-  width:9px; height:9px;
-  border-radius:50%;
-  border:1px solid var(--line-strong);
-  background:var(--bg);
-  transition:background 0.5s var(--ease-out), border-color 0.5s var(--ease-out),
-             box-shadow 0.5s var(--ease-out), transform 0.5s var(--ease-out);
-}
-.timeline-row.is-reached .timeline-node{
-  background:var(--accent);
-  border-color:var(--accent);
-  box-shadow:0 0 0 4px rgba(255,255,255,0.14), 0 0 20px rgba(255,255,255,0.7);
-  transform:scale(1.15);
-}
-.timeline-row:first-child .timeline-node{ top:20px; }
-@media (max-width:560px){
-  .timeline{ padding-left:26px; }
-  .timeline-spine{ left:5px; }
-  .timeline-node{ left:-25px; }
-}
-
-/* ---- tech chips settle in ---- */
-.tech-chip{ will-change:transform; }
-
-@media (prefers-reduced-motion: reduce){
-  /* Everything above is decoration on top of content that is already
-     readable — under reduced motion it resolves to its end state. */
-  .char{ --lit:0; }
-  .project-card{ transform:none; transition:none; }
-  .project-sheen{ display:none; }
-  .pipeline-stage, .pipeline-stage .pipeline-k,
-  .timeline-node, .timeline-fill{ transition:none; }
-}
-
-/* ============================================================
-   Per-section text choreography (sectionText.js)
-   Each section arrives in its own voice. The CSS here only
-   provides the surfaces those animations need — a mask to rise
-   out of, a plane to rotate in, a bar of light to hide behind —
-   and every one of them degrades to plain, fully visible text
-   with no JavaScript and under reduced motion.
-   ============================================================ */
-
-[data-textfx]{ }
-
-/* The mask a word rises out of. inline-block + clip is what makes the
-   letters emerge from an edge rather than simply translate into place;
-   the bottom padding buys room for descenders, and the matching negative
-   margin keeps the line box exactly where it was. */
-.textfx-mask{
-  display:inline-block;
-  overflow:hidden;
-  vertical-align:top;
-  padding-bottom:0.18em;
-  margin-bottom:-0.18em;
-}
-.textfx-mask > .split-word{ display:inline-block; will-change:transform; }
-
-/* chars: the letters rotate in depth, so each needs its own plane. */
-[data-textfx="chars"] .char{ display:inline-block; transform-style:preserve-3d; }
-
-/* wipe: one custom property drives both the bar and the text behind it.
-   --wipe runs 0 -> 1; the text is clipped to everything the bar has already
-   passed, so the words are literally left behind by the light. */
-@property --wipe{ syntax:'<number>'; inherits:false; initial-value:1; }
-.textfx-wipe{
-  position:relative;
-  clip-path:inset(0 calc((1 - var(--wipe)) * 100%) 0 0);
-}
-.textfx-wipe::after{
-  content:"";
-  position:absolute;
-  top:-0.1em; bottom:-0.1em;
-  left:calc(var(--wipe) * 100%);
-  width:2px;
-  background:var(--accent);
-  box-shadow:0 0 22px 3px rgba(255,255,255,0.55);
-  opacity:calc(1 - var(--wipe));
-  pointer-events:none;
-}
-.textfx-wipe.is-wiped{ clip-path:none; }
-.textfx-wipe.is-wiped::after{ display:none; }
-
-/* typewrite: a caret that only exists while the line is being written. */
-.textfx-caret::after{
-  content:"";
-  display:inline-block;
-  width:0.55em; height:1em;
-  margin-left:0.08em;
-  vertical-align:-0.16em;
-  background:var(--accent);
-  animation:textfx-caret 0.6s steps(1) infinite;
-}
-@keyframes textfx-caret{ 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
-
-/* scramble holds its own height while it resolves, so a line of glyphs
-   wrapping differently than the final text cannot shift the layout. */
-[data-textfx="scramble"]{ font-variant-ligatures:none; }
-
-@media (prefers-reduced-motion: reduce){
-  [data-textfx]{ opacity:1 !important; clip-path:none !important; filter:none !important; }
-  .textfx-wipe::after, .textfx-caret::after{ display:none; }
-}
-
-/* ---------- hero ink reveal (heroInk.js) ----------
-   The stage sits between the hero's gradient fallback and its type: it is
-   the image the visitor is reading the headline over, not a panel beside it.
-   It stays hidden until both plates have decoded, so a slow connection never
-   shows an empty black box where the hero should be. */
-.hero-ink{
-  position:absolute; inset:0;
-  z-index:1;
-  opacity:0;
-  transition:opacity 1.2s var(--ease-film);
-  /* The brush has to receive the pointer, but nothing in the hero should be
-     harder to select because of it — the canvas takes the events, the text
-     above it keeps its own. */
+.about-figure-canvas{
+  width:100%;
+  aspect-ratio:2 / 1;
+  background:var(--dark);
   cursor:crosshair;
 }
-.hero-ink.is-ready{ opacity:1; }
-.hero-ink-canvas{
-  display:block;
-  width:100%; height:100%;
-  /* The plates are photographic; this keeps them sitting behind the type as
-     environment rather than competing with it for the reader's eye. */
-  filter:grayscale(1) contrast(1.06);
+.about-figure figcaption{ margin-top:10px; }
+
+/* ---------- stats ----------
+   Four counters on the grid, each over a rule. No boxes: the rule and the
+   column are the container. */
+.stats{ margin-top:clamp(48px, 8vh, 96px); row-gap:clamp(24px, 4vh, 40px); }
+.stat{ border-top:1px solid var(--line); padding-top:12px; }
+.stat p:first-child{ margin-bottom:6px; }
+
+/* ============================================================
+   WORK LIST
+   A row is: number, title, category, year, arrow. The row is the
+   interface — there is no card, and the rule between rows is the
+   only edge in the section.
+   ============================================================ */
+.work-list{ margin-top:clamp(8px, 2vh, 20px); }
+.work-row > a{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto auto;
+  align-items:baseline;
+  gap:clamp(14px, 2.4vw, 40px);
+  padding-block:clamp(18px, 2.6vh, 32px);
+  position:relative;
 }
-/* The headline has to stay readable over whichever plate is currently
-   showing, and the plates are by definition high-contrast in both directions. */
-.hero-ink + .hero-content, .hero-ink ~ .hero-content{ z-index:3; }
-.hero-ink::after{
-  content:"";
-  position:absolute; inset:0;
+.work-num{ color:var(--muted); transition:color var(--t-hover) var(--ease); }
+.work-title{
+  display:inline-block;
+  transition:transform var(--t-hover) var(--ease), color var(--t-hover) var(--ease);
+}
+.work-go{ opacity:0; transform:translateX(-8px); transition:opacity var(--t-hover) var(--ease), transform var(--t-hover) var(--ease); }
+
+.work-row > a:hover .work-title,
+.work-row > a:focus-visible .work-title{ transform:translateX(clamp(10px, 1.6vw, 24px)); }
+.work-row > a:hover .work-num,
+.work-row > a:focus-visible .work-num{ color:var(--accent); }
+.work-row > a:hover .work-go,
+.work-row > a:focus-visible .work-go{ opacity:1; transform:translateX(0); }
+
+/* While one row is hovered the others recede, so the list reads as a
+   focus rather than as eight equally loud lines. */
+.work-list:hover .work-row > a:not(:hover) .work-title{ color:var(--muted); }
+
+@media (max-width: 809.98px){
+  .work-row > a{
+    grid-template-columns:auto 1fr auto;
+    row-gap:6px;
+  }
+  .work-cat{ grid-column:2; }
+  .work-year{ grid-column:3; }
+}
+
+/* ============================================================
+   EXPERIENCE / SKILLS / TECHNOLOGY
+   Three lists, one shape: a rule, then a row that is all type.
+   ============================================================ */
+.exp-inner{
+  display:grid;
+  grid-template-columns:minmax(120px, 1fr) minmax(0, 3fr) minmax(120px, 1fr);
+  gap:clamp(14px, 2.4vw, 40px);
+  align-items:baseline;
+  padding-block:clamp(20px, 3vh, 36px);
+}
+.exp-note{ grid-column:2; color:var(--muted); }
+.exp-role{ text-align:right; }
+
+.skill-inner{
+  display:grid;
+  grid-template-columns:auto minmax(140px, 1fr) minmax(0, 2fr) auto;
+  gap:clamp(12px, 2vw, 32px);
+  align-items:baseline;
+  padding-block:clamp(12px, 1.6vh, 20px);
+  transition:padding-left var(--t-hover) var(--ease);
+}
+.skill-row:hover .skill-inner{ padding-left:clamp(8px, 1.2vw, 18px); }
+.skill-go{ opacity:0; transition:opacity var(--t-hover) var(--ease); }
+.skill-row:hover .skill-go{ opacity:1; }
+
+.tech-list{ row-gap:clamp(14px, 2vh, 22px); }
+.tech-item{ display:flex; gap:10px; align-items:baseline; border-top:1px solid var(--line); padding-top:10px; }
+
+@media (max-width: 809.98px){
+  .exp-inner{ grid-template-columns:1fr; }
+  .exp-role{ text-align:left; }
+  .exp-note{ grid-column:1; }
+  .skill-inner{ grid-template-columns:auto 1fr auto; }
+  .skill-note{ display:none; }
+}
+
+/* ============================================================
+   CONTACT
+   ============================================================ */
+.contact-head{ margin-bottom:clamp(32px, 5vh, 64px); }
+.contact-grid{ row-gap:clamp(28px, 4vh, 48px); align-items:start; }
+.contact-grid p:first-child{ margin-bottom:8px; }
+.contact-mail{ word-break:break-word; }
+.contact-cols{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:clamp(20px, 3vw, 40px); }
+
+/* ============================================================
+   CASE STUDY
+   ============================================================ */
+.case-head-grid{ row-gap:clamp(20px, 3vh, 36px); align-items:start; }
+.case-facts{ margin-top:clamp(36px, 6vh, 72px); row-gap:20px; }
+.case-facts dt{ margin-bottom:6px; }
+.case-facts dd{ margin:0; }
+.machine{ row-gap:clamp(20px, 3vh, 32px); }
+.machine-stage span{ display:block; margin:12px 0 6px; }
+.case-body :is(h2,h3){ font-family:var(--font-main); font-size:var(--fs-body); text-transform:uppercase; letter-spacing:0.08em; margin:2.4em 0 0.8em; }
+.case-body p{ margin-bottom:1em; }
+.case-body :is(ul,ol){ margin:0 0 1.4em; display:grid; gap:0.5em; }
+.case-body li{ padding-left:1.2em; position:relative; }
+.case-body li::before{ content:"/"; position:absolute; left:0; color:var(--muted); }
+.case-stack ul{ display:grid; gap:6px; margin-top:8px; }
+.case-next a{ display:grid; gap:10px; padding-top:clamp(24px, 4vh, 44px); }
+.case-next-title{ display:inline-block; transition:transform var(--t-hover) var(--ease); }
+.case-next a:hover .case-next-title{ transform:translateX(clamp(10px, 1.6vw, 24px)); }
+
+/* ============================================================
+   CURSOR
+   Fine pointers only. It is a dot until something under it names
+   what it does, and then it is that word.
+   ============================================================ */
+.cursor{
+  position:fixed; top:0; left:0;
+  z-index:500;
   pointer-events:none;
-  /* Kept light on purpose. The plates are a wordmark and its negative, not
-     a photograph: a heavy scrim would grey the white plate into the page and
-     throw away the one thing the reveal is for — the hard flip between them.
-     The headline carries its own text-shadow for the rest. */
-  background:
-    radial-gradient(120% 80% at 50% 45%, transparent 40%, rgba(0,0,0,0.45) 100%),
-    linear-gradient(180deg, rgba(0,0,0,0.45), transparent 38%, rgba(0,0,0,0.6));
+  display:flex; align-items:center; gap:8px;
+  transform:translate3d(-100px, -100px, 0);
+  transition:opacity var(--t-micro) var(--ease);
 }
-@media (prefers-reduced-motion: reduce){
-  .hero-ink{ cursor:default; }
+.cursor.is-gone{ opacity:0; }
+.cursor-dot{
+  width:7px; height:7px;
+  margin:-3.5px 0 0 -3.5px;
+  background:var(--text);
+  border-radius:50%;
+  transition:transform var(--t-micro) var(--ease), background var(--t-micro) var(--ease);
+}
+.cursor-word{
+  color:var(--text);
+  opacity:0;
+  transform:translateX(-4px);
+  transition:opacity var(--t-micro) var(--ease), transform var(--t-micro) var(--ease);
+}
+.cursor.is-labelled .cursor-dot{ transform:scale(0.55); background:var(--accent); }
+.cursor.is-labelled .cursor-word{ opacity:1; transform:translateX(0); }
+/* A cursor that replaces the pointer has to be the only pointer, or the
+   page has two. Restored on coarse pointers, where it never mounts. */
+@media (pointer: fine){
+  .js-ready.has-cursor, .js-ready.has-cursor *{ cursor:none; }
 }
