@@ -10,7 +10,7 @@ const projects = (await getCollection('work')).sort((a, b) => a.data.order - b.d
 /**
  * A project's cover, by convention.
  *
- * Dropping `public/images/work/<id>.webp` is all it takes — the file is
+ * Dropping `public/images/work/<id>.webp` is all it takes: the file is
  * matched to the project by its own id, so there is no frontmatter to keep
  * in sync and no way for the two to drift apart. An explicit `cover:` still
  * wins, for a file that does not follow the convention.
@@ -25,7 +25,7 @@ function coverFor(entry: { id: string; data: { cover?: string } }) {
  * The hover preview's image.
  *
  * `.work-preview` is position:fixed, so the browser counts it as on-screen
- * and `loading="lazy"` defers nothing — every preview is fetched on the
+ * and `loading="lazy"` defers nothing: every preview is fetched on the
  * first paint whether or not a row is ever hovered. Serving the full cover
  * there would put the whole gallery on the critical path of the index page
  * for a panel about 270px wide.
@@ -111,7 +111,7 @@ const schema = {
           <span class="hero-row"><span class="hero-char">T</span><span class="hero-char">O</span></span>
           <span class="hero-row"><span class="hero-char">B</span><span class="hero-char">Y</span></span>
         </span>
-        <span class="sr-only">Toby — creative technologist</span>
+        <span class="sr-only">Toby, creative technologist</span>
       </h1>
 
       <div class="hero-say t-label" style="--c:4; --s:8;" data-hero-say>
@@ -148,7 +148,7 @@ const schema = {
       </p>
       <div class="about-body" style="--c:5; --s:5;">
         <p class="t-body" data-reveal>
-          I work close to the ground — inside the actual workflow of a food business, not from a
+          I work close to the ground, inside the actual workflow of a food business, not from a
           spec document. The tools I build get judged the same way the kitchen does: does it work
           today, under pressure, without anyone babysitting it.
         </p>
@@ -190,7 +190,7 @@ const schema = {
     <SectionLabel num="02" name="Selected Work" />
     <!-- One preview panel shared by every row. Each frame is the project's
          own screenshot when it has one, and a typographic plate built from
-         its number, title and category when it does not — so the interaction
+         its number, title and category when it does not, so the interaction
          is real before the photography exists. -->
     <div class="work-preview" data-work-preview aria-hidden="true">
       {projects.map((p, i) => (
@@ -201,7 +201,7 @@ const schema = {
               <div class="work-plate on-dark">
                 <span class="t-counter">{String(i + 1).padStart(2, '0')}</span>
                 <span class="t-label work-plate-title">{p.data.title}</span>
-                <span class="t-tiny">{p.data.tag} — {p.data.timeframe}</span>
+                <span class="t-tiny">{p.data.tag}, {p.data.timeframe}</span>
               </div>
             )}
         </figure>

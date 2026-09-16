@@ -25,7 +25,7 @@ machine:
 ## The problem
 
 Operational mistakes were remembered, not recorded. Which means they were
-remembered selectively — the dramatic one from last Tuesday stayed vivid, and
+remembered selectively: the dramatic one from last Tuesday stayed vivid, and
 the small one that quietly happened eleven times did not. Without a record, the
 loudest incident sets the agenda instead of the most frequent one.
 
@@ -33,7 +33,7 @@ loudest incident sets the agenda instead of the most frequent one.
 
 A deliberately lightweight log. Recording a mistake takes seconds, because
 anything that takes longer than seconds doesn't get recorded during a busy
-service — and a tracker with gaps in it is worse than useless, since it makes
+service, and a tracker with gaps in it is worse than useless, since it makes
 the gaps look like zeroes.
 
 ## The thing it's careful about
@@ -45,7 +45,7 @@ the incentive pointed at fixing the process.
 
 ## Result
 
-Patterns that used to take months to notice — a step that's systematically
-error-prone, a time of day where errors cluster — became visible in the trend.
+Patterns that used to take months to notice (a step that's systematically
+error-prone, a time of day where errors cluster) became visible in the trend.
 That's the point: the tracker doesn't fix anything itself, it just makes the
 thing worth fixing obvious enough to argue about with data.

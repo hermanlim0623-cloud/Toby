@@ -37,7 +37,7 @@ changes, it becomes a billing error.
 
 An internal site that holds the menu, the pricing and the operational
 references in one place, built to be opened on a phone with wet hands in a
-loud room — which is the only usage condition that actually matters here.
+loud room, which is the only usage condition that actually matters here.
 
 No framework, no build step, no login wall to fight during service. Plain HTML
 and CSS, fast on the worst connection in the building.
@@ -47,7 +47,7 @@ and CSS, fast on the worst connection in the building.
 - **Legible under pressure.** Large type, high contrast, no decorative
   interference. Someone is reading this mid-service, not browsing it.
 - **One screen per decision.** If a question takes two taps and a scroll to
-  answer, the team goes back to asking a colleague — and the site has failed.
+  answer, the team goes back to asking a colleague, and the site has failed.
 - **Changing it has to be trivial.** A reference that's annoying to update
   becomes a reference that's out of date, which is worse than no reference.
 

@@ -21,7 +21,7 @@ for (const path of PAGES) {
     await settled(page);
 
     // The focus scrub dims and blurs sections that are outside the focal
-    // area — by design, and only while they are not the thing being read.
+    // area, by design, and only while they are not the thing being read.
     // axe evaluates the whole document at once, so without this it reports
     // every off-focus section as a contrast failure at its transient value.
     // Pinning the focal state is what makes this audit the page a reader
@@ -65,7 +65,7 @@ test('every page has exactly one h1', async ({ page }) => {
 
 test('the opening curtain never gates the content behind it', async ({ page }) => {
   await page.goto('/');
-  // Before the curtain lifts the document underneath is already complete —
+  // Before the curtain lifts the document underneath is already complete:
   // a loading screen here is a cover, not a gate.
   const titles = await page.locator('[data-work-row] .work-title').allTextContents();
   expect(titles.length).toBeGreaterThanOrEqual(7);

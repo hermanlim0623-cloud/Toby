@@ -7,9 +7,9 @@ const year = String(new Date().getFullYear()).slice(-2);
 
 <!-- The header is a readout, not a navbar: who this is, where you are in
      the document, what time it is where they are, and a way in. Everything
-     in it is either an index or a control — there is no branding furniture. -->
+     in it is either an index or a control: there is no branding furniture. -->
 <header class="hdr bleed" data-header>
-  <a class="hdr-mark" href="/#top" aria-label={`${SITE.name} — home`}>{SITE.name}</a>
+  <a class="hdr-mark" href="/#top" aria-label={`${SITE.name}, home`}>{SITE.name}</a>
 
   <!-- Current section. Written by the scroll spy, and pre-filled so it is
        never briefly empty on a cold load. -->

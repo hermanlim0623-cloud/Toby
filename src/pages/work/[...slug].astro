@@ -48,7 +48,7 @@ const schema = {
 };
 ---
 
-<Base title={`${d.title} — ${SITE.name}`} description={d.summary} type="article" schema={schema}>
+<Base title={`${d.title} (${SITE.name})`} description={d.summary} type="article" schema={schema}>
   <article class="case" data-section={num} data-section-name={d.tag.toUpperCase()}>
 
     <header class="section bleed case-head" data-motion>
@@ -74,12 +74,12 @@ const schema = {
     <div class="bleed">
       <figure class="case-visual" data-figure data-cursor="image">
         {cover
-          ? <img src={cover} alt={`${d.title} — interface`} decoding="async" width="1672" height="941" />
+          ? <img src={cover} alt={`${d.title} interface`} decoding="async" width="1672" height="941" />
           : (
             <div class="case-plate on-dark">
               <span class="t-counter">{num}</span>
               <span class="t-md case-plate-title">{d.title}</span>
-              <span class="t-tiny">{d.tag} — {d.timeframe} — {d.status}</span>
+              <span class="t-tiny">{d.tag}, {d.timeframe}, {d.status}</span>
             </div>
           )}
       </figure>

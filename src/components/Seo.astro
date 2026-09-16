@@ -13,7 +13,7 @@ interface Props {
 
 const { title, description, image = SITE.ogImage, type = 'website', schema } = Astro.props;
 
-// Social scrapers do not resolve relative image paths — they need absolute
+// Social scrapers do not resolve relative image paths: they need absolute
 // URLs, which is the whole reason `site` is configured.
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImage = new URL(image, Astro.site).href;

@@ -2,7 +2,7 @@
 //
 // A real odometer, not a counter: each digit is a column of 0–9 inside a
 // one-line mask, and rolling a number means sliding each column to its own
-// digit. That is what makes 09 → 10 work — the columns are independent, so
+// digit. That is what makes 09 → 10 work: the columns are independent, so
 // the tens carries at its own moment instead of the whole number being
 // re-rendered as a string.
 //
@@ -17,7 +17,7 @@ const ROWS = 10;
  * Turns `el` into digit columns and returns a handle that can reset and
  * replay it any number of times.
  *
- * Non-digits — a plus, a slash, a space — are passed through as static
+ * Non-digits (a plus, a slash, a space) are passed through as static
  * cells, so "09+" and "2026" both work without the caller separating the
  * number from its unit.
  */
@@ -76,7 +76,7 @@ export function buildOdometer(el) {
  * from the start on every section entry.
  *
  * Each column travels from 0 to its digit, passing through every digit
- * between — the roll is the point, so the easing is gentle and the columns
+ * between: the roll is the point, so the easing is gentle and the columns
  * to the right take longer, the way a real odometer's units wheel spins
  * furthest while the tens barely moves.
  */

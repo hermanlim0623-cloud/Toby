@@ -26,14 +26,14 @@ machine:
 
 Withdrawal records were being kept in whatever format the person keeping them
 preferred. Each format was individually fine. Collectively they were
-unreconcilable — and money records that can't be reconciled are the ones that
+unreconcilable, and money records that can't be reconciled are the ones that
 turn into an afternoon of archaeology the moment anyone asks a question about
 them.
 
 ## What I built
 
 A small internal tool that records withdrawals in one fixed shape, with the
-fields that make a record auditable — what, when, how much, by whom — required
+fields that make a record auditable (what, when, how much, by whom) required
 rather than optional.
 
 ## Why it stays basic
@@ -41,7 +41,7 @@ rather than optional.
 There was an obvious temptation to grow this into approvals, roles, and a
 reporting layer. I didn't, because every feature added to a tool that touches
 money is a new way for the record to be wrong, and the actual problem was never
-"we need more capability" — it was "we need the same capability, spelled the
+"we need more capability". It was "we need the same capability, spelled the
 same way every time."
 
 A tool this small can be fully understood by the person using it. That property

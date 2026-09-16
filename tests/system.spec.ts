@@ -262,7 +262,7 @@ test.describe('cursor', () => {
     await page.waitForTimeout(300);
     expect(await state()).toBe('default');
 
-    // The scroll cue carries no data-cursor — the link arrow has to be
+    // The scroll cue carries no data-cursor: the link arrow has to be
     // inferred from the element being a link, or every anchor on the site
     // would need annotating by hand. (The header's section list is hidden
     // below 1440px, so it is not a reliable target at test viewport sizes.)
@@ -296,7 +296,7 @@ test.describe('cursor', () => {
       await page.mouse.move(box.x + 400, box.y + box.height / 2);
       await page.waitForTimeout(500);
       // The frame showing must be the one belonging to the row under the
-      // pointer — paired by the project's id, not by document order.
+      // pointer, paired by the project's id, not by document order.
       const on = await page.locator('.work-frame.is-on').getAttribute('data-preview');
       expect(on, `row ${i} shows its own preview`).toBe(id);
       expect(await page.locator('.work-frame.is-on').count()).toBe(1);
@@ -308,7 +308,7 @@ test.describe('cursor', () => {
     await page.goto('/');
     await page.waitForTimeout(2400);
     // The panel is position:fixed and placed in viewport coordinates, but a
-    // transformed ancestor becomes the containing block for fixed children —
+    // transformed ancestor becomes the containing block for fixed children,
     // and the section focus scrub puts a scale on every section. Inside the
     // work section the panel would resolve against that section instead of
     // the window, and every edge calculation would be against the wrong box.
@@ -565,7 +565,7 @@ test.describe('section motion', () => {
     const focal = await at(0);
     const leaving = await at(0.85);
 
-    // Sharp in the focal area, soft on both sides — and this is a scrub, so
+    // Sharp in the focal area, soft on both sides, and this is a scrub, so
     // reversing the scroll runs the same curve backwards by construction.
     expect(focal.blur).toBe(0);
     expect(focal.opacity).toBe(1);
@@ -626,7 +626,7 @@ test.describe('project covers', () => {
     test.skip(fetched.length === 0, 'no covers in public/images/work/ yet');
 
     // `.work-preview` is position:fixed, so the browser treats it as
-    // on-screen and loading="lazy" defers nothing — every preview is
+    // on-screen and loading="lazy" defers nothing: every preview is
     // fetched on first paint. Serving the full covers here would put the
     // whole gallery on the index page's critical path for a panel about
     // 270px wide.

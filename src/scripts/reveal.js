@@ -1,4 +1,4 @@
-// Scroll reveal — the four moves in the brief, and nothing else.
+// Scroll reveal: the four moves in the brief, and nothing else.
 //
 //   text     clip-path opens, the line lifts, opacity follows
 //   rules    a 1px line draws from zero width to full
@@ -82,7 +82,7 @@ export function createReveals(gsap, ScrollTrigger, reduced) {
 /**
  * Editorial images arrive by un-cropping and settling out of a slight
  * over-scale, rather than fading. The clip and the scale run against each
- * other, so the frame opens while the picture eases back to its true size —
+ * other, so the frame opens while the picture eases back to its true size,
  * which is what makes it read as a printed image being revealed rather than
  * as an element appearing.
  */

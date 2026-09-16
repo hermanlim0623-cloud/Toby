@@ -18,7 +18,7 @@ metrics:
 machine:
   input: Repetitive adjustment entries
   process: Apply the rules in a fixed order
-  decision: Apply, or flag — never guess
+  decision: Apply, or flag, never guess
   output: Adjusted records, unattended
 ---
 
@@ -32,7 +32,7 @@ than the first.
 
 ## What I built
 
-A bot that applies the adjustment rules directly against the records — the
+A bot that applies the adjustment rules directly against the records: the
 same rules, in the same order, every time, without getting tired near the end
 of the batch.
 
@@ -40,9 +40,9 @@ of the batch.
 
 The bot does not guess. Every case falls into one of three buckets:
 
-1. **Matches a rule cleanly** — apply it and log what was done.
-2. **Matches nothing** — leave it alone and flag it for a person.
-3. **Matches ambiguously** — leave it alone and flag it, loudly.
+1. **Matches a rule cleanly**: apply it and log what was done.
+2. **Matches nothing**: leave it alone and flag it for a person.
+3. **Matches ambiguously**: leave it alone and flag it, loudly.
 
 Automation that silently does something plausible with an edge case is worse
 than automation that stops. The whole value proposition is that you can stop
@@ -52,5 +52,5 @@ couldn't handle.
 ## Result
 
 The recurring entry task is gone from the daily routine. What's left is a short
-exception list — the cases that genuinely needed judgment — which is exactly
+exception list (the cases that genuinely needed judgment), which is exactly
 the part a person should have been spending their attention on all along.

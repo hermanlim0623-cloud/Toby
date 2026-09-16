@@ -1,7 +1,7 @@
 // The full-screen menu.
 //
 // `inert` does the accessibility work: while closed the panel is not
-// focusable, not read, and not reachable — which is the part an off-screen
+// focusable, not read, and not reachable, which is the part an off-screen
 // transform alone never gets right.
 export function createMenu(signal) {
   const menu = document.querySelector('[data-menu]');

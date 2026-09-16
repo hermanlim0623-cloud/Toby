@@ -17,7 +17,7 @@ export default [
     },
     rules: {
       // Empty catch blocks are deliberate in a few places (a seek that
-      // isn't ready yet, storage that a private window refuses) — but they
+      // isn't ready yet, storage that a private window refuses), but they
       // have to be spelled out rather than left silently empty.
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],

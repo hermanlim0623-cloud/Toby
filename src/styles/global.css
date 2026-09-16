@@ -1,5 +1,5 @@
 /* ============================================================
-   TOBY — editorial / technical
+   TOBY: editorial / technical
    ------------------------------------------------------------
    A Swiss grid, a brutalist type scale, and a 1px rule system.
    The page is built out of alignment and whitespace: there are
@@ -18,7 +18,7 @@
   --bg: #F4F4F4;
   --text: #404040;
   /* The brief specifies #B3B3B3 for muted text. On #F4F4F4 that measures
-     1.86:1, which fails WCAG AA by a wide margin — and the same brief asks
+     1.86:1, which fails WCAG AA by a wide margin, and the same brief asks
      for sufficient contrast, so the two cannot both be honoured literally.
      The value is split: --muted is the darkest grey that still reads as a
      clear step below --text while passing AA at 10px, and --muted-line
@@ -126,7 +126,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .grid > [style*="--s"]{ grid-column:var(--s) / span var(--c, 1); }
 
 /* On the 4-column grid a desktop span of 6 starting at column 8 does not
-   clamp — it makes grid build implicit columns off the right edge, which is
+   clamp: it makes grid build implicit columns off the right edge, which is
    how a "responsive" page ends up wider than the phone holding it. Below the
    tablet breakpoint every child is full width unless it names a mobile span
    with --c-m, and the desktop start column is dropped entirely. */
@@ -184,7 +184,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 
 /* ---------- section label ----------
    Every section is announced the same way: number, slash, name. This is
-   the page's spine — it is how a reader always knows where they are. */
+   the page's spine: it is how a reader always knows where they are. */
 .section{ padding-block:clamp(80px, 11vh, 160px); position:relative; }
 .section-label{
   display:flex;
@@ -217,7 +217,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 /* ---------- dark section ----------
    The one inversion in the system, and it inverts the *tokens*, not just
    the colour property. Setting `color` alone leaves every rule that names
-   var(--text) — the section label, among others — painting #404040 onto
+   var(--text), the section label among others, painting #404040 onto
    #161819, which is dark-on-dark and unreadable. Redefining the tokens is
    what makes an inverted block the same design rather than a second one. */
 .on-dark{
@@ -299,7 +299,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
   z-index:200;
   display:grid;
   align-items:center;
-  /* Closed is a clip, not a display:none — the panel has to be able to
+  /* Closed is a clip, not a display:none: the panel has to be able to
      animate out, and inert is what keeps it unreachable meanwhile. */
   clip-path:inset(0 0 100% 0);
   transition:clip-path var(--t-section) var(--ease);
@@ -328,7 +328,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 }
 .hero-top{ padding-top:clamp(40px, 9vh, 120px); align-items:start; row-gap:clamp(24px, 4vh, 48px); }
 
-/* The slash is the page's first mark and it is set in the accent — the one
+/* The slash is the page's first mark and it is set in the accent: the one
    place on the whole page where the accent leads rather than supports. */
 .hero-slash{
   font-family:var(--font-mono);
@@ -412,7 +412,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 /* ============================================================
    WORK LIST
    A row is: number, title, category, year, arrow. The row is the
-   interface — there is no card, and the rule between rows is the
+   interface: there is no card, and the rule between rows is the
    only edge in the section.
    ============================================================ */
 .work-list{ margin-top:clamp(8px, 2vh, 20px); }
@@ -518,7 +518,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 
 /* ============================================================
    CURSOR
-   The system pointer is left alone. Nothing here draws one —
+   The system pointer is left alone. Nothing here draws one:
    a replacement mark always trails the real pointer by its own
    easing, and the eye follows the drawn thing instead of the
    true position, which is what makes a custom cursor feel a
@@ -543,7 +543,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .cur.is-gone{ opacity:0; }
 
 /* Offset down and right of the hotspot, which is where a system arrow
-   leaves room — the control sits beside the pointer, never beneath it. */
+   leaves room: the control sits beside the pointer, never beneath it. */
 .cur-inner{
   transform:translate(18px, 16px) scale(1);
   transform-origin:0 0;
@@ -602,7 +602,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 
 /* ---------- work preview ----------
    The project's own image, riding above the control. Positioned by
-   cursor.js in viewport coordinates — it is clamped against the edges, so
+   cursor.js in viewport coordinates: it is clamped against the edges, so
    a pointer in any corner still shows the whole panel rather than half of
    one hanging off the screen. */
 .work-preview{
@@ -645,7 +645,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
   transition:opacity 220ms var(--ease);
 }
 .work-frame.is-on{ opacity:1; }
-/* The image scales inside a fixed frame rather than the frame growing —
+/* The image scales inside a fixed frame rather than the frame growing,
    the panel's edge stays exactly where it was placed. */
 .work-frame img{ width:100%; height:100%; object-fit:cover; transform:scale(1.04); }
 .work-plate{

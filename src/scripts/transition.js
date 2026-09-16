@@ -16,7 +16,7 @@ export function createTransitions(reduced) {
   document.body.appendChild(curtain);
 
   // `before-preparation` fires before the new document is fetched, and
-  // `after-swap` once it is in place — which is exactly the window the
+  // `after-swap` once it is in place, which is exactly the window the
   // curtain needs to cover.
   document.addEventListener('astro:before-preparation', () => {
     curtain.dataset.on = '';

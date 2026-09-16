@@ -3,7 +3,7 @@
 // It is capped, hard, at 1.2s. A loading screen that outlasts the load is a
 // delay dressed as craft, so this one resolves on whichever comes first:
 // the fonts being ready, or the cap expiring. The document underneath is
-// fully parsed and readable the entire time — the overlay never gates
+// fully parsed and readable the entire time: the overlay never gates
 // content, it only covers it.
 const CAP = 1200;
 

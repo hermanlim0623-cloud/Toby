@@ -1,7 +1,7 @@
 /** Single source of truth for anything that appears in metadata twice. */
 export const SITE = {
   name: 'TOBY',
-  title: 'TOBY — Creative Technologist',
+  title: 'TOBY: Creative Technologist',
   tagline: 'I build digital systems & experiences.',
   description:
     'Creative technologist building dashboards, automation and backend tools inside a food & beverage business’s day-to-day operations.',

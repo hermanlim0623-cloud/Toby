@@ -28,12 +28,12 @@ One metric needed recomputing every cycle, by hand, using the same method every
 time. Manual recalculation has a specific failure mode that's easy to miss: the
 method drifts. Someone rounds at a different step, or includes a category the
 last person excluded, and two cycles stop being comparable without anyone
-noticing a mistake was made — because no mistake *was* made, exactly.
+noticing a mistake was made, because no mistake *was* made, exactly.
 
 ## What I built
 
 A small, focused utility that does one calculation and does it identically
-every time. Not a reporting platform — a tool with one job.
+every time. Not a reporting platform. A tool with one job.
 
 The narrow scope is intentional. This could have been folded into the general
 back-office reporting, and it would have been worse: a metric with its own

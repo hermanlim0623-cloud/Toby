@@ -2,7 +2,7 @@
 //
 // The two places a project's image appears want wildly different sizes: the
 // case study shows it across the full content width, and the hover preview
-// shows it at around 270px. One file cannot serve both — and the preview is
+// shows it at around 270px. One file cannot serve both, and the preview is
 // the expensive one, because `.work-preview` is position:fixed, so the
 // browser treats it as on-screen and `loading="lazy"` never defers anything.
 // Every preview downloads on the first paint of the index page whether or
@@ -28,7 +28,7 @@ let files;
 try {
   files = await readdir(DIR);
 } catch {
-  console.log('No public/images/work/ yet — nothing to do.');
+  console.log('No public/images/work/ yet, nothing to do.');
   process.exit(0);
 }
 
@@ -47,7 +47,7 @@ for (const file of covers) {
   try {
     const [src, out] = await Promise.all([stat(from), stat(to)]);
     if (out.mtimeMs >= src.mtimeMs) {
-      console.log(`${file} — thumb up to date`);
+      console.log(`${file}: thumb up to date`);
       continue;
     }
   } catch { /* no thumb yet */ }
@@ -60,5 +60,5 @@ for (const file of covers) {
     .toFile(to);
 
   const before = Math.round((await stat(from)).size / 1024);
-  console.log(`${file} — ${before}KB → thumb ${Math.round(info.size / 1024)}KB`);
+  console.log(`${file}: ${before}KB → thumb ${Math.round(info.size / 1024)}KB`);
 }

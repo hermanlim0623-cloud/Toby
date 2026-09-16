@@ -3,7 +3,7 @@
 // The view-transition router means a "page load" happens many times per
 // visit, so initialisation is split in two: the smooth-scroll instance and
 // the GSAP ticker are built once and kept, and everything bound to DOM the
-// router replaces is rebuilt per page behind an AbortSignal — so a
+// router replaces is rebuilt per page behind an AbortSignal, so a
 // navigation cancels its listeners instead of stacking a second copy.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';

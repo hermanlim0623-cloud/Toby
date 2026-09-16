@@ -1,7 +1,7 @@
 // The cursor system.
 //
 // The native pointer is left exactly as the operating system draws it. A
-// replacement mark — however well drawn — always trails the real pointer by
+// replacement mark, however well drawn, always trails the real pointer by
 // its own easing, and the eye tracks the drawn thing rather than the true
 // position, which is what makes an otherwise smooth custom cursor feel
 // slightly wrong to use.
@@ -12,8 +12,8 @@
 // project's own preview. Over everything else there is nothing at all and
 // the page behaves like any other page.
 //
-//   default   nothing — the system arrow, unmodified
-//   link      nothing — the arrow already becomes a hand
+//   default   nothing: the system arrow, unmodified
+//   link      nothing: the arrow already becomes a hand
 //   project   a bordered control reading VIEW →, with the project's
 //             own preview riding above it
 //   image     a bordered control reading OPEN
@@ -33,7 +33,7 @@ const MAX_TILT = 3;
 
 // The shapes live inside their own wrapper. The press compression scales
 // the wrapper, so it composes with whatever transform the current state has
-// on the shape itself rather than competing with it for specificity — which
+// on the shape itself rather than competing with it for specificity, which
 // is why the box did not compress when the two were on the same element.
 // The press compression scales the wrapper rather than the control itself,
 // so it composes with the state's own transform instead of competing with
@@ -104,7 +104,7 @@ export function createCursor(signal, reduced) {
     preview.querySelectorAll('[data-preview]').forEach((f) => frames.set(f.dataset.preview, f));
     // Reparented to the body, and this is load-bearing rather than tidy.
     // The panel is position:fixed and placed in viewport coordinates, but a
-    // transformed ancestor becomes the containing block for fixed children —
+    // transformed ancestor becomes the containing block for fixed children,
     // and the section focus scrub puts a scale on every section. Left inside
     // the work section the panel resolves against that section instead of
     // the window, so it drifts with the scrub and the edge clamping computed
@@ -158,7 +158,7 @@ export function createCursor(signal, reduced) {
     const h = preview.offsetHeight;
 
     let x = cx - w / 2;
-    // Above the control by default — it keeps the panel off the row being
+    // Above the control by default: it keeps the panel off the row being
     // read. Near the top of the window there is no room for that, so it
     // flips below; the clearance there has to clear the control itself,
     // which sits 16px under the pointer and is 26px tall. At the original
@@ -183,7 +183,7 @@ export function createCursor(signal, reduced) {
       cy = py;
     } else {
       // Exponential smoothing: frame-rate independent, and critically damped
-      // by construction — it cannot overshoot, which is what keeps this
+      // by construction: it cannot overshoot, which is what keeps this
       // reading as precision rather than as bounce.
       const k = 1 - Math.exp(-dt / TAU);
       const nx = cx + (px - cx) * k;

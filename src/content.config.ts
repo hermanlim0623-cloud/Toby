@@ -4,7 +4,7 @@ import { glob } from 'astro/loaders';
 
 // The seven projects used to live as an array literal inside index.astro,
 // which capped each one at a single sentence. As a collection they get a
-// real body — problem, build, result — and a page of their own, while the
+// real body (problem, build, result) and a page of their own, while the
 // schema keeps the card data that the gallery still needs.
 const work = defineCollection({
   loader: glob({ base: './src/content/work', pattern: '**/*.md' }),
@@ -19,7 +19,7 @@ const work = defineCollection({
      * the day a file is dropped in.
      */
     cover: z.string().optional(),
-    /** Gallery order — lowest first. */
+    /** Gallery order: lowest first. */
     order: z.number(),
     summary: z.string(),
     impact: z.string(),
@@ -37,7 +37,7 @@ const work = defineCollection({
      *
      * Required rather than optional on purpose. The gallery renders every
      * project as this diagram, and a card with an empty one would be a hole
-     * in the middle of the section making the argument — better that the
+     * in the middle of the section making the argument: better that the
      * build fails than that a project quietly renders as a blank frame.
      *
      * Each line is deliberately short. These are read at a glance across

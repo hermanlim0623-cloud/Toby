@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 // `site` is what makes canonical URLs, the sitemap and absolute OG image
-// URLs possible — social scrapers reject relative image paths, so without
+// URLs possible: social scrapers reject relative image paths, so without
 // it a pasted link renders as a bare text card.
 export default defineConfig({
   site: 'https://toby.dev',

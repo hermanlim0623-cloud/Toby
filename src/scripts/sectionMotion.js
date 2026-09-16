@@ -2,7 +2,7 @@
 //
 // Every section is its own scene with its own lifecycle, and nothing here
 // is play-once. A section that has been scrolled past and returned to plays
-// again, in either direction, indefinitely — there is deliberately no
+// again, in either direction, indefinitely: there is deliberately no
 // `hasPlayed` flag anywhere in this file.
 //
 // Two effects, and only two:

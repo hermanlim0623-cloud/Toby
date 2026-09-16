@@ -26,8 +26,8 @@ machine:
 
 Back-office reporting had no fixed shape. Each report was assembled from
 whatever was to hand, in whatever layout made sense that week, which meant two
-reports from two weeks couldn't be read side by side. Comparison — the entire
-reason you write a weekly report — required re-reading both from scratch.
+reports from two weeks couldn't be read side by side. Comparison (the entire
+reason you write a weekly report) required re-reading both from scratch.
 
 ## What I built
 
@@ -36,7 +36,7 @@ sections, same order, same units, every week.
 
 The boring consistency is the feature. A reader who has seen last week's report
 already knows where to look in this one, so the report gets scanned in a minute
-instead of studied for ten — and reports that take ten minutes to study are
+instead of studied for ten, and reports that take ten minutes to study are
 reports that stop getting read.
 
 ## How it works

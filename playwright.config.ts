@@ -24,11 +24,11 @@ export default defineConfig({
   },
   projects: [
     // The `unit` project used to carry the video seek rules. The generated
-    // dive has no playhead to seek, so those rules — and the project that
-    // ran them without a browser — are gone with the footage.
+    // dive has no playhead to seek, so those rules (and the project that
+    // ran them without a browser) are gone with the footage.
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     {
-      // Reduced motion is a supported mode here, not an afterthought — the
+      // Reduced motion is a supported mode here, not an afterthought: the
       // preloader, the dive and the palette all branch on it, so it gets
       // its own run rather than being assumed to work.
       name: 'reduced-motion',
@@ -38,7 +38,7 @@ export default defineConfig({
   ],
   webServer: {
     // A plain static server over dist/ rather than `astro preview`, which
-    // daemonizes itself in some environments and keeps a lock file — both
+    // daemonizes itself in some environments and keeps a lock file, both
     // of which break Playwright's contract that the webServer command runs
     // in the foreground for the life of the run.
     command: 'npm run build && npx serve dist --listen 4321 --no-clipboard',

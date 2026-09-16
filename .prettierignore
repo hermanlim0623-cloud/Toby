@@ -6,5 +6,5 @@ public
 test-results
 playwright-report
 
-# Hand-tuned compact rule style — deliberately not Prettier-formatted.
+# Hand-tuned compact rule style, deliberately not Prettier-formatted.
 src/styles/global.css
