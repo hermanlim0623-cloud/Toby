@@ -20,6 +20,7 @@ import { createHeroSlash } from './heroSlash.js';
 import { createLoader } from './loader.js';
 import { createTransitions } from './transition.js';
 import { createWorkSort } from './workSort.js';
+import { createTechPartition } from './techPartition.js';
 import { createProgress } from './progress.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -55,6 +56,7 @@ function initPage() {
   createMenu(signal);
   createSpy(ScrollTrigger);
   disposables.push(createWorkSort(gsap, ScrollTrigger, reduced));
+  disposables.push(createTechPartition(gsap, ScrollTrigger, reduced));
   disposables.push(createCursor(signal, reduced));
   disposables.push(createHeroSlash(signal, reduced));
   createReveals(gsap, ScrollTrigger, reduced);

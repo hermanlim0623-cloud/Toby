@@ -1157,3 +1157,102 @@ test.describe('work list sort', () => {
     await ctx.close();
   });
 });
+
+test.describe('technology partition', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
+
+  /** Whether the three group blocks are still pulled together. */
+  const closed = (page: import('@playwright/test').Page) => page.evaluate(
+    () => [...document.querySelectorAll('.tech-group')]
+      .map((g) => Math.round(new DOMMatrix(getComputedStyle(g).transform).f)));
+
+  test('the inventory arrives undivided, then splits into its groups',
+    async ({ page }) => {
+      test.skip(test.info().project.name !== 'chromium', 'client routing');
+      await page.goto('/');
+      await page.waitForTimeout(2400);
+      await page.locator('#technology').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(120);
+
+      // Closed: every group but the first is pulled up into the one above,
+      // and the names are not there yet to divide them.
+      const before = await closed(page);
+      expect(before.slice(1).every((y) => y < 0), `offsets: ${before}`).toBe(true);
+      const headsEarly = await page.locator('.tech-head').evaluateAll(
+        (els) => els.map((e) => +getComputedStyle(e).opacity));
+      expect(Math.max(...headsEarly), 'headings held back').toBeLessThan(1);
+
+      await page.waitForTimeout(2600);
+      const after = await closed(page);
+      expect(after.every((y) => y === 0), `offsets: ${after}`).toBe(true);
+      const headsLate = await page.locator('.tech-head').evaluateAll(
+        (els) => els.map((e) => +getComputedStyle(e).opacity));
+      expect(Math.min(...headsLate), 'headings arrived').toBe(1);
+    });
+
+  test('the numbers are readable while the list is still undivided',
+    async ({ page }) => {
+      test.skip(test.info().project.name !== 'chromium', 'client routing');
+      await page.goto('/');
+      await page.waitForTimeout(2400);
+      await page.locator('#technology').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+
+      // The repeating count is the whole hook: a single list has no business
+      // numbering 01-08, 01-05, 01-08. An odometer rolling here would leave
+      // every row reading 00 at exactly the moment that has to be legible.
+      const nums = await page.locator('.tech-item .t-tiny').allInnerTexts();
+      const seq = nums.map((n) => n.replace('/', '').trim());
+      expect(seq.slice(0, 8)).toEqual(['01', '02', '03', '04', '05', '06', '07', '08']);
+      expect(seq.slice(8, 13)).toEqual(['01', '02', '03', '04', '05']);
+      expect(seq.slice(13)).toEqual(['01', '02', '03', '04', '05', '06', '07', '08']);
+    });
+
+  test('everything is legible once it settles, on any route in', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    // Landing straight on the section must not leave it armed and hidden.
+    await page.goto('/#technology');
+    await page.waitForTimeout(3600);
+    const state = await page.evaluate(() => ({
+      items: [...document.querySelectorAll('.tech-item')]
+        .filter((e) => +getComputedStyle(e).opacity === 1).length,
+      heads: [...document.querySelectorAll('.tech-head')]
+        .filter((e) => +getComputedStyle(e).opacity === 1).length,
+    }));
+    expect(state).toEqual({ items: 21, heads: 3 });
+  });
+
+  test('replays when the section is scrolled back to', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#technology').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(2600);
+    expect((await closed(page)).every((y) => y === 0)).toBe(true);
+
+    await page.locator('#contact').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1000);
+    await page.locator('#technology').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    const again = await closed(page);
+    expect(again.slice(1).every((y) => y < 0), `offsets: ${again}`).toBe(true);
+  });
+
+  test('reduced motion gets the divided list and no partition', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.goto('/');
+    await page.waitForTimeout(1800);
+    await page.locator('#technology').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
+    const state = await page.evaluate(() => ({
+      offsets: [...document.querySelectorAll('.tech-group')]
+        .map((g) => new DOMMatrix(getComputedStyle(g).transform).f),
+      hidden: [...document.querySelectorAll('.tech-item, .tech-head')]
+        .filter((e) => +getComputedStyle(e).opacity < 1).length,
+    }));
+    expect(state.offsets.every((y) => y === 0), 'nothing displaced').toBe(true);
+    expect(state.hidden, 'nothing held back').toBe(0);
+    await ctx.close();
+  });
+});

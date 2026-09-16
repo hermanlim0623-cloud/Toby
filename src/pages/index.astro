@@ -402,20 +402,20 @@ const schema = {
        Technologies and capabilities are listed separately on purpose.
        "Automation" and "Bots" are things the tools do, not things they are
        written in, and listing them beside Python read as though they were. -->
-  <section id="technology" class="section bleed on-dark" data-cursor-theme="dark" data-motion data-section="05" data-section-name="TECHNOLOGY">
+  <section id="technology" class="section bleed on-dark" data-tech data-cursor-theme="dark" data-motion data-section="05" data-section-name="TECHNOLOGY">
     <SectionLabel num="05" name="Technology" />
 
     <!-- Three groups, one row treatment. The index restarts per group so a
          reader counts within a category rather than through the section. -->
     {techGroups.map((group, gi) => (
       <div class="tech-group">
-        <p class={`t-tiny tech-head${gi > 0 ? ' tech-head-second' : ''}`} data-reveal>
+        <p class={`t-tiny tech-head${gi > 0 ? ' tech-head-second' : ''}`}>
           {group.name.toUpperCase()}
         </p>
         <ul class="grid tech-list">
           {group.items.map((item, i) => (
-            <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
-              <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
+            <li class="tech-item" style="--c:3; --c-m:2;">
+              <span class="t-tiny">{String(i + 1).padStart(2, '0')} /</span>
               <span class="t-label">{item}</span>
             </li>
           ))}
@@ -424,11 +424,11 @@ const schema = {
     ))}
 
     <div class="tech-group">
-      <p class="t-tiny tech-head tech-head-second" data-reveal>CAPABILITIES</p>
+      <p class="t-tiny tech-head tech-head-second">CAPABILITIES</p>
       <ul class="grid tech-list">
         {capabilityItems.map((item, i) => (
-          <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
-            <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
+          <li class="tech-item" style="--c:3; --c-m:2;">
+            <span class="t-tiny">{String(i + 1).padStart(2, '0')} /</span>
             <span class="t-label">{item}</span>
           </li>
         ))}
