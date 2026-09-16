@@ -104,6 +104,19 @@ const schema = {
 
   <section class="hero" aria-label="Introduction">
     <div class="hero-fallback" aria-hidden="true"></div>
+    <!-- The ink reveal: two plates of the same wordmark, white over black,
+         with the pointer as the brush. It removes itself if either plate is
+         missing, so the hero never depends on it. See public/images/. -->
+    <div
+      class="hero-ink"
+      data-hero-ink
+      data-plate-top="/images/hero-plate-top.jpg"
+      data-plate-under="/images/hero-plate-under.jpg"
+      data-plate-top-invert
+      aria-hidden="true"
+    >
+      <canvas class="hero-ink-canvas" data-hero-ink-canvas></canvas>
+    </div>
     <div class="wrap hero-content">
       <div class="eyebrow">TOBY — Creative Technologist</div>
       <h1>
@@ -131,7 +144,7 @@ const schema = {
     <div class="id-surface-bloom" aria-hidden="true"></div>
     <div class="id-grid" aria-hidden="true" data-parallax="0.22"></div>
     <div class="wrap">
-      <div class="eyebrow">01 — Identity · Who is behind the system</div>
+      <div class="eyebrow" data-textfx="wipe">01 — Identity · Who is behind the system</div>
       <div class="id-console glass" style="margin-top:26px;">
         <div class="id-terminal">
           {identityLines.map((line) => (
@@ -143,7 +156,7 @@ const schema = {
         </div>
       </div>
       <div class="intro-copy glass" data-reveal>
-        <p>I work close to the ground — inside the actual workflow of a food business, not from a spec document. The tools I build get judged the same way the kitchen does: does it work today, under pressure, without babysitting.</p>
+        <p data-textfx="scramble">I work close to the ground — inside the actual workflow of a food business, not from a spec document. The tools I build get judged the same way the kitchen does: does it work today, under pressure, without babysitting.</p>
       </div>
     </div>
   </section>
@@ -152,7 +165,7 @@ const schema = {
     <div class="wrap">
       <div class="section-head">
         <h2 data-split>The skill matrix</h2>
-        <div class="eyebrow">02 — Network, not a list</div>
+        <div class="eyebrow" data-textfx="wipe">02 — Network, not a list</div>
       </div>
     </div>
     <div class="skill-stage">
@@ -177,14 +190,14 @@ const schema = {
         </div>
       </div>
     </div>
-    <p class="tech-note wrap" style="margin-top:28px;">A map of where the work actually concentrates — node size is how load-bearing a skill is across the projects below, not a proficiency score. Point at one, or tab to it, to see what it connects to.</p>
+    <p class="tech-note wrap" data-textfx="blur" style="margin-top:28px;">A map of where the work actually concentrates — node size is how load-bearing a skill is across the projects below, not a proficiency score. Point at one, or tab to it, to see what it connects to.</p>
   </section>
 
   <section id="work" style="padding-inline:0;">
     <div class="wrap">
       <div class="section-head">
-        <h2 data-split>Selected work</h2>
-        <div class="eyebrow">03 — Featured projects</div>
+        <h2 data-textfx="chars">Selected work</h2>
+        <div class="eyebrow" data-textfx="wipe">03 — Featured projects</div>
       </div>
     </div>
     <div class="gallery-pin">
@@ -235,13 +248,13 @@ const schema = {
     <div class="wrap">
       <div class="section-head">
         <h2 data-split>Machines I build</h2>
-        <div class="eyebrow">04 — The automation factory</div>
+        <div class="eyebrow" data-textfx="wipe">04 — The automation factory</div>
       </div>
-      <p class="tech-note" data-reveal style="margin-bottom:44px;">The business used to close each day with a manual recap, typed by hand. Here's the shape of what replaced it: data goes in one end, a decision happens in the middle, and a finished result comes out the other side — no one babysitting it.</p>
+      <p class="tech-note" data-textfx="typewrite" style="margin-bottom:44px;">The business used to close each day with a manual recap, typed by hand. Here's the shape of what replaced it: data goes in one end, a decision happens in the middle, and a finished result comes out the other side — no one babysitting it.</p>
 
       <svg class="pipeline-svg" viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
         <path data-flow-path d="M 40 100 C 200 100, 200 40, 340 40 C 480 40, 480 160, 620 160 C 760 160, 760 100, 960 100" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" stroke-dasharray="2 8" stroke-linecap="round" />
-        {[0,1,2,3,4,5].map(() => <circle data-flow-dot r="3.2" fill="#6FE8FF" />)}
+        {[0,1,2,3,4,5].map(() => <circle data-flow-dot r="3.2" fill="#FFFFFF" />)}
       </svg>
 
       <div class="pipeline-stages">
@@ -257,7 +270,7 @@ const schema = {
         {pipelineStats.map((s) => (
           <div class="pipeline-stat">
             <div class="pipeline-stat-n"><span data-counter={s.n}>0</span>{s.label.includes('Minutes') ? '' : '+'}</div>
-            <div class="pipeline-stat-l">{s.label}</div>
+            <div class="pipeline-stat-l" data-textfx="flicker">{s.label}</div>
           </div>
         ))}
       </div>
@@ -268,13 +281,13 @@ const schema = {
     <div class="wrap">
       <div class="section-head">
         <h2 data-split>Inside the machine</h2>
-        <div class="eyebrow">05 — Systems &amp; stack</div>
+        <div class="eyebrow" data-textfx="wipe">05 — Systems &amp; stack</div>
       </div>
-      <p class="tech-note" data-reveal style="margin-bottom:30px;">TOBY doesn't only design what you see. Every interface here sits on a stack that has to be understood layer by layer — UI, network, API, data, automation, output.</p>
+      <p class="tech-note" data-textfx="lines" style="margin-bottom:30px;">TOBY doesn't only design what you see. Every interface here sits on a stack that has to be understood layer by layer — UI, network, API, data, automation, output.</p>
       <div class="tech-cloud" data-tech-cloud>
         {stack.map((t) => <span class="tech-chip">{t}</span>)}
       </div>
-      <p class="tech-note" data-reveal>This site is one of the experiments — built in Astro, animated with GSAP and ScrollTrigger, scrolled with Lenis, and rendered through a hand-written GLSL water shader on an OGL canvas. Reduced-motion and low-power devices get a simplified, static version automatically.</p>
+      <p class="tech-note" data-textfx="lines">This site is one of the experiments — built in Astro, animated with GSAP and ScrollTrigger, scrolled with Lenis, and rendered through a hand-written GLSL water shader on an OGL canvas. Reduced-motion and low-power devices get a simplified, static version automatically.</p>
     </div>
   </section>
 
@@ -282,7 +295,7 @@ const schema = {
     <div class="wrap">
       <div class="section-head">
         <h2 data-split>The evolution</h2>
-        <div class="eyebrow">06 — Timeline</div>
+        <div class="eyebrow" data-textfx="wipe">06 — Timeline</div>
       </div>
       <div class="timeline" data-timeline>
         <div class="timeline-spine" aria-hidden="true">
@@ -291,10 +304,10 @@ const schema = {
         {experience.map((e) => (
           <div class="timeline-row" data-reveal>
             <span class="timeline-node" aria-hidden="true"></span>
-            <div class="timeline-when">{e.when}</div>
+            <div class="timeline-when" data-textfx="wipe">{e.when}</div>
             <div>
-              <h3>{e.title}</h3>
-              <p>{e.desc}</p>
+              <h3 data-textfx="skew">{e.title}</h3>
+              <p data-textfx="lines">{e.desc}</p>
             </div>
           </div>
         ))}
@@ -304,7 +317,7 @@ const schema = {
 
   <section id="contact" class="transmission-section" data-transmission>
     <div class="wrap contact">
-      <div class="eyebrow" style="justify-content:center;">07 — Transmission</div>
+      <div class="eyebrow" data-textfx="wipe" style="justify-content:center;">07 — Transmission</div>
       <div class="transmission-console glass">
         <div class="transmission-status" data-transmission-status>ESTABLISHING CONNECTION…</div>
         <div class="transmission-bar-track"><div class="transmission-bar" data-transmission-bar></div></div>
@@ -313,7 +326,7 @@ const schema = {
 
       <h2 data-split data-transmission-reveal style="margin-top:32px;">Let's fix the next bottleneck together.</h2>
       <div class="transmission-tags" data-transmission-reveal>
-        <span class="eyebrow" style="justify-content:center; margin-bottom:12px;">Available for</span>
+        <span class="eyebrow" data-textfx="wipe" style="justify-content:center; margin-bottom:12px;">Available for</span>
         <div class="id-tags" style="justify-content:center;">
           {["WEB", "AUTOMATION", "AI", "3D", "SYSTEMS", "CREATIVE DEVELOPMENT"].map((t) => <span class="id-tag">{t}</span>)}
         </div>

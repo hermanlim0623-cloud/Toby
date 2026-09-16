@@ -23,11 +23,11 @@ export const WORLD_DEPTH = 260;
 // backwards from the intended screen colour, roughly display^2.2, and any
 // change has to be judged on a canvas capture rather than on a render-target
 // readback, which shows the raw linear values instead.
-export const ENTRY_TINT = vec3(0.011, 0.020, 0.034); // the lit upper layers
-export const CORE_TINT = vec3(0.0035, 0.0065, 0.013); // the working depth
-export const FLOOR_TINT = vec3(0.0006, 0.0011, 0.0022); // not pure black — pure black reads as "broken"
-export const SIGNAL_TINT = vec3(0.49, 0.89, 0.96); // scan light: cyan, never white
-export const STRUCTURE_TINT = vec3(0.011, 0.013, 0.017); // the architecture, before any light
+export const ENTRY_TINT = vec3(0.022, 0.022, 0.022); // the lit upper layers
+export const CORE_TINT = vec3(0.0075, 0.0075, 0.0075); // the working depth
+export const FLOOR_TINT = vec3(0.0013, 0.0013, 0.0013); // not pure black — pure black reads as "broken"
+export const SIGNAL_TINT = vec3(0.86, 0.86, 0.86); // scan light: neutral, never tinted
+export const STRUCTURE_TINT = vec3(0.0135, 0.0135, 0.0135); // the architecture, before any light
 
 /** 0 at the entry surface, 1 at the output floor, for any world height. */
 export const depthAt = (y) => clamp(y.negate().div(WORLD_DEPTH), 0.0, 1.0);

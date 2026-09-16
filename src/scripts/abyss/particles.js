@@ -256,7 +256,7 @@ function createSwarm({ count, uniforms }) {
     // They brighten as they accelerate, so the swarm reads as carrying
     // something rather than as drifting.
     const flash = mix(float(0.35), float(1.0), speed);
-    return vec4(mix(SIGNAL_TINT, vec3(0.8, 0.92, 1.0), speed), flash.mul(lit).mul(falloff));
+    return vec4(mix(SIGNAL_TINT, vec3(1.0, 1.0, 1.0), speed), flash.mul(lit).mul(falloff));
   })();
 
   const geometry = new BufferGeometry();

@@ -197,7 +197,7 @@ export function createSkillNetwork(host, nodes, { prefersReducedMotion, signal }
       // Weight of the connection follows the lighter of the two ends: a link
       // is only as load-bearing as its weaker side.
       const strength = Math.min(na.weight, nb.weight);
-      ctx.strokeStyle = `rgba(124,228,245,${alpha})`;
+      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
       ctx.lineWidth = 0.5 + strength * (a === focused || b === focused ? 1.3 : 0.5);
       ctx.beginPath();
       ctx.moveTo(na.x * w, na.y * h);
@@ -226,7 +226,7 @@ export function createSkillNetwork(host, nodes, { prefersReducedMotion, signal }
         const fade = Math.sin(p.t * Math.PI);
         ctx.beginPath();
         ctx.arc(x, y, 1.8, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(124,228,245,${0.85 * fade})`;
+        ctx.fillStyle = `rgba(255,255,255,${0.85 * fade})`;
         ctx.fill();
         return true;
       });

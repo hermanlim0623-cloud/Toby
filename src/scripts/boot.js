@@ -35,6 +35,8 @@ import {
   createPipelineIgnition,
   createTimelineSpine,
 } from './sectionFx.js';
+import { createSectionText } from './sectionText.js';
+import { createHeroInk } from './heroInk.js';
 import { createPointerFx } from './pointerFx.js';
 import { createOdometers } from './odometer.js';
 import { SKILL_NODES } from './skillData.js';
@@ -120,11 +122,16 @@ function initPage() {
     disposables.push(createSkillNetwork(skillStage, SKILL_NODES, { prefersReducedMotion, signal }));
   }
 
+  disposables.push(createHeroInk(document.querySelector('[data-hero-ink]'), { prefersReducedMotion, signal }));
+
   createScrollFx(gsap, ScrollTrigger, prefersReducedMotion);
 
   // Section motion. These run after the reveals above because the heading
   // shimmer rides the `.char` spans that reveals.js creates.
   createHeadingShimmer(gsap, ScrollTrigger, prefersReducedMotion);
+  // Per-section text choreography runs after the shimmer: both ride the
+  // `.char` spans, and sectionText splits the elements the shimmer skips.
+  createSectionText(gsap, ScrollTrigger, prefersReducedMotion);
   createTechAssemble(gsap, ScrollTrigger, prefersReducedMotion);
   createPipelineIgnition(gsap, ScrollTrigger, prefersReducedMotion);
   createTimelineSpine(gsap, ScrollTrigger, prefersReducedMotion);
