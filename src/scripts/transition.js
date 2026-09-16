@@ -17,9 +17,11 @@
 
 import { createStairs } from './stairs.js';
 
-/** The one route running the staircase prototype. Every other project keeps
- *  the slash, so the two can be compared against each other directly. */
-const STAIRS_ROUTE = '/work/sales-dashboard/';
+/** The staircase is the navigation signature for the work: every project
+ *  opens and closes with it, in both directions. The slash remains for
+ *  anything outside /work/, which in practice is only the 404 page finding
+ *  its way home. */
+const isProject = (pathname) => pathname.startsWith('/work/');
 
 /** The diagonal, matching the typographic slash the identity is built on. */
 const ANGLE = 20;
@@ -117,6 +119,7 @@ export function createTransitions(reduced) {
   // happens, nothing sweeps across the screen.
   if (reduced) {
     root.remove();
+    stairsRoot?.remove();
     document.addEventListener('astro:after-swap', () => window.scrollTo(0, 0));
     return;
   }
@@ -125,11 +128,11 @@ export function createTransitions(reduced) {
     // Going back runs the halves in from the mirrored sides, so the same
     // mechanism reads as operating backwards rather than repeating itself.
     if (phase === 'IDLE') {
-      // The staircase runs for the prototype route in both directions:
-      // arriving at it, and leaving it for anywhere else.
+      // Either end being a project is enough: opening one, leaving one, and
+      // stepping between two all run the same mechanism.
       const from = new URL(event.from, location.origin).pathname;
       const to = new URL(event.to, location.origin).pathname;
-      mechanism = (to === STAIRS_ROUTE || from === STAIRS_ROUTE) && stairs ? 'stairs' : 'slash';
+      mechanism = (isProject(to) || isProject(from)) && stairs ? 'stairs' : 'slash';
       rot.style.setProperty('--pt-angle', `${event.direction === 'back' ? ANGLE + 180 : ANGLE}deg`);
     }
 

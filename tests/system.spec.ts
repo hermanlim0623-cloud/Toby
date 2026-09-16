@@ -822,134 +822,66 @@ test.describe('hero slash', () => {
   });
 });
 
-test.describe('slash transition', () => {
+test.describe('transition layers', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
 
-  /** The page-side counter the cover watcher writes into. */
-  interface CoverWindow extends Window {
-    __cover?: number;
-    __poll?: ReturnType<typeof setInterval>;
-  }
+  // The project routes run the staircase and are covered by their own suite.
+  // What is left here is the shared scaffolding both mechanisms depend on:
+  // the persisted layers, their styling, and the reduced-motion opt out.
 
-  /** Starts (or resets) a poll recording how long the cover stays up. */
-  const watchCover = (page: import('@playwright/test').Page) => page.evaluate(() => {
-    const w = window as unknown as CoverWindow;
-    w.__cover = 0;
-    w.__poll ??= setInterval(() => {
-      const el = document.querySelector('[data-pt]') as HTMLElement | null;
-      if (el && el.dataset.on !== undefined) w.__cover = (w.__cover ?? 0) + 20;
-    }, 20);
-  });
-  const coverMs = (page: import('@playwright/test').Page) =>
-    page.evaluate(() => (window as unknown as CoverWindow).__cover ?? 0);
-
-  test('survives the swap, so it works on every navigation and not just the first',
-    async ({ page }) => {
-      test.skip(test.info().project.name !== 'chromium', 'client routing');
-      await page.goto('/');
-      await page.waitForTimeout(2400);
-      await page.locator('#work').scrollIntoViewIfNeeded();
-      await page.waitForTimeout(700);
-
-      // The router replaces document.body on every swap. An overlay created
-      // from script is destroyed by the first navigation and the mechanism
-      // then silently does nothing, which is exactly what happened before
-      // it was moved into the layout with transition:persist.
-      // Sales Dashboard runs the staircase prototype, so this walks a slash
-      // route instead; the mechanism differs, the persistence problem does not.
-      const steps: [string, () => Promise<unknown>][] = [
-        ['forward', () => page.locator('[data-work-row][href="/work/back-office-report/"]').click()],
-        ['back', () => page.goBack()],
-        ['forward again', () => page.goForward()],
-        ['next project', () => page.locator('.case-next a').click()],
-      ];
-      for (const [label, act] of steps) {
-        await watchCover(page);
-        await act();
-        await page.waitForTimeout(1900);
-        expect(await coverMs(page), `${label}: the cover ran`).toBeGreaterThan(300);
-        expect(await page.locator('[data-pt]').count(), `${label}: overlay survived`).toBe(1);
-        expect(await page.evaluate(
-          () => (document.querySelector('[data-pt]') as HTMLElement).dataset.on === undefined,
-        ), `${label}: cover cleared`).toBe(true);
-      }
-    });
-
-  test('every project opens through the same mechanism', async ({ page }) => {
+  test('both layers survive the swap rather than being replaced by it', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
-    // Seven round trips, each with a real transition at both ends.
-    test.setTimeout(120_000);
     await page.goto('/');
     await page.waitForTimeout(2400);
     await page.locator('#work').scrollIntoViewIfNeeded();
     await page.waitForTimeout(700);
 
-    // Every project except the one running the staircase prototype. That
-    // route is covered by its own suite; here the point is that the slash
-    // serves all the rest from one implementation.
-    const hrefs = await page.locator('[data-work-row]').evaluateAll(
-      (els) => els.map((e) => e.getAttribute('href')!)
-        .filter((h) => !h.includes('sales-dashboard')),
-    );
-    expect(hrefs.length).toBe(6);
-
-    // One system, six destinations. Walking them without reloading also
-    // proves the overlay is not consumed by the navigation before it.
-    for (const href of hrefs) {
-      await watchCover(page);
-      await page.locator(`[data-work-row][href="${href}"]`).click();
+    // The router replaces document.body on every swap. A layer created from
+    // script is destroyed by the first navigation and the mechanism then
+    // silently does nothing, which is exactly what happened before both were
+    // moved into the layout with transition:persist.
+    const steps: [string, () => Promise<unknown>][] = [
+      ['forward', () => page.locator('[data-work-row][href="/work/back-office-report/"]').click()],
+      ['back', () => page.goBack()],
+      ['forward again', () => page.goForward()],
+      ['next project', () => page.locator('.case-next a').click()],
+    ];
+    for (const [label, act] of steps) {
+      await act();
       await page.waitForTimeout(1900);
-      expect(await coverMs(page), `${href}: the cover ran`).toBeGreaterThan(300);
-      expect(page.url()).toContain(href);
-      await watchCover(page);
-      await page.goBack();
-      await page.waitForTimeout(1900);
-      await page.locator('#work').scrollIntoViewIfNeeded();
-      await page.waitForTimeout(400);
+      expect(await page.locator('[data-pt]').count(), `${label}: slash layer survived`).toBe(1);
+      expect(await page.locator('[data-stairs]').count(), `${label}: stair layer survived`).toBe(1);
+      expect(await page.evaluate(() => {
+        const on = (sel: string) =>
+          (document.querySelector(sel) as HTMLElement | null)?.dataset.on !== undefined;
+        return on('[data-pt]') || on('[data-stairs]');
+      }), `${label}: both layers cleared`).toBe(false);
     }
   });
-
-  test('a second click during the transition does not start a second run',
-    async ({ page }) => {
-      test.skip(test.info().project.name !== 'chromium', 'client routing');
-      await page.goto('/');
-      await page.waitForTimeout(2400);
-      await page.locator('#work').scrollIntoViewIfNeeded();
-      await page.waitForTimeout(700);
-
-      const first = page.locator('[data-work-row][href="/work/back-office-report/"]');
-      const second = page.locator('[data-work-row][href="/work/rtp-report-tool/"]');
-      await first.click();
-      await page.waitForTimeout(60);
-      await second.click({ force: true }).catch(() => { /* mid-transition */ });
-      await page.waitForTimeout(2200);
-
-      // Whichever won, the page settles on one destination with the cover
-      // down, rather than two overlapping runs leaving it stuck up.
-      expect(page.url()).toMatch(/\/work\/.+\//);
-      expect(await page.evaluate(
-        () => (document.querySelector('[data-pt]') as HTMLElement).dataset.on === undefined,
-      )).toBe(true);
-    });
 
   test('the cover is the brand blue, and takes no pointer events', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    const pt = page.locator('[data-pt]');
-    expect(await pt.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
-    // Hidden between navigations rather than a permanently composited layer.
-    expect(await pt.evaluate((el) => getComputedStyle(el).visibility)).toBe('hidden');
+    for (const sel of ['[data-pt]', '[data-stairs]']) {
+      const el = page.locator(sel);
+      expect(await el.evaluate((n) => getComputedStyle(n).pointerEvents), sel).toBe('none');
+      // Hidden between navigations rather than a permanently composited layer.
+      expect(await el.evaluate((n) => getComputedStyle(n).visibility), sel).toBe('hidden');
+    }
     const half = await page.locator('[data-pt-a]').evaluate((el) => getComputedStyle(el).backgroundColor);
     expect(half).toBe('rgb(5, 93, 255)');
+    const step = await page.locator('[data-stair]').first().evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(step).toBe('rgb(5, 93, 255)');
   });
 
-  test('reduced motion navigates without the mechanism', async ({ browser }) => {
+  test('reduced motion navigates without either mechanism', async ({ browser }) => {
     const ctx = await browser.newContext({ reducedMotion: 'reduce' });
     const page = await ctx.newPage();
     await page.goto('/');
     await page.waitForTimeout(1800);
     expect(await page.locator('[data-pt]').count()).toBe(0);
+    expect(await page.locator('[data-stairs]').count()).toBe(0);
     await page.locator('#work').scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
     await page.locator('[data-work-row]').first().click();
@@ -960,7 +892,7 @@ test.describe('slash transition', () => {
   });
 });
 
-test.describe('staircase transition (prototype)', () => {
+test.describe('staircase transition', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'client routing');
 
   /** Which mechanism ran during the navigation just performed. */
@@ -983,7 +915,50 @@ test.describe('staircase transition (prototype)', () => {
     return s.stairs > 4 ? 'stairs' : s.slash > 4 ? 'slash' : 'none';
   };
 
-  test('the prototype route uses the staircase, in both directions', async ({ page }) => {
+  test('every project opens and closes with the staircase', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    test.setTimeout(180_000);
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+
+    const hrefs = await page.locator('[data-work-row]').evaluateAll(
+      (els) => els.map((e) => e.getAttribute('href')!),
+    );
+    expect(hrefs.length).toBe(7);
+
+    // One mechanism, seven projects, both directions. Walking them without
+    // reloading also proves the layer is not consumed by the run before it.
+    for (const href of hrefs) {
+      await watch(page);
+      await page.locator(`[data-work-row][href="${href}"]`).click();
+      await page.waitForTimeout(1800);
+      expect(await ran(page), `${href} opening`).toBe('stairs');
+      await watch(page);
+      await page.goBack();
+      await page.waitForTimeout(1800);
+      expect(await ran(page), `${href} closing`).toBe('stairs');
+      await page.locator('#work').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+    }
+  });
+
+  test('stepping between two projects runs it too', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    await page.locator('[data-work-row]').first().click();
+    await page.waitForTimeout(1800);
+    await watch(page);
+    await page.locator('.case-next a').click();
+    await page.waitForTimeout(1800);
+    expect(await ran(page)).toBe('stairs');
+  });
+
+  test('the route links use it as well as the browser controls', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
     await page.goto('/');
     await page.waitForTimeout(2400);
@@ -1010,33 +985,6 @@ test.describe('staircase transition (prototype)', () => {
     await page.locator('.case-back').click();
     await page.waitForTimeout(1900);
     expect(await ran(page), 'the ALL WORK link').toBe('stairs');
-  });
-
-  test('the other six are untouched by the prototype', async ({ page }) => {
-    test.skip(test.info().project.name !== 'chromium', 'client routing');
-    test.setTimeout(120_000);
-    await page.goto('/');
-    await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
-
-    const others = await page.locator('[data-work-row]').evaluateAll(
-      (els) => els.map((e) => e.getAttribute('href')!)
-        .filter((h) => !h.includes('sales-dashboard')),
-    );
-    expect(others.length).toBe(6);
-
-    // The scope of a prototype is the easiest thing to widen by accident.
-    for (const href of others) {
-      await watch(page);
-      await page.locator(`[data-work-row][href="${href}"]`).click();
-      await page.waitForTimeout(1800);
-      expect(await ran(page), `${href} keeps the slash`).toBe('slash');
-      await page.goBack();
-      await page.waitForTimeout(1800);
-      await page.locator('#work').scrollIntoViewIfNeeded();
-      await page.waitForTimeout(400);
-    }
   });
 
   test('the steps arrive one at a time, not together', async ({ page }) => {
