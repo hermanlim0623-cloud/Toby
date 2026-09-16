@@ -330,22 +330,75 @@ test.describe('cursor', () => {
     }
   });
 
-  test('compresses on press, in whichever state it is in', async ({ page }) => {
+  test('the control compresses on press', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
-    await page.goto('/');
+    // The case study's main visual takes the image state and is not a link,
+    // so it can be held down without navigating out from under the pointer.
+    await page.goto('/work/sales-dashboard/');
     await page.waitForTimeout(2400);
+    const visual = page.locator('.case-visual');
+    await visual.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    const box = (await visual.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(500);
+    await expect(page.locator('.cur')).toHaveAttribute('data-state', 'image');
+
     const scale = () => page.locator('.cur-inner').evaluate(
       (el) => Number(new DOMMatrix(getComputedStyle(el).transform).a.toFixed(2)),
     );
-    await page.mouse.move(700, 640);
-    await page.waitForTimeout(300);
     expect(await scale()).toBe(1);
     await page.mouse.down();
     await page.waitForTimeout(250);
-    // The compression lives on its own wrapper so a state's transform and
+    // The compression lives on its own wrapper, so a state's transform and
     // the press cannot out-specify each other.
     expect(await scale()).toBe(0.82);
     await page.mouse.up();
+  });
+
+  test('leaves the system pointer alone', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    // Nothing may hide the native cursor. A drawn replacement always trails
+    // the real pointer by its own easing, and that half-beat is exactly what
+    // this system was rebuilt to remove.
+    const hiding = await page.evaluate(() =>
+      [...document.querySelectorAll('body, main, section, a, p, h1, h2, li')]
+        .filter((el) => getComputedStyle(el).cursor === 'none').length);
+    expect(hiding).toBe(0);
+    // And a link still shows the hand the browser would normally show.
+    await expect(page.locator('.hero-scroll')).toHaveCSS('cursor', 'pointer');
+  });
+
+  test('shows the control only where there is something to say', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const opacity = () => page.locator('.cur-box').evaluate(
+      (el) => Number(getComputedStyle(el).opacity),
+    );
+
+    // Empty page: nothing follows the mouse at all.
+    await page.mouse.move(700, 640);
+    await page.waitForTimeout(400);
+    expect(await opacity()).toBe(0);
+
+    // A plain link: the system pointer already becomes a hand, so the
+    // control stays out of it.
+    const nav = (await page.locator('.hero-scroll').boundingBox())!;
+    await page.mouse.move(nav.x + 30, nav.y + nav.height / 2);
+    await page.waitForTimeout(400);
+    expect(await opacity()).toBe(0);
+
+    // A project row: the control appears, because VIEW → is information the
+    // pointer cannot carry by itself.
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+    const row = (await page.locator('[data-work-row]').nth(2).boundingBox())!;
+    await page.mouse.move(row.x + 400, row.y + row.height / 2);
+    await page.waitForTimeout(500);
+    expect(await opacity()).toBe(1);
   });
 
   test('goes white inside the inverted block', async ({ page }) => {
@@ -387,8 +440,8 @@ test.describe('cursor', () => {
     await m.goto('/');
     await m.waitForTimeout(2400);
     expect(await m.locator('.cur').count()).toBe(0);
-    // And the native pointer is never hidden on a device that needs it.
-    expect(await m.locator('html.has-cursor').count()).toBe(0);
+    // And no preview panel is left tracking a pointer that does not exist.
+    expect(await m.locator('.work-preview.is-on').count()).toBe(0);
     await ctx.close();
   });
 });

@@ -1,22 +1,24 @@
 // The cursor system.
 //
-// One element, one rAF loop, one state machine. Every pointer affordance on
-// the site resolves through here — there is no second follower and no
-// per-section special case, which is the only way a cursor stays coherent
-// once a site has more than a couple of interactive surfaces.
+// The native pointer is left exactly as the operating system draws it. A
+// replacement mark — however well drawn — always trails the real pointer by
+// its own easing, and the eye tracks the drawn thing rather than the true
+// position, which is what makes an otherwise smooth custom cursor feel
+// slightly wrong to use.
 //
-// The default is a technical crosshair: a registration mark, not a pointer.
-// It says the page is an instrument you are aiming at rather than a document
-// you are poking. Every other state is that same mark resolving into the
-// control the thing under it actually is.
+// So nothing here draws a pointer. What follows the mouse is only the
+// information the pointer cannot carry by itself: a small technical control
+// naming what the thing underneath does, and, over a project row, that
+// project's own preview. Over everything else there is nothing at all and
+// the page behaves like any other page.
 //
-//   default   crosshair + centre dot
-//   link      a directional arrow
+//   default   nothing — the system arrow, unmodified
+//   link      nothing — the arrow already becomes a hand
 //   project   a bordered control reading VIEW →, with the project's
 //             own preview riding above it
 //   image     a bordered control reading OPEN
 //   drag      a bordered control reading ← DRAG →
-//   active    any of the above, compressed, while the button is down
+//   active    the control compresses while the button is down
 //
 // Position is interpolated on rAF with an exponential filter rather than a
 // per-frame fraction, so the inertia is the same ~95ms on a 60Hz panel and
@@ -33,15 +35,11 @@ const MAX_TILT = 3;
 // the wrapper, so it composes with whatever transform the current state has
 // on the shape itself rather than competing with it for specificity — which
 // is why the box did not compress when the two were on the same element.
+// The press compression scales the wrapper rather than the control itself,
+// so it composes with the state's own transform instead of competing with
+// it for specificity.
 const SHAPES = `
   <div class="cur-inner">
-  <svg class="cur-cross" viewBox="0 0 28 28" aria-hidden="true">
-    <path d="M14 0v7M14 21v7M0 14h7M21 14h7M7 7h14v14H7z" />
-    <circle class="cur-dot" cx="14" cy="14" r="1.25" />
-  </svg>
-  <svg class="cur-arrow" viewBox="0 0 28 28" aria-hidden="true">
-    <path d="M9 19L19 9M13 9h6v6" />
-  </svg>
   <div class="cur-box">
     <span class="cur-pre"></span>
     <span class="cur-label"></span>
@@ -90,11 +88,6 @@ export function createCursor(signal, reduced) {
   root.setAttribute('aria-hidden', 'true');
   root.innerHTML = SHAPES;
   document.body.appendChild(root);
-
-  // The native pointer is only hidden once the replacement is actually in
-  // the document. Doing it from CSS alone would leave a page with no cursor
-  // at all on any path where this module did not run.
-  document.documentElement.classList.add('has-cursor');
 
   const pre = root.querySelector('.cur-pre');
   const label = root.querySelector('.cur-label');
@@ -219,6 +212,5 @@ export function createCursor(signal, reduced) {
   return () => {
     cancelAnimationFrame(raf);
     root.remove();
-    document.documentElement.classList.remove('has-cursor');
   };
 }
