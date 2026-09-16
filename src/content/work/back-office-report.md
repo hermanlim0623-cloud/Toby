@@ -1,7 +1,6 @@
 ---
 title: Back Office Report
 tag: Reporting
-world: report
 order: 4
 summary: Structured back-office reporting tool that compiles operational data into a clean, shareable format.
 impact: Standardized weekly reporting

@@ -1,13 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#9A9A9A"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="#000000"/>
-  <!-- a T built from two bars, reading as the mark and as a dive marker -->
-  <rect x="14" y="17" width="36" height="7" rx="3.5" fill="url(#g)"/>
-  <rect x="28.5" y="17" width="7" height="31" rx="3.5" fill="url(#g)"/>
-  <circle cx="32" cy="52" r="2.5" fill="#FFFFFF" opacity="0.75"/>
+  <rect width="64" height="64" fill="#F4F4F4"/>
+  <!-- The page's own first mark: the accent slash, then the wordmark
+       stacked the way the hero stacks it. -->
+  <path d="M40 10 L28 26" stroke="#055DFF" stroke-width="4" stroke-linecap="square"/>
+  <text x="8" y="41" font-family="Helvetica, Arial, sans-serif" font-size="21" font-weight="700" letter-spacing="-1.2" fill="#404040">TO</text>
+  <text x="8" y="58" font-family="Helvetica, Arial, sans-serif" font-size="21" font-weight="700" letter-spacing="-1.2" fill="#404040">BY</text>
 </svg>

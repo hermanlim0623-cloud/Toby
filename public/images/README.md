@@ -1,7 +1,7 @@
-# Hero ink plates
+# Ink plates — the About figure
 
-The hero's ink reveal (`src/scripts/heroInk.js`) composites two plates of the
-wordmark. **The files here are generated — do not edit them.** The originals
+The About section's figure (`src/scripts/heroInk.js`) composites two plates
+of the wordmark. **The files here are generated — do not edit them.** The originals
 live in `src/assets/hero-plates/` and are never served:
 
 | Original (`src/assets/hero-plates/`) | Served (`public/images/`) | What it is |
@@ -9,13 +9,11 @@ live in `src/assets/hero-plates/` and are never served:
 | `hero-plate-top.png` | `hero-plate-top.webp` | the plate the visitor lands on — the clean wordmark |
 | `hero-plate-under.png` | `hero-plate-under.webp` | the plate underneath — the wordmark over the machinery |
 
-Both are authored the same way: **a black TOBY on white**. The site is black,
-so the upper plate is drawn as its *negative* — TOBY arrives white on black —
-and held back to about a third of full strength, so it reads as texture the
-headline sits on rather than as a second headline competing with the real one.
+Both are authored the same way: **a black TOBY on white**, and on this light
+page they are shown exactly as authored — no inversion, full strength.
 Dragging the cursor paints ink into an alpha channel that lets the lower plate
-through at full contrast, which flips the wordmark to black over the machinery
-under your hand and bleeds away again over a few seconds.
+through, so the mark develops over the machinery under your hand and bleeds
+away again over a few seconds.
 
 ## Replacing a plate
 
@@ -36,12 +34,12 @@ whose aspect does not match the hero is cropped rather than stretched.
 
 ## Knobs
 
-Set these on the `[data-hero-ink]` element in `src/pages/index.astro`:
+Set these on the `[data-hero-ink]` figure in `src/pages/index.astro`:
 
 | Attribute | Default | What it does |
 | --- | --- | --- |
-| `data-plate-rest` | `0.34` | how present the upper plate is before it is touched |
-| `data-plate-top-invert` | on | drop it to `"false"` for an upper plate already white-on-black |
+| `data-plate-rest` | `0.34` | how present the upper plate is before it is touched; the About figure sets `1` |
+| `data-plate-top-invert` | on | the About figure sets `"false"` — the plates are already right for a light page |
 
 `hero-plate-top` is optional: with only the lower plate present, the upper one
 is derived as its negative. Until `hero-plate-under.webp` exists the stage

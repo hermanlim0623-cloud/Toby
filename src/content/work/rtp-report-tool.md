@@ -1,7 +1,6 @@
 ---
 title: RTP Report Tool
 tag: Reporting
-world: report
 order: 6
 summary: Focused reporting utility built to track a specific recurring metric without manual recalculation each cycle.
 impact: Removes manual recalculation

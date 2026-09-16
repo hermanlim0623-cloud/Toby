@@ -43,6 +43,28 @@ test.describe('grid and scale', () => {
     expect(gradients).toBe(0);
   });
 
+  test('the inverted block inverts its tokens, not just its colour', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(2200);
+    // Setting `color` alone leaves anything that names var(--text) painting
+    // the light token onto the dark background. This asserts the tokens
+    // themselves flip, which is the thing that is easy to half-fix.
+    // The technology archive is the document's inverted block. The menu and
+    // the footer are .on-dark too but carry no section label, so this names
+    // the one that has to survive the inversion intact.
+    const tokens = await page.locator('#technology.on-dark').evaluate((el) => {
+      const s = getComputedStyle(el);
+      return {
+        text: s.getPropertyValue('--text').trim(),
+        bg: s.backgroundColor,
+        label: getComputedStyle(el.querySelector('.section-label')!).color,
+      };
+    });
+    expect(tokens.text.toUpperCase()).toBe('#F4F4F4');
+    // The section label must be light, not the page's #404040.
+    expect(tokens.label).not.toBe('rgb(64, 64, 64)');
+  });
+
   test('borders are 1px, everywhere they exist', async ({ page }) => {
     await page.goto('/');
     await page.waitForTimeout(2200);

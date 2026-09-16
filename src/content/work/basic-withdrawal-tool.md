@@ -1,7 +1,6 @@
 ---
 title: Basic Withdrawal Tool
 tag: Internal tool
-world: system
 order: 7
 summary: Simple internal utility for handling withdrawal records in a consistent, auditable way.
 impact: Consistent record-keeping

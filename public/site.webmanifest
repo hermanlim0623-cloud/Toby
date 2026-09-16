@@ -1,13 +1,22 @@
 {
-  "name": "TOBY — Creative Technologist",
+  "name": "TOBY \u2014 Creative Technologist",
   "short_name": "TOBY",
-  "description": "I build digital systems & experiences.",
+  "description": "Creative technologist building digital systems, automation and tooling.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#F4F4F4",
+  "theme_color": "#F4F4F4",
   "icons": [
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
   ]
 }

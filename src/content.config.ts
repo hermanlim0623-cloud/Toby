@@ -11,8 +11,6 @@ const work = defineCollection({
   schema: z.object({
     title: z.string(),
     tag: z.string(),
-    /** Kept for URL-stable categorisation; no longer drives a visual. */
-    world: z.enum(['control', 'editorial', 'bot', 'report', 'tracker', 'system']),
     /**
      * Optional path to a real screenshot, e.g. "/images/work/sales.webp".
      * When present the work list's hover preview shows it; when absent the

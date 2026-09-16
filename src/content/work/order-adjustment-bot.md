@@ -1,7 +1,6 @@
 ---
 title: Order Adjustment Bot
 tag: Automation
-world: bot
 order: 3
 summary: Automates repetitive order-adjustment entries that were previously handled manually, one by one.
 impact: Removes a recurring manual task

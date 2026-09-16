@@ -1,7 +1,6 @@
 ---
 title: Mistake Count Tracker
 tag: Tracking
-world: tracker
 order: 5
 summary: Lightweight tool for logging and tracking recurring operational mistakes so patterns can be caught early.
 impact: Surfaces recurring issues faster

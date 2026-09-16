@@ -243,7 +243,11 @@ const schema = {
   </section>
 
   <!-- ==================== 05 / TECHNOLOGY ==================== -->
-  <section id="technology" class="section bleed" data-section="05" data-section-name="TECHNOLOGY">
+  <!-- The one inverted block in the document. The archive is the right
+       section for it: it is a list of names rather than an argument, so the
+       reader loses nothing by it going quiet and dark before the contact
+       block, and the page gains a beat it does not otherwise have. -->
+  <section id="technology" class="section bleed on-dark" data-section="05" data-section-name="TECHNOLOGY">
     <SectionLabel num="05" name="Technology" />
     <ul class="grid tech-list">
       {allStack.map((t, i) => (

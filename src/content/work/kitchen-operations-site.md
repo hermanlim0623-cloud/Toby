@@ -1,7 +1,6 @@
 ---
 title: Kitchen Operations Site
 tag: Operations
-world: editorial
 order: 2
 summary: Internal site consolidating menu, pricing, and operational references used across the business.
 impact: Single source of truth for the team

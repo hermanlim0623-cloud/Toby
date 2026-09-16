@@ -1,7 +1,6 @@
 ---
 title: Sales Dashboard
 tag: Dashboard
-world: control
 order: 1
 summary: Daily and monthly sales overview for a food & beverage business, replacing manual recap spreadsheets with a live view of performance.
 impact: Recap time cut from ~30 min to instant

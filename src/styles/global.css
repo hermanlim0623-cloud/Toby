@@ -215,14 +215,20 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .link:hover > i, .link:focus-visible > i{ opacity:1; transform:translateX(0); }
 
 /* ---------- dark section ----------
-   The one inversion in the system. Inside it the rule, the muted grey and
-   the body text all flip, so a dark block is the same design rather than a
-   second one. */
+   The one inversion in the system, and it inverts the *tokens*, not just
+   the colour property. Setting `color` alone leaves every rule that names
+   var(--text) — the section label, among others — painting #404040 onto
+   #161819, which is dark-on-dark and unreadable. Redefining the tokens is
+   what makes an inverted block the same design rather than a second one. */
 .on-dark{
   background:var(--dark);
-  color:var(--bg);
-  --line: var(--line-dark);
+  --text: #F4F4F4;
   --muted: rgba(244,244,244,0.62);
+  --line: var(--line-dark);
+  /* #055DFF is drawn for a light background; on #161819 it measures under
+     3:1. The dark block gets the same blue lifted into range. */
+  --accent: #5C9BFF;
+  color:var(--text);
 }
 
 .skip-link{
@@ -541,7 +547,10 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .cursor-dot{
   width:7px; height:7px;
   margin:-3.5px 0 0 -3.5px;
-  background:var(--text);
+  /* Difference blending is what lets one dot cross a light page and an
+     inverted block without needing to know which it is over. */
+  background:#FFFFFF;
+  mix-blend-mode:difference;
   border-radius:50%;
   transition:transform var(--t-micro) var(--ease), background var(--t-micro) var(--ease);
 }
