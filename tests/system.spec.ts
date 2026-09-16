@@ -1256,3 +1256,115 @@ test.describe('technology partition', () => {
     await ctx.close();
   });
 });
+
+test.describe('prose measure', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
+
+  const FIRST = 'I work close to the ground, inside the actual workflow of a food and '
+    + 'beverage business, not from a spec document. The tools I build get judged the '
+    + 'same way the kitchen does: does it work today, under pressure, without anyone '
+    + 'babysitting it.';
+
+  test('the rules are drawn before the lines land on them', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(260);
+
+    // Mid-cascade there must be a rule already drawn under a line whose
+    // words have not arrived: the measure stating itself ahead of the text
+    // is the whole move, and a rule that merely accompanies its line is not
+    // the same thing.
+    const lead = await page.evaluate(() => {
+      const paras = [...document.querySelectorAll('.about-body p')];
+      return paras.some((para) => {
+        const rules = [...para.querySelectorAll<HTMLElement>('.pl')];
+        return rules.some((rule) => {
+          const drawn = new DOMMatrix(getComputedStyle(rule).transform).a > 0.9
+            && +getComputedStyle(rule).opacity > 0.5;
+          if (!drawn) return false;
+          const top = parseFloat(rule.style.top);
+          // The words sitting on this rule's own line.
+          const words = [...para.querySelectorAll<HTMLElement>('.pw')].filter(
+            (w) => Math.abs(w.offsetTop + w.offsetHeight - 1 - top) < 2);
+          return words.length > 0 && words.every((w) => +getComputedStyle(w).opacity < 0.5);
+        });
+      });
+    });
+    expect(lead, 'a drawn rule was waiting for its line').toBe(true);
+  });
+
+  test('every rule and word settles, and none are left behind', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(3200);
+    const end = await page.evaluate(() => ({
+      hiddenWords: [...document.querySelectorAll('.pw')]
+        .filter((w) => +getComputedStyle(w).opacity < 1).length,
+      rulesLeft: [...document.querySelectorAll('.pl')]
+        .filter((r) => +getComputedStyle(r).opacity > 0.02).length,
+    }));
+    expect(end).toEqual({ hiddenWords: 0, rulesLeft: 0 });
+  });
+
+  test('splitting the words does not change the text', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(3200);
+    // The rules are decoration and must not read; the prose must survive
+    // being taken apart to be measured.
+    const text = await page.locator('.about-body p').first()
+      .evaluate((el) => el.textContent!.replace(/\s+/g, ' ').trim());
+    expect(text).toBe(FIRST);
+    expect(await page.locator('.pl[aria-hidden="true"]').count())
+      .toBe(await page.locator('.pl').count());
+  });
+
+  test('a resize redraws the rules against the new line boxes', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(3200);
+    await page.setViewportSize({ width: 900, height: 900 });
+    await page.waitForTimeout(900);
+
+    // A rule drawn against the old width would sit between lines rather
+    // than under one, so the count has to follow the new layout exactly.
+    const m = await page.evaluate(() => {
+      const paras = [...document.querySelectorAll('.about-body p')];
+      const lines = new Set<string>();
+      paras.forEach((para, i) => para.querySelectorAll('.pw')
+        .forEach((w) => lines.add(`${i}:${Math.round((w as HTMLElement).offsetTop)}`)));
+      return {
+        rules: document.querySelectorAll('.pl').length,
+        lines: lines.size,
+        hidden: [...document.querySelectorAll('.pw')]
+          .filter((w) => +getComputedStyle(w).opacity < 1).length,
+      };
+    });
+    expect(m.rules, `rules ${m.rules} vs lines ${m.lines}`).toBe(m.lines);
+    expect(m.hidden, 'nothing left hidden by the rebuild').toBe(0);
+  });
+
+  test('reduced motion leaves the prose alone entirely', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.goto('/');
+    await page.waitForTimeout(1800);
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    // Not merely settled: never taken apart in the first place.
+    expect(await page.locator('.pw').count()).toBe(0);
+    expect(await page.locator('.pl').count()).toBe(0);
+    const text = await page.locator('.about-body p').first()
+      .evaluate((el) => el.textContent!.replace(/\s+/g, ' ').trim());
+    expect(text).toBe(FIRST);
+    await ctx.close();
+  });
+});
