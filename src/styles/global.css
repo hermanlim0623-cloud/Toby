@@ -554,7 +554,12 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
   margin:-28px 0 0 -28px;
   border:1px solid var(--cur-ink);
   border-radius:50%;
-  opacity:0.55;
+  /* A hairline of the opposite value just outside the stroke. On the light
+     hero it is invisible and the dark ring carries; over the revealed blue
+     the ring would otherwise sink into the ink, and this is what keeps the
+     brush readable against its own reveal. */
+  box-shadow:0 0 0 1px rgba(255,255,255,0.45);
+  opacity:0.6;
   transform:scale(1);
   transition:opacity 260ms var(--ease), transform 300ms var(--ease);
 }
@@ -850,14 +855,19 @@ html:not(.js-ready) .loader{ display:none; }
 
 /* ============================================================
    HERO SLASH
-   A diagonal band carrying the wordmark, revealed by moving the
-   pointer. It is a cursor interaction rather than a background
-   element: invisible until the pointer moves, gone again once it
-   stops, and the hero at rest is unchanged.
+   A fixed diagonal band of accent blue carrying the repeated
+   wordmark, painted into a canvas and masked to nothing. The
+   pointer paints into the mask, so the band is discovered
+   locally rather than shown. The artwork never moves.
+
+   There is no CSS for the band itself on purpose: everything
+   visible is drawn in heroSlash.js, because the reveal has to
+   accumulate and decay, and a CSS mask can move but cannot
+   remember where it has been.
    ============================================================ */
 .hero{ position:relative; }
 /* The hero's own content sits above the effect. Without this the
-   absolutely positioned band would paint over the static grid children. */
+   absolutely positioned canvas would paint over the static grid children. */
 .hero > .grid{ position:relative; z-index:1; }
 
 .hero-fx{
@@ -866,56 +876,15 @@ html:not(.js-ready) .loader{ display:none; }
   z-index:0;
   overflow:hidden;
   pointer-events:none;
-  /* The angle of the typographic slash the page opens with, so the band and
-     the mark in the h1 lean the same way. */
-  --slash-angle:20deg;
-  opacity:0;
-  transition:opacity 620ms var(--ease);
 }
-.hero-fx.is-live{ opacity:0.72; }
-
-.hero-fx-band{
-  position:absolute;
-  top:50%;
-  left:0;
-  width:clamp(200px, 19vw, 300px);
-  /* Tall enough that a 20deg rotation never brings an end into view. */
-  height:190%;
-  transform:translate3d(-9999px, -50%, 0) rotate(var(--slash-angle));
-  will-change:transform;
-  /* Flat accent, deliberately. The page's own rule is that no gradient
-     paints a surface anywhere, and the soft edge this effect needs comes
-     from the mask below instead, which costs nothing per frame and does not
-     put a second kind of fill into a design built on flat colour. */
-  background:var(--accent);
-  /* The soft edge. A mask rather than a blur filter: it costs nothing per
-     frame, where blurring a band this size on every move would not. */
-  -webkit-mask-image:linear-gradient(90deg, transparent, #000 26%, #000 74%, transparent);
-  mask-image:linear-gradient(90deg, transparent, #000 26%, #000 74%, transparent);
-  overflow:hidden;
+.hero-fx-canvas{
+  width:100%;
+  height:100%;
+  display:block;
 }
 
-/* The wordmark, repeated down the band and rotated with it. */
-.hero-fx-type{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:0.06em;
-  font-family:var(--font-main);
-  font-weight:700;
-  font-size:clamp(38px, 4.4vw, 72px);
-  line-height:0.92;
-  letter-spacing:-0.04em;
-  color:rgba(255,255,255,0.62);
-  white-space:nowrap;
-  user-select:none;
-}
-/* Alternating weight keeps the column from reading as a printed pattern. */
-.hero-fx-type span:nth-child(even){ color:rgba(255,255,255,0.3); }
-
+/* Reduced motion never mounts it, and the hero's default state is already
+   the clean one, so there is nothing to fall back to. */
 @media (prefers-reduced-motion: reduce){
   .hero-fx{ display:none; }
 }

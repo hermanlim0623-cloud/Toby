@@ -1,22 +1,17 @@
 ---
 /**
- * The hero's cursor-driven slash.
+ * The hero's hidden slash.
  *
- * A diagonal band carrying the wordmark, revealed by moving the pointer and
- * fading out again when it stops. It is an interaction rather than a
- * background: at rest the hero is exactly as it was.
+ * A fixed diagonal band carrying the repeated wordmark, painted into a
+ * canvas and then masked to nothing. Moving the pointer paints into the mask,
+ * so the band is discovered locally rather than shown: the artwork never
+ * moves, only the brush does.
  *
- * Decorative and inert. The wordmark is already in the hero's h1, so
- * repeating it here would only make a screen reader read the name twelve
- * times.
+ * Decorative and inert. The wordmark is already the hero's h1, so repeating
+ * it here for a screen reader would only read the name a dozen more times.
  */
-const REPEATS = 14;
 ---
 
 <div class="hero-fx" data-hero-slash aria-hidden="true">
-  <div class="hero-fx-band" data-hero-slash-band>
-    <div class="hero-fx-type">
-      {Array.from({ length: REPEATS }, () => <span>TOBY</span>)}
-    </div>
-  </div>
+  <canvas class="hero-fx-canvas" data-hero-slash-canvas></canvas>
 </div>

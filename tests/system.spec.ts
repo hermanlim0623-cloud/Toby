@@ -722,55 +722,86 @@ test.describe('project covers', () => {
 test.describe('hero slash', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'pointer-driven');
 
-  test('appears on movement and fades once the pointer stops', async ({ page }) => {
-    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
-    await page.goto('/');
-    await page.waitForTimeout(2400);
-    const fx = page.locator('[data-hero-slash]');
-
-    // It is an interaction, not a background: the hero at rest is unchanged.
-    await expect(fx).toHaveCSS('opacity', '0');
-
-    for (let i = 0; i < 18; i += 1) {
-      await page.mouse.move(340 + i * 26, 430);
-      await page.waitForTimeout(16);
-    }
-    await page.waitForTimeout(500);
-    expect(Number(await fx.evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThan(0.5);
-
-    // And it lets go again rather than staying on screen.
-    await page.waitForTimeout(1600);
-    await expect(fx).toHaveCSS('opacity', '0');
+  /** How much of the canvas currently carries ink. */
+  const inked = (page: import('@playwright/test').Page) => page.evaluate(() => {
+    const c = document.querySelector('[data-hero-slash-canvas]') as HTMLCanvasElement | null;
+    if (!c) return -1;
+    const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+    let n = 0;
+    for (let i = 3; i < d.length; i += 160) if (d[i] > 12) n += 1;
+    return n;
   });
 
-  test('tracks the pointer horizontally', async ({ page }) => {
+  test('is completely invisible until the brush touches it', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    const band = page.locator('[data-hero-slash-band]');
-    const x = () => band.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).e);
 
-    await page.mouse.move(400, 430);
-    await page.waitForTimeout(700);
-    const left = await x();
-    await page.mouse.move(1100, 430);
-    await page.waitForTimeout(700);
-    expect(await x()).toBeGreaterThan(left);
+    // Not faint. Absent. The whole idea is that it is discovered.
+    expect(await inked(page), 'default state').toBe(0);
+
+    // Approaching is not touching: the far side of the hero reveals nothing.
+    await page.mouse.move(160, 300);
+    await page.waitForTimeout(400);
+    expect(await inked(page), 'pointer far from the slash').toBe(0);
+  });
+
+  test('reveals locally, then forgets', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+
+    for (let i = 0; i < 16; i += 1) {
+      await page.mouse.move(700 + i * 12, 580 - i * 16);
+      await page.waitForTimeout(16);
+    }
+    await page.waitForTimeout(160);
+    const touched = await inked(page);
+    expect(touched, 'ink appears where the brush crossed').toBeGreaterThan(200);
+
+    // Local, not global: a single crossing must not light the whole band.
+    const total = await page.evaluate(() => {
+      const c = document.querySelector('[data-hero-slash-canvas]') as HTMLCanvasElement;
+      return Math.floor((c.width * c.height) / 40);
+    });
+    expect(touched, 'the reveal is local').toBeLessThan(total * 0.5);
+
+    // And the memory is temporary rather than a painted line.
+    await page.waitForTimeout(2800);
+    expect(await inked(page), 'returns to clean').toBe(0);
+  });
+
+  test('the artwork never moves', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+
+    // The canvas carries no transform of its own: the band is painted at a
+    // fixed place inside it, and only the mask changes. A cursor-following
+    // slash would show up here as a moving transform.
+    const before = await page.locator('[data-hero-slash-canvas]').evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    await page.mouse.move(500, 400);
+    await page.waitForTimeout(300);
+    await page.mouse.move(1200, 700);
+    await page.waitForTimeout(300);
+    const after = await page.locator('[data-hero-slash-canvas]').evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    expect(after).toBe(before);
   });
 
   test('never covers the hero content', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    // The band paints under the hero's own grid, and takes no pointer
-    // events, so the headline and the links behind it still work.
     expect(await page.locator('[data-hero-slash]').evaluate(
       (el) => getComputedStyle(el).pointerEvents,
     )).toBe('none');
     const fxZ = await page.locator('[data-hero-slash]').evaluate((el) => getComputedStyle(el).zIndex);
     const contentZ = await page.locator('.hero .hero-top').evaluate((el) => getComputedStyle(el).zIndex);
     expect(Number(fxZ)).toBeLessThan(Number(contentZ));
-    // The scroll link inside the hero is still clickable.
     await page.locator('.hero-scroll').click();
     await page.waitForTimeout(600);
     expect(page.url()).toContain('#about');
