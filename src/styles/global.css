@@ -630,3 +630,55 @@ html:not(.js-ready) .loader{ display:none; }
   .work-row > a{ padding-block:16px; }
   .section{ padding-block:clamp(56px, 9vh, 96px); }
 }
+
+/* ---------- case study ---------- */
+.case-back{ display:inline-flex; margin-bottom:clamp(20px, 3vh, 36px); }
+/* The back link's arrow points the other way, so it leads with the mark
+   and the text steps right rather than left. */
+.case-back > i{ transform:translateX(6px); }
+.case-back:hover > i, .case-back:focus-visible > i{ transform:translateX(0); }
+.case-back:hover > span, .case-back:focus-visible > span{ transform:translateX(4px); }
+
+.case-visual{
+  margin:0;
+  overflow:hidden;
+}
+.case-visual img{ width:100%; aspect-ratio:16 / 9; object-fit:cover; }
+.case-plate{
+  aspect-ratio:16 / 9;
+  display:grid;
+  align-content:space-between;
+  padding:clamp(20px, 3vw, 48px);
+}
+.case-plate-title{ align-self:center; max-width:16ch; }
+@media (max-width: 809.98px){
+  .case-visual img, .case-plate{ aspect-ratio:4 / 3; }
+}
+
+/* ---------- progress ----------
+   The header's bottom border, doubled: the rule underneath fills as the
+   document is read. It is the same 1px the rest of the page is built from. */
+.progress{
+  position:fixed;
+  top:56px; left:0; right:0;
+  z-index:101;
+  height:1px;
+  pointer-events:none;
+}
+.progress-bar{
+  display:block;
+  height:100%;
+  background:var(--text);
+  transform:scaleX(0);
+  transform-origin:left center;
+}
+
+/* ---------- route curtain ---------- */
+.curtain{
+  position:fixed; inset:0;
+  z-index:800;
+  pointer-events:none;
+  transform:translateY(100%);
+  transition:transform 420ms var(--ease);
+}
+.curtain[data-on]{ transform:translateY(0); }

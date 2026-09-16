@@ -103,3 +103,26 @@ export function createReveals(gsap, ScrollTrigger, reduced) {
     });
   });
 }
+
+/**
+ * Editorial images arrive by un-cropping and settling out of a slight
+ * over-scale, rather than fading. The clip and the scale run against each
+ * other, so the frame opens while the picture eases back to its true size —
+ * which is what makes it read as a printed image being revealed rather than
+ * as an element appearing.
+ */
+export function createFigureReveals(gsap, ScrollTrigger, reduced) {
+  const figures = gsap.utils.toArray('[data-figure]');
+  if (!figures.length || reduced) return;
+
+  figures.forEach((fig) => {
+    const inner = fig.firstElementChild;
+    gsap.timeline({ scrollTrigger: { trigger: fig, start: 'top 88%', once: true } })
+      .fromTo(fig,
+        { clipPath: 'inset(0 0 100% 0)' },
+        { clipPath: 'inset(0 0 0% 0)', duration: 1, ease: 'expo.out' })
+      .fromTo(inner,
+        { scale: 1.05 },
+        { scale: 1, duration: 1.2, ease: 'expo.out' }, 0);
+  });
+}

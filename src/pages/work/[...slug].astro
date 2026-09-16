@@ -47,6 +47,7 @@ const schema = {
   <article class="case" data-section={num} data-section-name={d.tag.toUpperCase()}>
 
     <header class="section bleed case-head">
+      <a class="link t-label case-back" href="/#work"><i>&lt;</i><span>ALL WORK</span></a>
       <SectionLabel num={num} name="Project" />
       <div class="grid case-head-grid">
         <p class="case-index t-counter" style="--c:2;">{num}<span class="t-muted"> / {String(total).padStart(2, '0')}</span></p>
@@ -64,6 +65,20 @@ const schema = {
       </dl>
       <hr class="rule" data-rule />
     </header>
+
+    <div class="bleed">
+      <figure class="case-visual" data-figure>
+        {d.cover
+          ? <img src={d.cover} alt={`${d.title} — interface`} loading="lazy" decoding="async" />
+          : (
+            <div class="case-plate on-dark">
+              <span class="t-counter">{num}</span>
+              <span class="t-md case-plate-title">{d.title}</span>
+              <span class="t-tiny">{d.tag} — {d.timeframe} — {d.status}</span>
+            </div>
+          )}
+      </figure>
+    </div>
 
     <!-- The project stated as a machine: what goes in, what happens to it,
          what it decides, what comes out. -->
