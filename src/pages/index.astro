@@ -156,7 +156,7 @@ const schema = {
 
     <ul class="grid stats">
       {stats.map((s) => (
-        <li class="stat" style="--c:3;" data-reveal>
+        <li class="stat" style="--c:3; --c-m:2;" data-reveal>
           <p class="t-counter">
             <span data-counter={s.n} data-counter-plain={s.plain ? '' : undefined}>0</span>{s.suffix}
           </p>
@@ -169,6 +169,26 @@ const schema = {
   <!-- ==================== 02 / SELECTED WORK ==================== -->
   <section id="work" class="section bleed" data-section="02" data-section-name="SELECTED WORK">
     <SectionLabel num="02" name="Selected Work" />
+    <!-- One preview panel shared by every row. Each frame is the project's
+         own screenshot when it has one, and a typographic plate built from
+         its number, title and category when it does not — so the interaction
+         is real before the photography exists. -->
+    <div class="work-preview" data-work-preview aria-hidden="true">
+      {projects.map((p, i) => (
+        <figure class="work-frame" data-work-frame>
+          {p.data.cover
+            ? <img src={p.data.cover} alt="" loading="lazy" decoding="async" />
+            : (
+              <div class="work-plate on-dark">
+                <span class="t-counter">{String(i + 1).padStart(2, '0')}</span>
+                <span class="t-label work-plate-title">{p.data.title}</span>
+                <span class="t-tiny">{p.data.tag} — {p.data.timeframe}</span>
+              </div>
+            )}
+        </figure>
+      ))}
+    </div>
+
     <ul class="work-list" data-work-list>
       {projects.map((p, i) => (
         <li class="work-row">
@@ -226,7 +246,7 @@ const schema = {
     <SectionLabel num="05" name="Technology" />
     <ul class="grid tech-list">
       {allStack.map((t, i) => (
-        <li class="tech-item" style="--c:3;" data-reveal>
+        <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
           <span class="t-tiny">{String(i + 1).padStart(2, '0')} /</span>
           <span class="t-label">{t}</span>
         </li>

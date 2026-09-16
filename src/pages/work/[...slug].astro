@@ -56,7 +56,7 @@ const schema = {
 
       <dl class="grid case-facts">
         {facts.map((f) => (
-          <div style="--c:3;" data-reveal>
+          <div style="--c:3; --c-m:2;" data-reveal>
             <dt class="t-tiny">{f.k}</dt>
             <dd class="t-label">{f.v}</dd>
           </div>
@@ -76,7 +76,7 @@ const schema = {
           { k: 'DECISION', v: d.machine.decision },
           { k: 'OUTPUT', v: d.machine.output },
         ].map((stage, i) => (
-          <li class="machine-stage" style="--c:3;" data-reveal>
+          <li class="machine-stage" style="--c:3; --c-m:2;" data-reveal>
             <hr class="rule" data-rule />
             <span class="t-tiny">{String(i + 1).padStart(2, '0')} / {stage.k}</span>
             <p class="t-label">{stage.v}</p>
@@ -90,7 +90,7 @@ const schema = {
         <SectionLabel num="/" name="Results" slash />
         <ul class="grid stats">
           {d.metrics.map((m) => (
-            <li class="stat" style="--c:4;" data-reveal>
+            <li class="stat" style="--c:4; --c-m:2;" data-reveal>
               <p class="t-counter">{m.value}</p>
               <p class="t-tiny">{m.label}</p>
             </li>

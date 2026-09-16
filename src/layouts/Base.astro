@@ -22,7 +22,7 @@ const year = new Date().getFullYear();
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="is-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -39,6 +39,27 @@ const year = new Date().getFullYear();
   <ClientRouter />
 </head>
 <body>
+
+<!-- The opening. aria-hidden and inert: it is a curtain over content that
+     is already there, and a screen reader should be reading the page, not
+     describing the curtain. -->
+<div class="loader on-dark" data-loader aria-hidden="true" inert>
+  <div class="loader-inner bleed" data-loader-inner>
+    <p class="loader-mark t-md">TOBY</p>
+    <div class="loader-row">
+      <p class="t-tiny">SYSTEM INITIALISING</p>
+      <ol class="loader-steps">
+        {['GRID', 'TYPE', 'INDEX', 'MOTION', 'READY'].map((step, i) => (
+          <li class="t-tiny" data-loader-step>
+            <span>{String(i + 1).padStart(2, '0')}</span> {step}
+          </li>
+        ))}
+      </ol>
+    </div>
+    <div class="loader-track"><span class="loader-bar" data-loader-bar></span></div>
+    <p class="t-label loader-pct" data-loader-pct>000%</p>
+  </div>
+</div>
 
 <a class="skip-link t-label" href="#main">SKIP TO CONTENT</a>
 

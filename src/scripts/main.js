@@ -14,7 +14,9 @@ import { createClock } from './clock.js';
 import { createSpy } from './spy.js';
 import { createMenu } from './menu.js';
 import { createCursor } from './cursor.js';
+import { createWorkHover } from './workHover.js';
 import { createHeroInk } from './heroInk.js';
+import { createLoader } from './loader.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -49,13 +51,18 @@ function initPage() {
   createSpy(ScrollTrigger);
   disposables.push(createCursor(gsap, signal, reduced));
   createReveals(gsap, ScrollTrigger, reduced);
+  createWorkHover(gsap, signal, reduced);
   disposables.push(createHeroInk(document.querySelector('[data-hero-ink]'), {
     prefersReducedMotion: reduced,
     signal,
   }));
 
-  playEntrance();
-  ScrollTrigger.refresh();
+  // The entrance waits for the curtain: playing the hero behind a cover
+  // nobody can see through spends the animation on an empty room.
+  createLoader(gsap, reduced).then(() => {
+    playEntrance();
+    ScrollTrigger.refresh();
+  });
 }
 
 /**

@@ -11,8 +11,16 @@ const work = defineCollection({
   schema: z.object({
     title: z.string(),
     tag: z.string(),
-    /** Which generative card visual ProjectVisual.astro should draw. */
+    /** Kept for URL-stable categorisation; no longer drives a visual. */
     world: z.enum(['control', 'editorial', 'bot', 'report', 'tracker', 'system']),
+    /**
+     * Optional path to a real screenshot, e.g. "/images/work/sales.webp".
+     * When present the work list's hover preview shows it; when absent the
+     * preview is built from the project's own number, title and category,
+     * so the interaction works before any photography exists and improves
+     * the day a file is dropped in.
+     */
+    cover: z.string().optional(),
     /** Gallery order — lowest first. */
     order: z.number(),
     summary: z.string(),

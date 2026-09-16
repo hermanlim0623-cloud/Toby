@@ -17,7 +17,14 @@
      screen where it appears more than once is a screen doing it wrong. */
   --bg: #F4F4F4;
   --text: #404040;
-  --muted: #B3B3B3;
+  /* The brief specifies #B3B3B3 for muted text. On #F4F4F4 that measures
+     1.86:1, which fails WCAG AA by a wide margin — and the same brief asks
+     for sufficient contrast, so the two cannot both be honoured literally.
+     The value is split: --muted is the darkest grey that still reads as a
+     clear step below --text while passing AA at 10px, and --muted-line
+     keeps the specified tone for the things that are not text. */
+  --muted: #6E6E6E;
+  --muted-line: #B3B3B3;
   --dark: #161819;
   --black: #050505;
   --white: #FFFFFF;
@@ -44,7 +51,7 @@
   /* ---- scale ----
      Fluid between the mobile and desktop values in the brief, so there is
      no step where the page is visibly "the desktop one, shrunk". */
-  --fs-hero: clamp(72px, 11vw, 180px);
+  --fs-hero: clamp(72px, 20vw, 180px);
   --fs-xl: clamp(40px, 5.6vw, 84px);
   --fs-lg: clamp(40px, 4.4vw, 64px);
   --fs-md: clamp(32px, 3.8vw, 56px);
@@ -117,6 +124,18 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 }
 .grid > *{ grid-column:span var(--c, var(--cols)) / span var(--c, var(--cols)); }
 .grid > [style*="--s"]{ grid-column:var(--s) / span var(--c, 1); }
+
+/* On the 4-column grid a desktop span of 6 starting at column 8 does not
+   clamp — it makes grid build implicit columns off the right edge, which is
+   how a "responsive" page ends up wider than the phone holding it. Below the
+   tablet breakpoint every child is full width unless it names a mobile span
+   with --c-m, and the desktop start column is dropped entirely. */
+@media (max-width: 809.98px){
+  .grid > *,
+  .grid > [style*="--s"]{
+    grid-column:span var(--c-m, var(--cols)) / span var(--c-m, var(--cols));
+  }
+}
 
 /* ---------- type roles ---------- */
 .t-hero{
@@ -203,7 +222,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
   background:var(--dark);
   color:var(--bg);
   --line: var(--line-dark);
-  --muted: rgba(244,244,244,0.45);
+  --muted: rgba(244,244,244,0.62);
 }
 
 .skip-link{
@@ -538,4 +557,76 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
    page has two. Restored on coarse pointers, where it never mounts. */
 @media (pointer: fine){
   .js-ready.has-cursor, .js-ready.has-cursor *{ cursor:none; }
+}
+
+/* ---------- work preview ----------
+   Fixed to the viewport and centred on the pointer, above the list but
+   below the cursor. `visibility` is animated with it, so a hidden panel is
+   genuinely out of the way rather than an invisible thing over the rows. */
+.work-preview{
+  position:fixed;
+  top:0; left:0;
+  z-index:80;
+  width:clamp(220px, 22vw, 340px);
+  aspect-ratio:4 / 3;
+  margin:calc(-1 * clamp(220px, 22vw, 340px) * 0.375) 0 0 calc(-1 * clamp(220px, 22vw, 340px) / 2);
+  pointer-events:none;
+  opacity:0;
+  visibility:hidden;
+  will-change:transform;
+}
+.work-frame{
+  position:absolute; inset:0;
+  margin:0;
+  overflow:hidden;
+  opacity:0;
+  transition:opacity var(--t-micro) var(--ease);
+}
+.work-frame.is-on{ opacity:1; }
+/* The image scales inside a fixed frame rather than the frame growing —
+   the panel's edge stays exactly where the pointer put it. */
+.work-frame img{ width:100%; height:100%; object-fit:cover; transform:scale(1.04); }
+.work-plate{
+  width:100%; height:100%;
+  display:grid;
+  align-content:space-between;
+  padding:clamp(14px, 1.4vw, 22px);
+}
+.work-plate-title{ align-self:end; }
+
+/* ---------- loader ----------
+   A curtain, not a gate: the document below it is complete and readable the
+   whole time, and the overlay removes itself from the DOM when it leaves. */
+html.is-loading{ overflow:hidden; }
+.loader{
+  position:fixed; inset:0;
+  z-index:900;
+  display:grid;
+  align-items:end;
+  padding-block:clamp(28px, 6vh, 64px);
+}
+.loader-inner{ display:grid; gap:clamp(16px, 3vh, 28px); width:100%; }
+.loader-mark{ line-height:1; }
+.loader-row{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; }
+.loader-steps{ display:flex; gap:clamp(10px, 1.6vw, 24px); flex-wrap:wrap; }
+.loader-steps li{ opacity:0.3; transition:opacity var(--t-micro) var(--ease); }
+.loader-steps li.is-on{ opacity:1; }
+.loader-track{ height:1px; background:var(--line); }
+.loader-bar{ display:block; height:100%; background:var(--bg); transform:scaleX(0); transform-origin:left center; }
+.loader-pct{ justify-self:end; font-family:var(--font-mono); }
+/* Without JS there is no curtain to lift, so there must be no curtain. */
+html:not(.js-ready) .loader{ display:none; }
+
+/* ---------- mobile ----------
+   Not the desktop page scaled down: the hero closes its gaps, the giant
+   type gets room, and the decorative half of the header stands down. */
+@media (max-width: 809.98px){
+  .hero{ row-gap:clamp(24px, 4vh, 40px); }
+  .hero-top{ padding-top:clamp(28px, 6vh, 64px); row-gap:20px; }
+  .hero-say{ padding-top:0; }
+  .hero-foot{ row-gap:18px; }
+  .hero-scroll{ justify-self:start; }
+  .about-figure-canvas{ aspect-ratio:4 / 3; }
+  .work-row > a{ padding-block:16px; }
+  .section{ padding-block:clamp(56px, 9vh, 96px); }
 }
