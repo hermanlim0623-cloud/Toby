@@ -141,18 +141,35 @@ export function createHeroInk(root, { prefersReducedMotion, signal } = {}) {
     let pending = [];
 
     function resize() {
-      const rect = root.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
+      // The canvas's *layout* size, via clientWidth/clientHeight. Two traps
+      // here, and the buffer has to dodge both: the figure includes its
+      // caption, so measuring the root sized the buffer taller than the box
+      // it is drawn in; and the reveal leaves a scale on the canvas, so a
+      // getBoundingClientRect during it reports the transformed size and
+      // bakes that inflation into the buffer permanently.
+      const cw = canvas.clientWidth;
+      const ch = canvas.clientHeight;
+      if (!cw || !ch) return;
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = Math.round(rect.width * dpr);
-      h = Math.round(rect.height * dpr);
+      w = Math.round(cw * dpr);
+      h = Math.round(ch * dpr);
       [canvas, ink, reveal].forEach((c) => { c.width = w; c.height = h; });
 
       // The brush scales with the stage so the effect reads the same on a
       // phone as on a wide display, rather than covering the whole hero.
-      brushR = Math.max(60, (rect.width / 1200) * BRUSH) * dpr;
+      brushR = Math.max(60, (cw / 1200) * BRUSH) * dpr;
       brush = makeBrush(Math.round(brushR));
       last = null;
+
+      // Setting width/height clears the canvas, so without an immediate
+      // redraw every resize flashes the empty element until the next frame —
+      // which is a black bar where the artwork should be, for as long as the
+      // resize lasts.
+      if (top) {
+        ctx.globalAlpha = rest;
+        drawCover(ctx, top);
+        ctx.globalAlpha = 1;
+      }
     }
 
     /** Draws an image as `cover` — cropped to fill, never stretched. */
@@ -212,8 +229,13 @@ export function createHeroInk(root, { prefersReducedMotion, signal } = {}) {
     }
 
     function onPointer(e) {
-      const rect = root.getBoundingClientRect();
-      pending.push({ x: (e.clientX - rect.left) * dpr, y: (e.clientY - rect.top) * dpr });
+      // The visual rect, deliberately: this is where the canvas is on
+      // screen, which is what the pointer's coordinates are relative to.
+      const rect = canvas.getBoundingClientRect();
+      pending.push({
+        x: ((e.clientX - rect.left) / rect.width) * w,
+        y: ((e.clientY - rect.top) / rect.height) * h,
+      });
     }
 
     resize();
