@@ -444,21 +444,15 @@ const schema = {
     </div>
 
     <div class="grid contact-grid">
-      <div style="--c:5;">
+      <div style="--c:5;" data-reveal>
         <p class="t-tiny">EMAIL</p>
         <a class="link t-lg contact-mail" href={`mailto:${SITE.email}`}>
           <span>{SITE.email}</span><i>&gt;</i>
         </a>
       </div>
-      <div class="contact-cols" style="--c:5; --s:8;">
-        <div>
-          <p class="t-tiny">GITHUB</p>
-          <a class="link t-label" href="https://github.com/hermanlim0623-cloud"><span>@hermanlim0623</span><i>&gt;</i></a>
-        </div>
-        <div>
-          <p class="t-tiny">LOCATION</p>
-          <p class="t-label">{SITE.location}</p>
-        </div>
+      <div style="--c:5; --s:8;" data-reveal>
+        <p class="t-tiny">LOCATION</p>
+        <p class="t-label">{SITE.location}</p>
       </div>
     </div>
 

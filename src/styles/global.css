@@ -495,8 +495,6 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .contact-grid{ row-gap:clamp(28px, 4vh, 48px); align-items:start; }
 .contact-grid p:first-child{ margin-bottom:8px; }
 .contact-mail{ word-break:break-word; }
-.contact-cols{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:clamp(20px, 3vw, 40px); }
-
 /* ============================================================
    CASE STUDY
    ============================================================ */
