@@ -20,6 +20,18 @@ for (const path of PAGES) {
     await page.goto(path);
     await settled(page);
 
+    // The focus scrub dims and blurs sections that are outside the focal
+    // area — by design, and only while they are not the thing being read.
+    // axe evaluates the whole document at once, so without this it reports
+    // every off-focus section as a contrast failure at its transient value.
+    // Pinning the focal state is what makes this audit the page a reader
+    // actually sees, the same way the wait above audits the settled
+    // entrance rather than the middle of a fade.
+    await page.addStyleTag({
+      content: '[data-motion]{ filter:none !important; opacity:1 !important; transform:none !important; }',
+    });
+    await page.waitForTimeout(150);
+
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze();

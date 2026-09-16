@@ -112,8 +112,10 @@ test.describe('the index', () => {
     await page.waitForTimeout(2600);
     const rows = await page.locator('[data-work-row]').count();
     // The hero index states the number of projects; if someone adds a
-    // project and this drifts, the page is lying about itself.
-    await expect(page.locator('.hero-index [data-counter]')).toHaveText(
+    // project and this drifts, the page is lying about itself. The odometer
+    // keeps the value as real text beside its digit columns, so this reads
+    // what a screen reader would read.
+    await expect(page.locator('.hero-index [data-odometer] .sr-only')).toHaveText(
       String(rows).padStart(2, '0'),
     );
   });
@@ -443,5 +445,151 @@ test.describe('cursor', () => {
     // And no preview panel is left tracking a pointer that does not exist.
     expect(await m.locator('.work-preview.is-on').count()).toBe(0);
     await ctx.close();
+  });
+});
+
+test.describe('section motion', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
+
+  /** Each digit column's offset, as a percentage of its own height. */
+  const strips = (page: import('@playwright/test').Page, sel: string) =>
+    page.evaluate((s) => {
+      const sec = document.querySelector(s)!;
+      return [...sec.querySelectorAll('.odo-s')].map((el) => {
+        const m = new DOMMatrix(getComputedStyle(el).transform);
+        const h = el.getBoundingClientRect().height || 1;
+        return Math.round((m.f / h) * 1000) / 10;
+      });
+    }, sel);
+
+  test('odometers replay on every entry, in both directions', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'motion project only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+
+    const atZero = (a: number[]) => a.filter((v) => Math.abs(v) < 1).length;
+
+    // Three separate arrivals at the same section. A `hasAnimated` flag
+    // anywhere would make the second and third of these do nothing.
+    for (const pass of [1, 2, 3]) {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(1400);
+      const before = await strips(page, '#skills');
+      expect(atZero(before), `pass ${pass}: reset while away`).toBe(before.length);
+
+      await page.locator('#skills').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(1800);
+      const after = await strips(page, '#skills');
+      const rolled = after.filter((v, i) => Math.abs(v - before[i]) > 1).length;
+      expect(rolled, `pass ${pass}: columns rolled on entry`).toBeGreaterThan(0);
+    }
+
+    // And arriving from below, which is the direction a play-once or
+    // scroll-direction-aware implementation gets wrong.
+    await page.locator('#contact').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1600);
+    const below = await strips(page, '#skills');
+    expect(atZero(below), 'reset while below').toBe(below.length);
+    await page.locator('#skills').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1800);
+    const up = await strips(page, '#skills');
+    expect(up.filter((v, i) => Math.abs(v - below[i]) > 1).length).toBeGreaterThan(0);
+  });
+
+  test('a carry rolls both columns independently', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'motion project only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#technology').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(2200);
+
+    // The technology archive counts past nine, so it contains the carry the
+    // brief calls out: 09 → 10 needs the tens column to move on its own.
+    const pairs = await page.evaluate(() =>
+      [...document.querySelectorAll('#technology [data-odometer]')].map((el) => ({
+        value: el.querySelector('.sr-only')?.textContent?.trim() ?? '',
+        offsets: [...el.querySelectorAll('.odo-s')].map((s) => {
+          const m = new DOMMatrix(getComputedStyle(s).transform);
+          // `|| 0` normalises the -0 that Math.round returns for a column
+          // that has not moved; toEqual treats -0 and 0 as different.
+          return Math.round((m.f / (s.getBoundingClientRect().height || 1)) * -10) || 0;
+        }),
+      })));
+
+    expect(pairs.length).toBeGreaterThan(9);
+    for (const { value, offsets } of pairs) {
+      const digits = value.replace(/\D/g, '').split('').map(Number);
+      // Each column must have travelled to exactly its own digit.
+      expect(offsets, `"${value}" settled on its digits`).toEqual(digits);
+    }
+  });
+
+  test('focus follows scroll position continuously, and symmetrically', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'motion project only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+
+    const read = () => page.locator('#skills').evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        blur: Number((cs.filter.match(/blur\(([\d.]+)px\)/) || [0, '0'])[1]),
+        opacity: Number(cs.opacity),
+      };
+    });
+
+    const box = (await page.locator('#skills').boundingBox())!;
+    const max = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    const at = async (frac: number) => {
+      const y = box.y + box.height / 2 - 450 + frac * 900;
+      await page.evaluate((v) => window.scrollTo(0, v), Math.max(0, Math.min(y, max)));
+      await page.waitForTimeout(900);
+      return read();
+    };
+
+    const approaching = await at(-0.85);
+    const focal = await at(0);
+    const leaving = await at(0.85);
+
+    // Sharp in the focal area, soft on both sides — and this is a scrub, so
+    // reversing the scroll runs the same curve backwards by construction.
+    expect(focal.blur).toBe(0);
+    expect(focal.opacity).toBe(1);
+    expect(approaching.blur).toBeGreaterThan(2);
+    expect(leaving.blur).toBeGreaterThan(2);
+    expect(approaching.opacity).toBeLessThan(0.6);
+    expect(leaving.opacity).toBeLessThan(0.6);
+    // Symmetric: entering and leaving cost the same.
+    expect(Math.abs(approaching.blur - leaving.blur)).toBeLessThan(0.5);
+  });
+
+  test('reduced motion settles the numbers and never blurs', async ({ page }) => {
+    test.skip(test.info().project.name !== 'reduced-motion', 'reduced-motion project only');
+    await page.goto('/');
+    await page.waitForTimeout(1600);
+    await page.locator('#skills').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+
+    // The numbers are correct immediately, with no roll to watch.
+    const pairs = await page.evaluate(() =>
+      [...document.querySelectorAll('#skills [data-odometer]')].map((el) => ({
+        value: el.querySelector('.sr-only')?.textContent?.trim() ?? '',
+        offsets: [...el.querySelectorAll('.odo-s')].map((s) => {
+          const m = new DOMMatrix(getComputedStyle(s).transform);
+          // `|| 0` normalises the -0 that Math.round returns for a column
+          // that has not moved; toEqual treats -0 and 0 as different.
+          return Math.round((m.f / (s.getBoundingClientRect().height || 1)) * -10) || 0;
+        }),
+      })));
+    for (const { value, offsets } of pairs) {
+      expect(offsets).toEqual(value.replace(/\D/g, '').split('').map(Number));
+    }
+
+    // Nothing is dimmed or softened at any scroll position.
+    const soft = await page.locator('[data-motion]').evaluateAll((els) =>
+      els.filter((el) => {
+        const cs = getComputedStyle(el);
+        return cs.filter !== 'none' || Number(cs.opacity) < 0.99;
+      }).length);
+    expect(soft).toBe(0);
   });
 });

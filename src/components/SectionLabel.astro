@@ -11,7 +11,7 @@ const { num, name, slash = false } = Astro.props;
 ---
 
 <div class="section-label" data-reveal>
-  <b class="t-label">{slash ? '/' : num}</b>
+  <b class="t-label">{slash ? '/' : <span data-odometer>{num}</span>}</b>
   {!slash && <span class="t-label t-muted">/</span>}
   <span class="t-label">{name}</span>
   <hr class="rule section-rule" data-rule />

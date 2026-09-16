@@ -10,6 +10,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { createSmoothScroll } from './smoothScroll.js';
 import { createReveals, createFigureReveals } from './reveal.js';
+import { createSectionMotion } from './sectionMotion.js';
+import { createOdometerTimeline } from './odometer.js';
 import { createClock } from './clock.js';
 import { createSpy } from './spy.js';
 import { createMenu } from './menu.js';
@@ -53,6 +55,8 @@ function initPage() {
   disposables.push(createCursor(signal, reduced));
   createReveals(gsap, ScrollTrigger, reduced);
   createFigureReveals(gsap, ScrollTrigger, reduced);
+  createSectionMotion(gsap, ScrollTrigger, reduced,
+    (section) => createOdometerTimeline(gsap, section, reduced));
   createProgress(gsap, ScrollTrigger, reduced);
 
   // The entrance waits for the curtain: playing the hero behind a cover

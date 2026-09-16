@@ -69,7 +69,7 @@ const schema = {
   <span id="top"></span>
 
   <!-- ==================== HERO ==================== -->
-  <section class="hero bleed" aria-label="Introduction" data-section="00" data-section-name="INDEX">
+  <section class="hero bleed" aria-label="Introduction" data-motion data-section="00" data-section-name="INDEX">
     <div class="grid hero-top">
       <h1 style="--c:6;">
         <span class="hero-slash" aria-hidden="true">/</span>
@@ -95,7 +95,7 @@ const schema = {
       <div class="hero-meta" style="--c:3; --s:6;">
         <p class="t-tiny">INDEX</p>
         <p class="hero-index">
-          <span class="t-counter" data-counter={projects.length}>00</span>
+          <span class="t-counter" data-odometer>{String(projects.length).padStart(2, "0")}</span>
           <span class="unit t-muted">/ PROJECTS</span>
         </p>
       </div>
@@ -106,7 +106,7 @@ const schema = {
   </section>
 
   <!-- ==================== 01 / ABOUT ==================== -->
-  <section id="about" class="section bleed" data-section="01" data-section-name="ABOUT">
+  <section id="about" class="section bleed" data-motion data-section="01" data-section-name="ABOUT">
     <SectionLabel num="01" name="About" />
     <div class="grid about">
       <p class="t-lg" style="--c:7; --s:5;" data-split>
@@ -143,7 +143,7 @@ const schema = {
       {stats.map((s) => (
         <li class="stat" style="--c:3; --c-m:2;" data-reveal>
           <p class="t-counter">
-            <span data-counter={s.n} data-counter-plain={s.plain ? '' : undefined}>0</span>{s.suffix}
+            <span data-odometer>{s.plain ? String(s.n) : String(s.n).padStart(2, "0")}{s.suffix}</span>
           </p>
           <p class="t-tiny">{s.label}</p>
         </li>
@@ -152,7 +152,7 @@ const schema = {
   </section>
 
   <!-- ==================== 02 / SELECTED WORK ==================== -->
-  <section id="work" class="section bleed" data-section="02" data-section-name="SELECTED WORK">
+  <section id="work" class="section bleed" data-motion data-section="02" data-section-name="SELECTED WORK">
     <SectionLabel num="02" name="Selected Work" />
     <!-- One preview panel shared by every row. Each frame is the project's
          own screenshot when it has one, and a typographic plate built from
@@ -178,7 +178,7 @@ const schema = {
       {projects.map((p, i) => (
         <li class="work-row">
           <a href={`/work/${p.id}/`} data-work-row data-preview={p.id} data-cursor="project">
-            <span class="work-num t-counter">{String(i + 1).padStart(2, '0')}</span>
+            <span class="work-num t-counter" data-odometer>{String(i + 1).padStart(2, '0')}</span>
             <span class="work-title t-lg">{p.data.title}</span>
             <span class="work-cat t-label t-muted">{p.data.tag}</span>
             <span class="work-year t-label t-muted">{p.data.timeframe}</span>
@@ -191,7 +191,7 @@ const schema = {
   </section>
 
   <!-- ==================== 03 / EXPERIENCE ==================== -->
-  <section id="experience" class="section bleed" data-section="03" data-section-name="EXPERIENCE">
+  <section id="experience" class="section bleed" data-motion data-section="03" data-section-name="EXPERIENCE">
     <SectionLabel num="03" name="Experience" />
     <ul class="exp-list">
       {experience.map((e) => (
@@ -209,14 +209,14 @@ const schema = {
   </section>
 
   <!-- ==================== 04 / SKILLS ==================== -->
-  <section id="skills" class="section bleed" data-section="04" data-section-name="SKILLS">
+  <section id="skills" class="section bleed" data-motion data-section="04" data-section-name="SKILLS">
     <SectionLabel num="04" name="Skills" />
     <ul class="skill-list">
       {skills.map((s, i) => (
         <li class="skill-row" data-reveal>
           <hr class="rule" data-rule />
           <div class="skill-inner">
-            <span class="t-label t-muted skill-num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="t-label t-muted skill-num" data-odometer>{String(i + 1).padStart(2, '0')}</span>
             <span class="t-label skill-name">{s.name}</span>
             <span class="t-label t-muted skill-note">{s.note}</span>
             <span class="t-label skill-go" aria-hidden="true">&gt;</span>
@@ -231,12 +231,12 @@ const schema = {
        section for it: it is a list of names rather than an argument, so the
        reader loses nothing by it going quiet and dark before the contact
        block, and the page gains a beat it does not otherwise have. -->
-  <section id="technology" class="section bleed on-dark" data-cursor-theme="dark" data-section="05" data-section-name="TECHNOLOGY">
+  <section id="technology" class="section bleed on-dark" data-motion data-cursor-theme="dark" data-section="05" data-section-name="TECHNOLOGY">
     <SectionLabel num="05" name="Technology" />
     <ul class="grid tech-list">
       {allStack.map((t, i) => (
         <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
-          <span class="t-tiny">{String(i + 1).padStart(2, '0')} /</span>
+          <span class="t-tiny" data-odometer>{String(i + 1).padStart(2, '0')} /</span>
           <span class="t-label">{t}</span>
         </li>
       ))}
@@ -244,7 +244,7 @@ const schema = {
   </section>
 
   <!-- ==================== / CONTACT ==================== -->
-  <section id="contact" class="section bleed contact" data-section="06" data-section-name="CONTACT">
+  <section id="contact" class="section bleed contact" data-motion data-section="06" data-section-name="CONTACT">
     <SectionLabel num="06" name="Contact" slash />
     <h2 class="t-md contact-head" data-split>/ CONTACT</h2>
     <div class="grid contact-grid">

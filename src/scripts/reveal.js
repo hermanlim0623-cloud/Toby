@@ -3,7 +3,6 @@
 //   text     clip-path opens, the line lifts, opacity follows
 //   rules    a 1px line draws from zero width to full
 //   blocks   a block lifts and fades
-//   numbers  a counter runs from zero to its value
 //
 // Everything is once-only. A reveal that replays on every pass turns an
 // editorial page into a toy, and re-reading a paragraph should not
@@ -32,11 +31,6 @@ export function splitText(el) {
   return el.querySelectorAll('.char');
 }
 
-/** Formats a counter's current value the way its target is written. */
-function format(value, plain) {
-  return plain ? String(value) : String(value).padStart(2, '0');
-}
-
 export function createReveals(gsap, ScrollTrigger, reduced) {
   const at = (trigger, extra = {}) => ({ trigger, start: 'top 85%', once: true, ...extra });
 
@@ -56,9 +50,6 @@ export function createReveals(gsap, ScrollTrigger, reduced) {
   if (reduced) {
     document.querySelectorAll('[data-reveal]').forEach((el) => { el.style.opacity = '1'; });
     document.querySelectorAll('[data-rule]').forEach((el) => { el.style.transform = 'scaleX(1)'; });
-    document.querySelectorAll('[data-counter]').forEach((el) => {
-      el.textContent = format(Number(el.dataset.counter), el.dataset.counterPlain !== undefined);
-    });
     return;
   }
 
@@ -85,22 +76,6 @@ export function createReveals(gsap, ScrollTrigger, reduced) {
         immediateRender: false,
         scrollTrigger: at(rule, { start: 'top 92%' }),
       });
-  });
-
-  // ---- counters: monospace and tabular, so the digits do not jitter the
-  // layout as they climb.
-  gsap.utils.toArray('[data-counter]').forEach((el) => {
-    const target = Number(el.dataset.counter);
-    const plain = el.dataset.counterPlain !== undefined;
-    const state = { v: plain ? Math.max(target - 12, 0) : 0 };
-    el.textContent = format(Math.round(state.v), plain);
-    gsap.to(state, {
-      v: target,
-      duration: 1.1,
-      ease: 'power2.out',
-      scrollTrigger: at(el, { start: 'top 95%' }),
-      onUpdate: () => { el.textContent = format(Math.round(state.v), plain); },
-    });
   });
 }
 

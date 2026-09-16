@@ -743,3 +743,59 @@ html:not(.js-ready) .loader{ display:none; }
   transition:transform 420ms var(--ease);
 }
 .curtain[data-on]{ transform:translateY(0); }
+
+/* ============================================================
+   ODOMETER
+   Each digit is a column of 0–9 inside a one-line mask. Rolling
+   a number slides each column to its own digit, which is why a
+   carry like 09 → 10 works: the columns are independent.
+   ============================================================ */
+.odo{
+  display:inline-flex;
+  /* Baseline, so a number sitting in a line of text stays on that line
+     rather than the flex box re-seating it. */
+  vertical-align:baseline;
+  line-height:1;
+  /* Equal-width figures, or the columns would change width as they roll
+     and shove everything after them along the line. */
+  font-variant-numeric:tabular-nums;
+}
+.odo-d{
+  display:block;
+  overflow:hidden;
+  /* Tall enough for ascenders and descenders at any of the sizes this is
+     used at, which the 1em a digit strictly needs is not. */
+  height:1.16em;
+}
+.odo-s{
+  display:block;
+  will-change:transform;
+}
+.odo-s > span{
+  display:block;
+  height:1.16em;
+  line-height:1.16em;
+}
+.odo-fixed{ display:block; line-height:1.16em; white-space:pre; }
+
+/* ============================================================
+   SECTION FOCUS
+   The scrub in sectionMotion.js writes filter, opacity and scale
+   straight onto the section. This only tells the compositor what
+   to expect, and gives the browser a stable box to rasterise.
+   ============================================================ */
+[data-motion]{
+  /* Measured: hinting the filter as well makes no difference to frame rate
+     here, and it is the hint most likely to cost memory on real hardware
+     with layers this large. */
+  will-change:transform, opacity;
+  /* The blur samples outside the element's own box; without this the
+     softened edge of one section bleeds over the sharp one next to it. */
+  isolation:isolate;
+}
+/* Reduced motion never mounts the scrub, so nothing should be hinted for
+   an animation that will not happen. */
+@media (prefers-reduced-motion: reduce){
+  [data-motion]{ will-change:auto; filter:none !important; opacity:1 !important; transform:none !important; }
+  .odo-s{ will-change:auto; }
+}

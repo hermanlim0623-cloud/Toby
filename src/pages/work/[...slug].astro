@@ -46,11 +46,11 @@ const schema = {
 <Base title={`${d.title} — ${SITE.name}`} description={d.summary} type="article" schema={schema}>
   <article class="case" data-section={num} data-section-name={d.tag.toUpperCase()}>
 
-    <header class="section bleed case-head">
+    <header class="section bleed case-head" data-motion>
       <a class="link t-label case-back" href="/#work"><i>&lt;</i><span>ALL WORK</span></a>
       <SectionLabel num={num} name="Project" />
       <div class="grid case-head-grid">
-        <p class="case-index t-counter" style="--c:2;">{num}<span class="t-muted"> / {String(total).padStart(2, '0')}</span></p>
+        <p class="case-index t-counter" style="--c:2;"><span data-odometer>{num}</span><span class="t-muted"> / {String(total).padStart(2, '0')}</span></p>
         <h1 class="t-lg" style="--c:8; --s:5;" data-split>{d.title}</h1>
         <p class="t-body case-summary" style="--c:6; --s:5;" data-reveal>{d.summary}</p>
       </div>
@@ -82,7 +82,7 @@ const schema = {
 
     <!-- The project stated as a machine: what goes in, what happens to it,
          what it decides, what comes out. -->
-    <section class="section bleed" aria-label="How it works">
+    <section class="section bleed" aria-label="How it works" data-motion>
       <SectionLabel num="/" name="The machine" slash />
       <ol class="grid machine">
         {[
@@ -93,7 +93,7 @@ const schema = {
         ].map((stage, i) => (
           <li class="machine-stage" style="--c:3; --c-m:2;" data-reveal>
             <hr class="rule" data-rule />
-            <span class="t-tiny">{String(i + 1).padStart(2, '0')} / {stage.k}</span>
+            <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> / {stage.k}</span>
             <p class="t-label">{stage.v}</p>
           </li>
         ))}
@@ -101,7 +101,7 @@ const schema = {
     </section>
 
     {d.metrics.length > 0 && (
-      <section class="section bleed" aria-label="Results">
+      <section class="section bleed" aria-label="Results" data-motion>
         <SectionLabel num="/" name="Results" slash />
         <ul class="grid stats">
           {d.metrics.map((m) => (
@@ -114,7 +114,7 @@ const schema = {
       </section>
     )}
 
-    <section class="section bleed" aria-label="Case study">
+    <section class="section bleed" aria-label="Case study" data-motion>
       <div class="grid">
         <div class="case-body t-body" style="--c:6; --s:5;">
           <Content />
