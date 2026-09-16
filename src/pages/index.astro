@@ -43,33 +43,61 @@ function thumbFor(cover?: string) {
 // Every number on this page is derived from the content collection rather
 // than typed in, so a new project updates the counters and nothing here can
 // quietly drift out of date.
-const allStack = [...new Set(projects.flatMap((p) => p.data.stack))];
+// Technologies and capabilities are now distinct, and both are derived from
+// the projects rather than typed here, so neither can drift from the work.
+// The site's own stack is added to the technology list because this page is
+// one of the things that was built with it.
+const projectTech = [...new Set(projects.flatMap((p) => p.data.stack))];
+const siteTech = ['TypeScript', 'Astro', 'Git'];
+const technologies = [...new Set([...projectTech, ...siteTech])].sort();
+const capabilities = [...new Set(projects.flatMap((p) => p.data.capabilities))].sort();
 const live = projects.filter((p) => p.data.status !== 'Retired');
 
 const stats = [
   { n: projects.length, suffix: '', label: 'Projects shipped' },
   { n: live.length, suffix: '', label: 'Systems in use' },
-  { n: allStack.length, suffix: '+', label: 'Tools in rotation' },
+  { n: technologies.length, suffix: '', label: 'Technologies in use' },
   { n: new Date().getFullYear(), suffix: '', label: 'Active', plain: true },
 ];
 
 const skills = [
-  { name: 'Automation', note: 'Scripts that remove a recurring manual step' },
-  { name: 'Web Development', note: 'Astro, TypeScript, the front of the system' },
-  { name: 'Backend & APIs', note: 'Python services, REST, scheduled jobs' },
-  { name: 'Data & Reporting', note: 'Sheets, dashboards, the daily recap' },
-  { name: 'Bots', note: 'Order handling and operational alerting' },
-  { name: 'UI / UX', note: 'Interfaces built for people mid-service' },
-  { name: 'Creative Development', note: 'Motion, WebGL, interactive work' },
-  { name: 'AI', note: 'Applied where a rule would be too brittle' },
+  { name: 'Automation', note: 'Removing repetitive manual steps from operational workflows' },
+  { name: 'Web Development', note: 'Building interfaces used directly inside day-to-day operations' },
+  { name: 'Backend & APIs', note: 'Connecting services, data and internal workflows' },
+  { name: 'Data & Reporting', note: 'Turning recurring operational data into usable reports' },
+  { name: 'Bots', note: 'Automating repetitive order and operational tasks' },
+  { name: 'UI / UX', note: 'Interfaces designed around how people actually work' },
+  { name: 'Creative Development', note: 'Interactive web experiences, motion and experimental interfaces' },
+  { name: 'AI', note: 'Applied selectively, where deterministic rules are not enough' },
 ];
 
+// What the work actually produces. Every item here is a category the seven
+// projects already fall into; nothing is aspirational.
+const builds = [
+  'Internal tools',
+  'Operational dashboards',
+  'Automation scripts',
+  'Reporting systems',
+  'API integrations',
+  'Workflow utilities',
+  'Interactive web experiences',
+];
+
+// Role-based rather than a timeline. There is no employment history to list
+// here beyond the ongoing work, and inventing one would be the least
+// defensible thing on the page.
 const experience = [
   {
     year: 'Ongoing',
     org: 'Operations & Automation',
     role: 'Creative Technologist',
-    note: 'Embedded in day-to-day operations, building the dashboards, bots and reporting tools the team runs service on.',
+    note: 'Embedded in the day-to-day running of a food and beverage operation, building the internal tools the team works with: dashboards, reporting jobs, order automation and the references the floor reads during service.',
+  },
+  {
+    year: 'Practice',
+    org: 'How the work happens',
+    role: 'Design, build, maintain',
+    note: 'Each tool is specified by watching the manual version of the job, built end to end, and then kept working as the operation changes. No handover between designing it and running it, which is why the tools tend to stay small.',
   },
 ];
 
@@ -84,7 +112,7 @@ const schema = {
       email: `mailto:${SITE.email}`,
       description: SITE.description,
       address: { '@type': 'PostalAddress', addressCountry: SITE.location },
-      knowsAbout: allStack,
+      knowsAbout: [...technologies, ...capabilities],
     },
     {
       '@type': 'WebSite',
@@ -148,13 +176,26 @@ const schema = {
       </p>
       <div class="about-body" style="--c:5; --s:5;">
         <p class="t-body" data-reveal>
-          I work close to the ground, inside the actual workflow of a food business, not from a
-          spec document. The tools I build get judged the same way the kitchen does: does it work
-          today, under pressure, without anyone babysitting it.
+          I work close to the ground, inside the actual workflow of a food and
+          beverage business, not from a spec document. The tools I build get
+          judged the same way the kitchen does: does it work today, under
+          pressure, without anyone babysitting it.
         </p>
         <p class="t-body" data-reveal>
-          That means dashboards people read mid-service, bots that handle the orders nobody has
-          time to retype, and reports that file themselves. Front to back, the same hands.
+          The problems I take on are the ones nobody writes a ticket for. A
+          recap typed out by hand every night. A price that lives in four
+          places and disagrees with itself. The same adjustment applied two
+          hundred times by someone who stopped concentrating an hour ago.
+          None of that is interesting work for a person, and all of it is
+          load-bearing.
+        </p>
+        <p class="t-body" data-reveal>
+          So I start by watching the manual version of the job rather than
+          asking what it should do. Then I build the smallest thing that
+          removes the step, and I keep it running. Design, code and the
+          automation behind it are the same job here, which is the reason
+          these tools stay small: nobody has to hand a specification to anyone
+          else, so nothing gets built to cover a misunderstanding.
         </p>
       </div>
       <div class="about-meta" style="--c:3; --s:10;">
@@ -167,10 +208,28 @@ const schema = {
           <p class="t-label">{SITE.location}</p>
         </div>
         <div data-reveal>
+          <p class="t-tiny">WORKS ACROSS</p>
+          <p class="t-label">Design, development, automation</p>
+        </div>
+        <div data-reveal>
           <p class="t-tiny">STATUS</p>
           <p class="t-label t-accent">Available for work</p>
         </div>
       </div>
+    </div>
+
+    <!-- What the work actually produces, stated plainly. Every line is a
+         category the seven projects below already fall into. -->
+    <div class="builds">
+      <p class="t-tiny" data-reveal>WHAT I BUILD</p>
+      <ul class="grid builds-list">
+        {builds.map((b, i) => (
+          <li class="build-item" style="--c:3; --c-m:2;" data-reveal>
+            <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
+            <span class="t-label">{b}</span>
+          </li>
+        ))}
+      </ul>
     </div>
 
     <ul class="grid stats">
@@ -260,18 +319,34 @@ const schema = {
     </ul>
   </section>
 
-  <!-- ==================== 05 / TECHNOLOGY ==================== -->
-  <!-- The one inverted block in the document. The archive is the right
+  <!-- ==================== 05 / TECHNOLOGY ====================
+       The one inverted block in the document. The archive is the right
        section for it: it is a list of names rather than an argument, so the
        reader loses nothing by it going quiet and dark before the contact
-       block, and the page gains a beat it does not otherwise have. -->
-  <section id="technology" class="section bleed on-dark" data-motion data-cursor-theme="dark" data-section="05" data-section-name="TECHNOLOGY">
+       block, and the page gains a beat it does not otherwise have.
+
+       Technologies and capabilities are listed separately on purpose.
+       "Automation" and "Bots" are things the tools do, not things they are
+       written in, and listing them beside Python read as though they were. -->
+  <section id="technology" class="section bleed on-dark" data-cursor-theme="dark" data-motion data-section="05" data-section-name="TECHNOLOGY">
     <SectionLabel num="05" name="Technology" />
+
+    <p class="t-tiny tech-head" data-reveal>BUILT WITH</p>
     <ul class="grid tech-list">
-      {allStack.map((t, i) => (
+      {technologies.map((t, i) => (
         <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
-          <span class="t-tiny" data-odometer>{String(i + 1).padStart(2, '0')} /</span>
+          <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
           <span class="t-label">{t}</span>
+        </li>
+      ))}
+    </ul>
+
+    <p class="t-tiny tech-head tech-head-second" data-reveal>CAPABILITIES</p>
+    <ul class="grid tech-list">
+      {capabilities.map((c, i) => (
+        <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
+          <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
+          <span class="t-label">{c}</span>
         </li>
       ))}
     </ul>
@@ -281,6 +356,16 @@ const schema = {
   <section id="contact" class="section bleed contact" data-motion data-section="06" data-section-name="CONTACT">
     <SectionLabel num="06" name="Contact" slash />
     <h2 class="t-md contact-head" data-split>/ CONTACT</h2>
+
+    <div class="grid contact-intro">
+      <p class="t-body" style="--c:6; --s:5;" data-reveal>
+        Open to technical projects, operational systems, automation work and
+        creative technology. If you have a process that only works because
+        somebody is holding it together by hand, that is the kind of problem
+        I find interesting.
+      </p>
+    </div>
+
     <div class="grid contact-grid">
       <div style="--c:5;">
         <p class="t-tiny">EMAIL</p>
@@ -297,6 +382,27 @@ const schema = {
           <p class="t-tiny">LOCATION</p>
           <p class="t-label">{SITE.location}</p>
         </div>
+      </div>
+    </div>
+
+    <!-- The case studies describe these systems; they do not show the real
+         interfaces, which run inside a working business. Saying so is more
+         useful than implying the public page is the whole picture. -->
+    <div class="grid contact-request">
+      <div style="--c:7; --s:5;" data-reveal>
+        <hr class="rule" data-rule />
+        <p class="t-tiny contact-request-label">SEEING THE REAL THING</p>
+        <p class="t-body">
+          The case studies describe these systems rather than show them. The
+          working interfaces sit inside a live operation, so they are not
+          published here. If you want to see how any of them actually looks
+          and runs, ask and I will walk you through it.
+        </p>
+        <p class="contact-request-cta">
+          <a class="link t-label" href={`mailto:${SITE.email}?subject=Walkthrough%20request`}>
+            <span>REQUEST A WALKTHROUGH</span><i>&gt;</i>
+          </a>
+        </p>
       </div>
     </div>
   </section>

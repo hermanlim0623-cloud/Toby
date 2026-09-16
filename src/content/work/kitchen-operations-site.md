@@ -2,9 +2,12 @@
 title: Kitchen Operations Site
 tag: Operations
 order: 2
-summary: Internal site consolidating menu, pricing, and operational references used across the business.
-impact: Single source of truth for the team
-stack: [HTML/CSS, Internal tooling]
+summary: An internal site holding menu, pricing and operational references in one place, built to be read on a phone during service.
+stack: [HTML/CSS]
+capabilities: [Internal tooling, Operational systems]
+use: Floor reference during service
+before: Menus, prices and process notes scattered across print-outs, chats and memory.
+after: One reference the whole team reads, on the device already in their pocket.
 role: Design and build
 timeframe: Ongoing
 status: In use
@@ -39,10 +42,24 @@ An internal site that holds the menu, the pricing and the operational
 references in one place, built to be opened on a phone with wet hands in a
 loud room, which is the only usage condition that actually matters here.
 
-No framework, no build step, no login wall to fight during service. Plain HTML
-and CSS, fast on the worst connection in the building.
+## How it works
 
-## Design constraints
+Every reference lives in one document, and that document is the one the team
+is pointed at. There is no second copy to keep in sync, which is the only
+reliable way to stop two versions disagreeing.
+
+## Technical approach
+
+Plain HTML and CSS. No framework, no build step, no login wall to fight
+during service.
+
+That is a real constraint rather than a shortcut. A site the kitchen depends
+on has to load on the worst connection in the building, and it has to be
+editable by whoever is nearest when a price changes. Every layer between the
+content and the page is a layer that can be down, out of date, or waiting on
+someone who knows how to run the build.
+
+The design rules followed from the same place:
 
 - **Legible under pressure.** Large type, high contrast, no decorative
   interference. Someone is reading this mid-service, not browsing it.
@@ -51,8 +68,8 @@ and CSS, fast on the worst connection in the building.
 - **Changing it has to be trivial.** A reference that's annoying to update
   becomes a reference that's out of date, which is worse than no reference.
 
-## Result
+## Current state
 
-One place to point at. "Check the site" replaced "ask whoever's been here
-longest," which is the difference between knowledge living in a system and
-knowledge living in a person who might be off that day.
+In use as the team's shared reference. "Check the site" replaced "ask whoever's
+been here longest," which is the difference between knowledge living in a
+system and knowledge living in a person who might be off that day.

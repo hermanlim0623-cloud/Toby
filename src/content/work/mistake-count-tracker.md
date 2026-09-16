@@ -2,9 +2,11 @@
 title: Mistake Count Tracker
 tag: Tracking
 order: 5
-summary: Lightweight tool for logging and tracking recurring operational mistakes so patterns can be caught early.
-impact: Surfaces recurring issues faster
-stack: [Automation, Logging]
+summary: A lightweight log for recurring operational mistakes, counted by category so patterns show up in the trend rather than in memory.
+capabilities: [Operational tracking, Logging, Data processing]
+use: Operational mistake tracking
+before: Mistakes remembered rather than recorded, which means remembered selectively.
+after: A record where frequency is visible, not just the memorable incidents.
 role: Design and build
 timeframe: Ongoing
 status: In use
@@ -36,16 +38,26 @@ anything that takes longer than seconds doesn't get recorded during a busy
 service, and a tracker with gaps in it is worse than useless, since it makes
 the gaps look like zeroes.
 
-## The thing it's careful about
+## How it works
+
+Each entry is categorised by the kind of mistake rather than attached to a
+person. Counts accumulate by category, and the useful output is the trend
+across weeks rather than any individual row.
+
+## Technical approach
+
+The design constraint doing the real work here is speed of entry. Every field
+added to the form is a reason not to fill it in mid-service, so the record
+stays minimal on purpose: enough to count, not enough to become paperwork.
 
 It counts categories, not people. The moment a log like this becomes a record
 of who is at fault, it stops being filled in honestly, and an incomplete log
 produces confidently wrong conclusions. Tracking the *type* of mistake keeps
 the incentive pointed at fixing the process.
 
-## Result
+## Current state
 
-Patterns that used to take months to notice (a step that's systematically
-error-prone, a time of day where errors cluster) became visible in the trend.
-That's the point: the tracker doesn't fix anything itself, it just makes the
-thing worth fixing obvious enough to argue about with data.
+In use. Patterns that used to take months to notice (a step that's
+systematically error-prone, a time of day where errors cluster) became visible
+in the trend. That's the point: the tracker doesn't fix anything itself, it
+just makes the thing worth fixing obvious enough to argue about with data.

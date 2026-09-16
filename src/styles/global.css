@@ -803,3 +803,24 @@ html:not(.js-ready) .loader{ display:none; }
   [data-motion]{ will-change:auto; filter:none !important; opacity:1 !important; transform:none !important; }
   .odo-s{ will-change:auto; }
 }
+
+.ba{ row-gap:clamp(20px, 3vh, 32px); }
+.ba p:first-child{ margin-bottom:8px; }
+.case-stack > div + div{ margin-top:clamp(20px, 3vh, 28px); }
+.case-visual-note{ margin-top:10px; }
+
+/* ---------- what I build ---------- */
+.builds{ margin-top:clamp(48px, 8vh, 96px); }
+.builds > p:first-child{ margin-bottom:clamp(16px, 2.4vh, 24px); }
+.builds-list{ row-gap:clamp(14px, 2vh, 22px); }
+.build-item{ display:flex; gap:10px; align-items:baseline; border-top:1px solid var(--line); padding-top:10px; }
+
+/* ---------- technology / capabilities ---------- */
+.tech-head{ margin-bottom:clamp(16px, 2.4vh, 24px); }
+.tech-head-second{ margin-top:clamp(40px, 6vh, 72px); }
+
+/* ---------- contact ---------- */
+.contact-intro{ margin-bottom:clamp(32px, 5vh, 56px); }
+.contact-request{ margin-top:clamp(48px, 8vh, 96px); }
+.contact-request-label{ margin:16px 0 8px; }
+.contact-request-cta{ margin-top:16px; }

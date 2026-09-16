@@ -231,9 +231,54 @@ test.describe('case study', () => {
     await page.goto('/work/sales-dashboard/');
     await page.waitForTimeout(2200);
     await expect(page.locator('h1')).toBeVisible();
-    expect(await page.locator('.case-facts div').count()).toBe(4);
     expect(await page.locator('.machine-stage').count()).toBe(4);
     await expect(page.locator('.case-next a')).toBeVisible();
+
+    // Before and after are stated as a pair rather than buried in the prose.
+    await expect(page.locator('.ba')).toBeVisible();
+
+    const rows = await page.locator('.case-facts dt').allTextContents();
+    for (const k of ['TYPE', 'USE', 'ROLE', 'STATUS', 'CAPABILITIES']) {
+      expect(rows, `${k} row`).toContain(k);
+    }
+  });
+
+  test('never invents a technology a project does not document', async ({ page }) => {
+    // Two of the seven have no documented language or runtime. The page has
+    // to show no BUILT WITH row at all for those rather than guess one, and
+    // show a real one where it is known. This is the whole reason stack and
+    // capabilities were split.
+    const cases: [string, boolean][] = [
+      ['sales-dashboard', true],
+      ['basic-withdrawal-tool', false],
+      ['mistake-count-tracker', false],
+    ];
+    for (const [slug, hasStack] of cases) {
+      await page.goto(`/work/${slug}/`);
+      await page.waitForTimeout(1800);
+      const rows = await page.locator('.case-facts dt').allTextContents();
+      expect(rows.includes('BUILT WITH'), `${slug} BUILT WITH row`).toBe(hasStack);
+      // Capabilities are always known, so that row is always there.
+      expect(rows, `${slug} capabilities`).toContain('CAPABILITIES');
+    }
+  });
+
+  test('the technology list contains technologies, not capabilities', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const under = (sel: string) => page.locator(sel).evaluateAll(
+      (els) => els.map((e) => e.textContent!.trim()),
+    );
+    const tech = await under('#technology .tech-list:nth-of-type(1) .t-label');
+    const caps = await under('#technology .tech-list:nth-of-type(2) .t-label');
+
+    // "Automation" and "Bots" are things the tools do, not things they are
+    // written in; listing them beside Python was the thing to fix.
+    for (const c of ['Automation', 'Bots', 'Reporting', 'Logging']) {
+      expect(tech, `${c} must not be listed as a technology`).not.toContain(c);
+    }
+    expect(tech).toContain('Python');
+    expect(caps).toContain('Automation');
   });
 
   test('the last study wraps back to the first rather than dead-ending', async ({ page }) => {

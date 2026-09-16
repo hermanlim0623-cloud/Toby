@@ -22,8 +22,24 @@ const work = defineCollection({
     /** Gallery order: lowest first. */
     order: z.number(),
     summary: z.string(),
-    impact: z.string(),
-    stack: z.array(z.string()).nonempty(),
+    /**
+     * Real technologies only. A project whose language or runtime is not
+     * documented leaves this empty rather than guessing: an empty BUILT WITH
+     * row is honest, an invented one is not. Capabilities belong below.
+     */
+    stack: z.array(z.string()).default([]),
+    /**
+     * What the project does, as opposed to what it is written in. These used
+     * to be mixed into `stack`, which listed "Automation" and "Bots" beside
+     * "Python" and read as though they were languages.
+     */
+    capabilities: z.array(z.string()).nonempty(),
+    /** Where it sits in the operation, e.g. "Daily sales reporting". */
+    use: z.string(),
+    /** The manual situation the tool replaced, in one line. */
+    before: z.string(),
+    /** What the situation is now, in one line. */
+    after: z.string(),
     role: z.string(),
     timeframe: z.string(),
     status: z.enum(['Live', 'In use', 'Maintained', 'Retired']).default('In use'),

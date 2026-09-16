@@ -30,11 +30,17 @@ const { Content } = await render(entry);
 const d = entry.data;
 const num = String(index).padStart(2, '0');
 
+// Only rows that are actually known. A project whose language is not
+// documented shows no BUILT WITH row rather than a guessed one.
 const facts = [
+  { k: 'TYPE', v: d.tag },
+  { k: 'USE', v: d.use },
   { k: 'ROLE', v: d.role },
-  { k: 'YEAR', v: d.timeframe },
-  { k: 'STATUS', v: d.status },
-  { k: 'CATEGORY', v: d.tag },
+  { k: 'STATUS', v: `${d.status}, ${d.timeframe.toLowerCase()}` },
+  // A conditional spread rather than a filtered null: `.filter(Boolean)`
+  // does not narrow the type, so the rows stay non-nullable.
+  ...(d.stack.length ? [{ k: 'BUILT WITH', v: d.stack.join(', ') }] : []),
+  { k: 'CAPABILITIES', v: d.capabilities.join(', ') },
 ];
 
 const schema = {
@@ -74,7 +80,7 @@ const schema = {
     <div class="bleed">
       <figure class="case-visual" data-figure data-cursor="image">
         {cover
-          ? <img src={cover} alt={`${d.title} interface`} decoding="async" width="1672" height="941" />
+          ? <img src={cover} alt={`${d.title}, illustrative render`} decoding="async" width="1672" height="941" />
           : (
             <div class="case-plate on-dark">
               <span class="t-counter">{num}</span>
@@ -82,8 +88,27 @@ const schema = {
               <span class="t-tiny">{d.tag}, {d.timeframe}, {d.status}</span>
             </div>
           )}
+        {cover && (
+          <figcaption class="t-tiny case-visual-note">
+            ILLUSTRATIVE RENDER. FIGURES SHOWN ARE NOT REAL OPERATIONAL DATA.
+          </figcaption>
+        )}
       </figure>
     </div>
+
+    <section class="section bleed" aria-label="Before and after" data-motion>
+      <SectionLabel num="/" name="Before and after" slash />
+      <div class="grid ba">
+        <div style="--c:5; --c-m:4;" data-reveal>
+          <p class="t-tiny">BEFORE</p>
+          <p class="t-body">{d.before}</p>
+        </div>
+        <div style="--c:5; --s:7; --c-m:4;" data-reveal>
+          <p class="t-tiny">AFTER</p>
+          <p class="t-body">{d.after}</p>
+        </div>
+      </div>
+    </section>
 
     <!-- The project stated as a machine: what goes in, what happens to it,
          what it decides, what comes out. -->
@@ -125,8 +150,16 @@ const schema = {
           <Content />
         </div>
         <aside class="case-stack" style="--c:3; --s:12;">
-          <p class="t-tiny">STACK</p>
-          <ul>{d.stack.map((s) => <li class="t-label">{s}</li>)}</ul>
+          {d.stack.length > 0 && (
+            <div>
+              <p class="t-tiny">BUILT WITH</p>
+              <ul>{d.stack.map((t) => <li class="t-label">{t}</li>)}</ul>
+            </div>
+          )}
+          <div>
+            <p class="t-tiny">CAPABILITIES</p>
+            <ul>{d.capabilities.map((c) => <li class="t-label">{c}</li>)}</ul>
+          </div>
         </aside>
       </div>
     </section>
