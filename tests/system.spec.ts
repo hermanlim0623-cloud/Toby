@@ -266,11 +266,16 @@ test.describe('case study', () => {
   test('the technology list contains technologies, not capabilities', async ({ page }) => {
     await page.goto('/');
     await page.waitForTimeout(2400);
-    const under = (sel: string) => page.locator(sel).evaluateAll(
-      (els) => els.map((e) => e.textContent!.trim()),
-    );
-    const tech = await under('#technology .tech-list:nth-of-type(1) .t-label');
-    const caps = await under('#technology .tech-list:nth-of-type(2) .t-label');
+    const group = (heading: string) => page
+      .locator('#technology .tech-group')
+      .filter({ has: page.locator('.tech-head', { hasText: heading }) })
+      .locator('.t-label')
+      .evaluateAll((els) => els.map((e) => e.textContent!.trim()));
+
+    const built = await group('BUILT WITH');
+    const interactive = await group('INTERACTIVE & 3D');
+    const caps = await group('CAPABILITIES');
+    const tech = [...built, ...interactive];
 
     // "Automation" and "Bots" are things the tools do, not things they are
     // written in; listing them beside Python was the thing to fix.
@@ -279,6 +284,12 @@ test.describe('case study', () => {
     }
     expect(tech).toContain('Python');
     expect(caps).toContain('Automation');
+    // The creative-technology half has to be there too: the section exists to
+    // show the work is not only Python and operational automation.
+    expect(interactive).toContain('Three.js');
+    expect(interactive).toContain('WebGL');
+    // And nothing may claim a tool the repository cannot evidence.
+    expect(tech, 'Spline appears nowhere in this repository').not.toContain('Spline');
   });
 
   test('the last study wraps back to the first rather than dead-ending', async ({ page }) => {
@@ -560,13 +571,14 @@ test.describe('section motion', () => {
     test.skip(test.info().project.name !== 'chromium', 'motion project only');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#technology').scrollIntoViewIfNeeded();
+    await page.locator('#about').scrollIntoViewIfNeeded();
     await page.waitForTimeout(2200);
 
-    // The technology archive counts past nine, so it contains the carry the
-    // brief calls out: 09 → 10 needs the tens column to move on its own.
+    // The stats row carries: the technology count runs into two digits and
+    // the year is four, so the tens column has to move on its own rather
+    // than the number being re-rendered as a string.
     const pairs = await page.evaluate(() =>
-      [...document.querySelectorAll('#technology [data-odometer]')].map((el) => ({
+      [...document.querySelectorAll('.stats [data-odometer]')].map((el) => ({
         value: el.querySelector('.sr-only')?.textContent?.trim() ?? '',
         offsets: [...el.querySelectorAll('.odo-s')].map((s) => {
           const m = new DOMMatrix(getComputedStyle(s).transform);
@@ -576,7 +588,9 @@ test.describe('section motion', () => {
         }),
       })));
 
-    expect(pairs.length).toBeGreaterThan(9);
+    expect(pairs.length).toBe(4);
+    // At least one value must actually exercise a carry.
+    expect(pairs.some((p) => p.value.replace(/\D/g, '').length > 1)).toBe(true);
     for (const { value, offsets } of pairs) {
       const digits = value.replace(/\D/g, '').split('').map(Number);
       // Each column must have travelled to exactly its own digit.

@@ -3,7 +3,7 @@ title: Mistake Count Tracker
 tag: Tracking
 order: 5
 summary: A lightweight log for recurring operational mistakes, counted by category so patterns show up in the trend rather than in memory.
-capabilities: [Operational tracking, Logging, Data processing]
+capabilities: [Operational systems, Data processing]
 use: Operational mistake tracking
 before: Mistakes remembered rather than recorded, which means remembered selectively.
 after: A record where frequency is visible, not just the memorable incidents.

@@ -43,14 +43,78 @@ function thumbFor(cover?: string) {
 // Every number on this page is derived from the content collection rather
 // than typed in, so a new project updates the counters and nothing here can
 // quietly drift out of date.
-// Technologies and capabilities are now distinct, and both are derived from
-// the projects rather than typed here, so neither can drift from the work.
-// The site's own stack is added to the technology list because this page is
-// one of the things that was built with it.
-const projectTech = [...new Set(projects.flatMap((p) => p.data.stack))];
-const siteTech = ['TypeScript', 'Astro', 'Git'];
-const technologies = [...new Set([...projectTech, ...siteTech])].sort();
-const capabilities = [...new Set(projects.flatMap((p) => p.data.capabilities))].sort();
+// The technology section is declared rather than derived, so the order is
+// curated instead of alphabetical. Derivation still happens, but as a check:
+// anything a project claims has to appear in one of these lists, or the
+// build fails. That keeps the curated version from quietly drifting away
+// from the work it is supposed to describe.
+//
+// Every entry is supported by something in this repository. Spline is not
+// listed: it appears nowhere in the source or its history, and the brief's
+// own rule is to include a tool only if it is genuinely part of the
+// workflow. (The word "spline" does occur in the history, describing the
+// camera curve of the old WebGL scene, which is a different thing.)
+const techGroups = [
+  {
+    name: 'Built with',
+    items: [
+      'Astro',
+      'TypeScript',
+      'JavaScript',
+      'Python',
+      'HTML / CSS',
+      'Git',
+      'REST APIs',
+      'Google Sheets API',
+    ],
+  },
+  {
+    // Demonstrated by this repository's own history: the site previously ran
+    // a scroll-driven WebGL scene built on Three.js with hand-written shader
+    // nodes, and still ships GSAP and Lenis for the motion it has now.
+    name: 'Interactive & 3D',
+    items: [
+      'Three.js',
+      'WebGL',
+      'GSAP',
+      'Shaders',
+      'Scroll-driven motion',
+    ],
+  },
+];
+
+const capabilityItems = [
+  'Automation',
+  'Bots',
+  'Data processing',
+  'Internal tooling',
+  'Operational systems',
+  'Reporting',
+  'Workflow automation',
+  'Interactive experiences',
+];
+
+// The drift check. A project that names a technology or capability the
+// section does not list is a section that has fallen behind the work.
+// Compared without case or spacing, so a project may write "HTML/CSS" while
+// the section sets it as "HTML / CSS" without the check calling that drift.
+const key = (v: string) => v.toLowerCase().replace(/\s+/g, '');
+const declaredTech = techGroups.flatMap((g) => g.items.map(key));
+const declaredCaps = capabilityItems.map(key);
+for (const project of projects) {
+  for (const t of project.data.stack) {
+    if (!declaredTech.includes(key(t))) {
+      throw new Error(`Technology "${t}" (${project.id}) is not listed in the technology section.`);
+    }
+  }
+  for (const c of project.data.capabilities) {
+    if (!declaredCaps.includes(key(c))) {
+      throw new Error(`Capability "${c}" (${project.id}) is not listed in the technology section.`);
+    }
+  }
+}
+
+const technologies = techGroups.flatMap((g) => g.items);
 const live = projects.filter((p) => p.data.status !== 'Retired');
 
 const stats = [
@@ -112,7 +176,7 @@ const schema = {
       email: `mailto:${SITE.email}`,
       description: SITE.description,
       address: { '@type': 'PostalAddress', addressCountry: SITE.location },
-      knowsAbout: [...technologies, ...capabilities],
+      knowsAbout: [...technologies, ...capabilityItems],
     },
     {
       '@type': 'WebSite',
@@ -331,25 +395,35 @@ const schema = {
   <section id="technology" class="section bleed on-dark" data-cursor-theme="dark" data-motion data-section="05" data-section-name="TECHNOLOGY">
     <SectionLabel num="05" name="Technology" />
 
-    <p class="t-tiny tech-head" data-reveal>BUILT WITH</p>
-    <ul class="grid tech-list">
-      {technologies.map((t, i) => (
-        <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
-          <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
-          <span class="t-label">{t}</span>
-        </li>
-      ))}
-    </ul>
+    <!-- Three groups, one row treatment. The index restarts per group so a
+         reader counts within a category rather than through the section. -->
+    {techGroups.map((group, gi) => (
+      <div class="tech-group">
+        <p class={`t-tiny tech-head${gi > 0 ? ' tech-head-second' : ''}`} data-reveal>
+          {group.name.toUpperCase()}
+        </p>
+        <ul class="grid tech-list">
+          {group.items.map((item, i) => (
+            <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
+              <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
+              <span class="t-label">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
 
-    <p class="t-tiny tech-head tech-head-second" data-reveal>CAPABILITIES</p>
-    <ul class="grid tech-list">
-      {capabilities.map((c, i) => (
-        <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
-          <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
-          <span class="t-label">{c}</span>
-        </li>
-      ))}
-    </ul>
+    <div class="tech-group">
+      <p class="t-tiny tech-head tech-head-second" data-reveal>CAPABILITIES</p>
+      <ul class="grid tech-list">
+        {capabilityItems.map((item, i) => (
+          <li class="tech-item" style="--c:3; --c-m:2;" data-reveal>
+            <span class="t-tiny"><span data-odometer>{String(i + 1).padStart(2, '0')}</span> /</span>
+            <span class="t-label">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   </section>
 
   <!-- ==================== / CONTACT ==================== -->
