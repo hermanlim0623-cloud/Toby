@@ -15,6 +15,12 @@
 // One mechanism serves every route; nothing here knows which project was
 // clicked, only that the page is changing.
 
+import { createStairs } from './stairs.js';
+
+/** The one route running the staircase prototype. Every other project keeps
+ *  the slash, so the two can be compared against each other directly. */
+const STAIRS_ROUTE = '/work/sales-dashboard/';
+
 /** The diagonal, matching the typographic slash the identity is built on. */
 const ANGLE = 20;
 // 300 + 40 + 380 = 720ms of mechanism, which leaves room for the fetch and
@@ -33,6 +39,9 @@ const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
 let phase = 'IDLE';
 /** The close currently in flight, so a second navigation can await it. */
 let closing = null;
+/** The mechanism this run is using, fixed at the start so the way out
+ *  always matches the way in. */
+let mechanism = 'slash';
 
 export function createTransitions(reduced) {
   // The cover is rendered by the layout with transition:persist rather than
@@ -42,6 +51,9 @@ export function createTransitions(reduced) {
   // in-flight animation survives the swap it exists to hide.
   const root = document.querySelector('[data-pt]');
   if (!root) return;
+
+  const stairsRoot = document.querySelector('[data-stairs]');
+  const stairs = stairsRoot ? createStairs(stairsRoot) : null;
 
   const rot = root.querySelector('[data-pt-rot]');
   const a = root.querySelector('[data-pt-a]');
@@ -56,8 +68,21 @@ export function createTransitions(reduced) {
   function ensureClosed() {
     if (phase === 'COVERED') return Promise.resolve();
     if (closing) return closing;
-    closing = close().finally(() => { closing = null; });
+    const run = mechanism === 'stairs' && stairs ? coverStairs : close;
+    closing = run().finally(() => { closing = null; });
     return closing;
+  }
+
+  async function coverStairs() {
+    phase = 'CLOSING';
+    await stairs.cover();
+    phase = 'COVERED';
+  }
+
+  async function uncoverStairs() {
+    phase = 'OPENING';
+    await stairs.uncover();
+    phase = 'IDLE';
   }
 
   function close() {
@@ -100,6 +125,11 @@ export function createTransitions(reduced) {
     // Going back runs the halves in from the mirrored sides, so the same
     // mechanism reads as operating backwards rather than repeating itself.
     if (phase === 'IDLE') {
+      // The staircase runs for the prototype route in both directions:
+      // arriving at it, and leaving it for anywhere else.
+      const from = new URL(event.from, location.origin).pathname;
+      const to = new URL(event.to, location.origin).pathname;
+      mechanism = (to === STAIRS_ROUTE || from === STAIRS_ROUTE) && stairs ? 'stairs' : 'slash';
       rot.style.setProperty('--pt-angle', `${event.direction === 'back' ? ANGLE + 180 : ANGLE}deg`);
     }
 
@@ -122,6 +152,8 @@ export function createTransitions(reduced) {
 
   document.addEventListener('astro:page-load', () => {
     // Any state but idle means a cover is up and owes the page an opening.
-    if (phase !== 'IDLE') open();
+    if (phase === 'IDLE') return;
+    if (mechanism === 'stairs' && stairs) uncoverStairs();
+    else open();
   });
 }

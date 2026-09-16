@@ -855,8 +855,10 @@ test.describe('slash transition', () => {
       // from script is destroyed by the first navigation and the mechanism
       // then silently does nothing, which is exactly what happened before
       // it was moved into the layout with transition:persist.
+      // Sales Dashboard runs the staircase prototype, so this walks a slash
+      // route instead; the mechanism differs, the persistence problem does not.
       const steps: [string, () => Promise<unknown>][] = [
-        ['forward', () => page.locator('[data-work-row]').first().click()],
+        ['forward', () => page.locator('[data-work-row][href="/work/back-office-report/"]').click()],
         ['back', () => page.goBack()],
         ['forward again', () => page.goForward()],
         ['next project', () => page.locator('.case-next a').click()],
@@ -882,12 +884,16 @@ test.describe('slash transition', () => {
     await page.locator('#work').scrollIntoViewIfNeeded();
     await page.waitForTimeout(700);
 
+    // Every project except the one running the staircase prototype. That
+    // route is covered by its own suite; here the point is that the slash
+    // serves all the rest from one implementation.
     const hrefs = await page.locator('[data-work-row]').evaluateAll(
-      (els) => els.map((e) => e.getAttribute('href')!),
+      (els) => els.map((e) => e.getAttribute('href')!)
+        .filter((h) => !h.includes('sales-dashboard')),
     );
-    expect(hrefs.length).toBe(7);
+    expect(hrefs.length).toBe(6);
 
-    // One system, seven destinations. Walking them without reloading also
+    // One system, six destinations. Walking them without reloading also
     // proves the overlay is not consumed by the navigation before it.
     for (const href of hrefs) {
       await watchCover(page);
@@ -911,8 +917,8 @@ test.describe('slash transition', () => {
       await page.locator('#work').scrollIntoViewIfNeeded();
       await page.waitForTimeout(700);
 
-      const first = page.locator('[data-work-row]').nth(0);
-      const second = page.locator('[data-work-row]').nth(3);
+      const first = page.locator('[data-work-row][href="/work/back-office-report/"]');
+      const second = page.locator('[data-work-row][href="/work/rtp-report-tool/"]');
       await first.click();
       await page.waitForTimeout(60);
       await second.click({ force: true }).catch(() => { /* mid-transition */ });
@@ -951,5 +957,150 @@ test.describe('slash transition', () => {
     // Still navigates, just without anything sweeping across the screen.
     expect(page.url()).toContain('/work/');
     await ctx.close();
+  });
+});
+
+test.describe('staircase transition (prototype)', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'client routing');
+
+  /** Which mechanism ran during the navigation just performed. */
+  interface SeenWindow extends Window {
+    __seen?: { stairs: number; slash: number };
+    __seenPoll?: ReturnType<typeof setInterval>;
+  }
+  const watch = (page: import('@playwright/test').Page) => page.evaluate(() => {
+    const w = window as unknown as SeenWindow;
+    w.__seen = { stairs: 0, slash: 0 };
+    w.__seenPoll ??= setInterval(() => {
+      const st = document.querySelector('[data-stairs]') as HTMLElement | null;
+      const pt = document.querySelector('[data-pt]') as HTMLElement | null;
+      if (st && st.dataset.on !== undefined) w.__seen!.stairs += 1;
+      if (pt && pt.dataset.on !== undefined) w.__seen!.slash += 1;
+    }, 20);
+  });
+  const ran = async (page: import('@playwright/test').Page) => {
+    const s = await page.evaluate(() => (window as unknown as SeenWindow).__seen!);
+    return s.stairs > 4 ? 'stairs' : s.slash > 4 ? 'slash' : 'none';
+  };
+
+  test('the prototype route uses the staircase, in both directions', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+
+    await watch(page);
+    await page.locator('[data-work-row][href="/work/sales-dashboard/"]').click();
+    await page.waitForTimeout(1900);
+    expect(await ran(page), 'entering').toBe('stairs');
+    expect(page.url()).toContain('/work/sales-dashboard/');
+
+    await watch(page);
+    await page.goBack();
+    await page.waitForTimeout(1900);
+    expect(await ran(page), 'browser back').toBe('stairs');
+
+    // And the page's own back link, not just the browser control.
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    await page.locator('[data-work-row][href="/work/sales-dashboard/"]').click();
+    await page.waitForTimeout(1900);
+    await watch(page);
+    await page.locator('.case-back').click();
+    await page.waitForTimeout(1900);
+    expect(await ran(page), 'the ALL WORK link').toBe('stairs');
+  });
+
+  test('the other six are untouched by the prototype', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    test.setTimeout(120_000);
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+
+    const others = await page.locator('[data-work-row]').evaluateAll(
+      (els) => els.map((e) => e.getAttribute('href')!)
+        .filter((h) => !h.includes('sales-dashboard')),
+    );
+    expect(others.length).toBe(6);
+
+    // The scope of a prototype is the easiest thing to widen by accident.
+    for (const href of others) {
+      await watch(page);
+      await page.locator(`[data-work-row][href="${href}"]`).click();
+      await page.waitForTimeout(1800);
+      expect(await ran(page), `${href} keeps the slash`).toBe('slash');
+      await page.goBack();
+      await page.waitForTimeout(1800);
+      await page.locator('#work').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+    }
+  });
+
+  test('the steps arrive one at a time, not together', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+
+    // Sample the columns mid-build. If they were animating together every
+    // column would sit at the same offset and the staircase would be a
+    // rectangle rising, which is the thing this is not.
+    await page.evaluate(() => {
+      (window as unknown as { __rows?: number[][] }).__rows = [];
+      const poll = setInterval(() => {
+        const ys = [...document.querySelectorAll('[data-stair]')].map(
+          (el) => Math.round(new DOMMatrix(getComputedStyle(el).transform).f),
+        );
+        (window as unknown as { __rows: number[][] }).__rows.push(ys);
+      }, 25);
+      setTimeout(() => clearInterval(poll), 900);
+    });
+    await page.locator('[data-work-row][href="/work/sales-dashboard/"]').click();
+    await page.waitForTimeout(1400);
+
+    const rows = await page.evaluate(() => (window as unknown as { __rows: number[][] }).__rows);
+    // A stepped silhouette: every column at a different height, and the
+    // offsets decreasing left to right, which is each step standing taller
+    // than the one before it. A settled build reads [640, 480, 320, 160, 0].
+    const stepped = rows.filter((ys) => {
+      if (ys.length !== 5) return false;
+      const distinct = new Set(ys).size;
+      const rising = ys.every((v, i) => i === 0 || ys[i - 1] > v);
+      return distinct === 5 && rising;
+    });
+    expect(stepped.length, 'frames showing a stepped silhouette').toBeGreaterThan(2);
+
+    // And the steps are evenly spaced, so it reads as architecture rather
+    // than five things that happened to stop at different heights.
+    const built = stepped[stepped.length - 1];
+    const gaps = built.slice(1).map((v, i) => built[i] - v);
+    const spread = Math.max(...gaps) - Math.min(...gaps);
+    expect(spread, `uneven risers: ${gaps.join(', ')}`).toBeLessThan(4);
+  });
+
+  test('cleans up, and a second click does not stack a second run', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+
+    const row = page.locator('[data-work-row][href="/work/sales-dashboard/"]');
+    await row.click();
+    await page.waitForTimeout(60);
+    await row.click({ force: true }).catch(() => { /* mid-transition */ });
+    await page.waitForTimeout(2200);
+
+    expect(page.url()).toContain('/work/sales-dashboard/');
+    expect(await page.evaluate(
+      () => (document.querySelector('[data-stairs]') as HTMLElement).dataset.on === undefined,
+    ), 'layer cleared').toBe(true);
+    expect(await page.evaluate(
+      () => getComputedStyle(document.querySelector('[data-stairs]')!).visibility,
+    )).toBe('hidden');
   });
 });

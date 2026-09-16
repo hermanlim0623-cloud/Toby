@@ -74,6 +74,16 @@ const year = new Date().getFullYear();
   <span class="pt-mark" data-pt-mark>/</span>
 </div>
 
+<!-- The staircase prototype's layer, persisted for the same reason as the
+     slash: the router replaces document.body on every swap. -->
+<div class="st" data-stairs aria-hidden="true" transition:persist="stairs">
+  <span class="st-step" data-stair></span>
+  <span class="st-step" data-stair></span>
+  <span class="st-step" data-stair></span>
+  <span class="st-step" data-stair></span>
+  <span class="st-step" data-stair></span>
+</div>
+
 <a class="skip-link t-label" href="#main">SKIP TO CONTENT</a>
 
 <Header />

@@ -948,3 +948,40 @@ html:not(.js-ready) .loader{ display:none; }
 @media (prefers-reduced-motion: reduce){
   .hero-fx{ display:none; }
 }
+
+/* ============================================================
+   STAIRCASE TRANSITION (prototype, one route)
+   Five columns across the viewport, each rising to its own step
+   height in sequence so the silhouette builds one step at a
+   time, then closing into a wall and coming apart again.
+
+   Flat accent, square corners, no shadow: a graphic system
+   rather than a drawing of a physical staircase.
+   ============================================================ */
+.st{
+  position:fixed;
+  inset:0;
+  z-index:800;
+  display:flex;
+  overflow:hidden;
+  pointer-events:none;
+  /* Out of the compositor's way between navigations. */
+  visibility:hidden;
+}
+.st[data-on]{ visibility:visible; }
+
+.st-step{
+  flex:1 1 0;
+  height:100%;
+  background:var(--accent);
+  transform:translateY(100%);
+  will-change:transform;
+  /* A hairline of the page between steps, so the treads read as separate
+     rectangles rather than one shape with a notched top. */
+  border-right:1px solid var(--bg);
+}
+.st-step:last-child{ border-right:0; }
+
+@media (prefers-reduced-motion: reduce){
+  .st{ display:none; }
+}
