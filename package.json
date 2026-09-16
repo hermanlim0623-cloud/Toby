@@ -14,8 +14,7 @@
     "format:check": "prettier --check .",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "verify": "npm run check && npm run lint && npm run build && npm run test",
-    "plates": "node scripts/build-hero-plates.mjs"
+    "verify": "npm run check && npm run lint && npm run build && npm run test"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

@@ -14,7 +14,6 @@ import { createClock } from './clock.js';
 import { createSpy } from './spy.js';
 import { createMenu } from './menu.js';
 import { createCursor } from './cursor.js';
-import { createHeroInk } from './heroInk.js';
 import { createLoader } from './loader.js';
 import { createTransitions } from './transition.js';
 import { createProgress } from './progress.js';
@@ -55,10 +54,6 @@ function initPage() {
   createReveals(gsap, ScrollTrigger, reduced);
   createFigureReveals(gsap, ScrollTrigger, reduced);
   createProgress(gsap, ScrollTrigger, reduced);
-  disposables.push(createHeroInk(document.querySelector('[data-hero-ink]'), {
-    prefersReducedMotion: reduced,
-    signal,
-  }));
 
   // The entrance waits for the curtain: playing the hero behind a cover
   // nobody can see through spends the animation on an empty room.

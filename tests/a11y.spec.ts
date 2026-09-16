@@ -22,8 +22,6 @@ for (const path of PAGES) {
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      // The About figure is a decorative canvas with a text caption beside it.
-      .exclude('.about-figure-canvas')
       .analyze();
 
     expect(results.violations).toEqual([]);

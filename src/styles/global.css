@@ -401,22 +401,6 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .about-meta{ display:grid; gap:clamp(16px, 2.4vh, 28px); align-content:start; }
 .about-meta p:first-child{ margin-bottom:5px; }
 
-/* The editorial image: full-bleed within the margins, square corners, no
-   shadow. The canvas is the ink reveal — the plate develops under the
-   cursor, which is the one interactive image on the page. */
-.about-figure{
-  margin:clamp(48px, 8vh, 96px) 0 0;
-  position:relative;
-}
-.about-figure-canvas{
-  width:100%;
-  aspect-ratio:2 / 1;
-  /* The page's own ground, not the dark token: if the canvas is ever empty
-     for a frame it should read as a gap in the layout, not as a black bar. */
-  background:var(--bg);
-  cursor:crosshair;
-}
-.about-figure figcaption{ margin-top:10px; }
 
 /* ---------- stats ----------
    Four counters on the grid, each over a rule. No boxes: the rule and the
@@ -743,7 +727,6 @@ html:not(.js-ready) .loader{ display:none; }
   .hero-say{ padding-top:0; }
   .hero-foot{ row-gap:18px; }
   .hero-scroll{ justify-self:start; }
-  .about-figure-canvas{ aspect-ratio:4 / 3; }
   .work-row > a{ padding-block:16px; }
   .section{ padding-block:clamp(56px, 9vh, 96px); }
 }
