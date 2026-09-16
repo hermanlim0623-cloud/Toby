@@ -61,6 +61,19 @@ const year = new Date().getFullYear();
   </div>
 </div>
 
+<!-- The slash transition's cover. It lives in the layout with
+     transition:persist because the router replaces document.body on every
+     swap: created from script it would be destroyed by the first navigation
+     and the mechanism would work exactly once. Persisting keeps the same
+     live node, so an animation in flight survives the swap it is hiding. -->
+<div class="pt" data-pt aria-hidden="true" transition:persist="slash">
+  <div class="pt-rot" data-pt-rot>
+    <span class="pt-half pt-half-a" data-pt-a></span>
+    <span class="pt-half pt-half-b" data-pt-b></span>
+  </div>
+  <span class="pt-mark" data-pt-mark>/</span>
+</div>
+
 <a class="skip-link t-label" href="#main">SKIP TO CONTENT</a>
 
 <Header />

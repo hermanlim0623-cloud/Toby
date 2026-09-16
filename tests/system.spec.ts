@@ -821,3 +821,135 @@ test.describe('hero slash', () => {
     }
   });
 });
+
+test.describe('slash transition', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
+
+  /** The page-side counter the cover watcher writes into. */
+  interface CoverWindow extends Window {
+    __cover?: number;
+    __poll?: ReturnType<typeof setInterval>;
+  }
+
+  /** Starts (or resets) a poll recording how long the cover stays up. */
+  const watchCover = (page: import('@playwright/test').Page) => page.evaluate(() => {
+    const w = window as unknown as CoverWindow;
+    w.__cover = 0;
+    w.__poll ??= setInterval(() => {
+      const el = document.querySelector('[data-pt]') as HTMLElement | null;
+      if (el && el.dataset.on !== undefined) w.__cover = (w.__cover ?? 0) + 20;
+    }, 20);
+  });
+  const coverMs = (page: import('@playwright/test').Page) =>
+    page.evaluate(() => (window as unknown as CoverWindow).__cover ?? 0);
+
+  test('survives the swap, so it works on every navigation and not just the first',
+    async ({ page }) => {
+      test.skip(test.info().project.name !== 'chromium', 'client routing');
+      await page.goto('/');
+      await page.waitForTimeout(2400);
+      await page.locator('#work').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(700);
+
+      // The router replaces document.body on every swap. An overlay created
+      // from script is destroyed by the first navigation and the mechanism
+      // then silently does nothing, which is exactly what happened before
+      // it was moved into the layout with transition:persist.
+      const steps: [string, () => Promise<unknown>][] = [
+        ['forward', () => page.locator('[data-work-row]').first().click()],
+        ['back', () => page.goBack()],
+        ['forward again', () => page.goForward()],
+        ['next project', () => page.locator('.case-next a').click()],
+      ];
+      for (const [label, act] of steps) {
+        await watchCover(page);
+        await act();
+        await page.waitForTimeout(1900);
+        expect(await coverMs(page), `${label}: the cover ran`).toBeGreaterThan(300);
+        expect(await page.locator('[data-pt]').count(), `${label}: overlay survived`).toBe(1);
+        expect(await page.evaluate(
+          () => (document.querySelector('[data-pt]') as HTMLElement).dataset.on === undefined,
+        ), `${label}: cover cleared`).toBe(true);
+      }
+    });
+
+  test('every project opens through the same mechanism', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    // Seven round trips, each with a real transition at both ends.
+    test.setTimeout(120_000);
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(700);
+
+    const hrefs = await page.locator('[data-work-row]').evaluateAll(
+      (els) => els.map((e) => e.getAttribute('href')!),
+    );
+    expect(hrefs.length).toBe(7);
+
+    // One system, seven destinations. Walking them without reloading also
+    // proves the overlay is not consumed by the navigation before it.
+    for (const href of hrefs) {
+      await watchCover(page);
+      await page.locator(`[data-work-row][href="${href}"]`).click();
+      await page.waitForTimeout(1900);
+      expect(await coverMs(page), `${href}: the cover ran`).toBeGreaterThan(300);
+      expect(page.url()).toContain(href);
+      await watchCover(page);
+      await page.goBack();
+      await page.waitForTimeout(1900);
+      await page.locator('#work').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+    }
+  });
+
+  test('a second click during the transition does not start a second run',
+    async ({ page }) => {
+      test.skip(test.info().project.name !== 'chromium', 'client routing');
+      await page.goto('/');
+      await page.waitForTimeout(2400);
+      await page.locator('#work').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(700);
+
+      const first = page.locator('[data-work-row]').nth(0);
+      const second = page.locator('[data-work-row]').nth(3);
+      await first.click();
+      await page.waitForTimeout(60);
+      await second.click({ force: true }).catch(() => { /* mid-transition */ });
+      await page.waitForTimeout(2200);
+
+      // Whichever won, the page settles on one destination with the cover
+      // down, rather than two overlapping runs leaving it stuck up.
+      expect(page.url()).toMatch(/\/work\/.+\//);
+      expect(await page.evaluate(
+        () => (document.querySelector('[data-pt]') as HTMLElement).dataset.on === undefined,
+      )).toBe(true);
+    });
+
+  test('the cover is the brand blue, and takes no pointer events', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const pt = page.locator('[data-pt]');
+    expect(await pt.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+    // Hidden between navigations rather than a permanently composited layer.
+    expect(await pt.evaluate((el) => getComputedStyle(el).visibility)).toBe('hidden');
+    const half = await page.locator('[data-pt-a]').evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(half).toBe('rgb(5, 93, 255)');
+  });
+
+  test('reduced motion navigates without the mechanism', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.goto('/');
+    await page.waitForTimeout(1800);
+    expect(await page.locator('[data-pt]').count()).toBe(0);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
+    await page.locator('[data-work-row]').first().click();
+    await page.waitForTimeout(1500);
+    // Still navigates, just without anything sweeping across the screen.
+    expect(page.url()).toContain('/work/');
+    await ctx.close();
+  });
+});
