@@ -534,68 +534,174 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 
 /* ============================================================
    CURSOR
-   Fine pointers only. It is a dot until something under it names
-   what it does, and then it is that word.
+   One element, six states. The default is a registration mark
+   rather than a pointer: the page reads as an instrument being
+   aimed at, and every other state is that mark resolving into
+   the control the thing underneath actually is.
+
+   Nothing here is coloured outside the four allowed values, and
+   there is no glow, gradient, shadow or fill anywhere — the
+   cursor is 1px strokes and type, exactly like the page it sits
+   on, and it is never louder than the content behind it.
    ============================================================ */
-.cursor{
-  position:fixed; top:0; left:0;
+.cur{
+  position:fixed;
+  top:0; left:0;
   z-index:500;
   pointer-events:none;
-  display:flex; align-items:center; gap:8px;
+  /* Every child is centred on the pointer, so a state change swaps one
+     shape for another without the anchor moving. */
+  display:grid;
+  place-items:center;
+  width:0; height:0;
   transform:translate3d(-100px, -100px, 0);
-  transition:opacity var(--t-micro) var(--ease);
+  will-change:transform;
+  /* The ink colour follows the block underneath, set from the theme of
+     whatever the pointer is over. */
+  --cur-ink: #404040;
+  color:var(--cur-ink);
 }
-.cursor.is-gone{ opacity:0; }
-.cursor-dot{
-  width:7px; height:7px;
-  margin:-3.5px 0 0 -3.5px;
-  /* Difference blending is what lets one dot cross a light page and an
-     inverted block without needing to know which it is over. */
-  background:#FFFFFF;
-  mix-blend-mode:difference;
-  border-radius:50%;
-  transition:transform var(--t-micro) var(--ease), background var(--t-micro) var(--ease);
+.cur[data-theme="dark"]{ --cur-ink: #FFFFFF; }
+.cur.is-gone{ opacity:0; }
+.cur{ transition:opacity var(--t-micro) var(--ease); }
+
+/* The wrapper carries the press. Keeping it on its own element is what
+   lets a state's own transform and the click compression coexist. */
+.cur-inner{
+  display:grid;
+  place-items:center;
+  transform:scale(1);
+  transition:transform 150ms var(--ease);
 }
-.cursor-word{
-  color:var(--text);
-  opacity:0;
-  transform:translateX(-4px);
-  transition:opacity var(--t-micro) var(--ease), transform var(--t-micro) var(--ease);
+/* Every shape occupies the same cell and cross-fades with the others. */
+.cur-inner > *{
+  grid-area:1 / 1;
+  transition:
+    opacity 280ms var(--ease),
+    transform 300ms var(--ease);
 }
-.cursor.is-labelled .cursor-dot{ transform:scale(0.55); background:var(--accent); }
-.cursor.is-labelled .cursor-word{ opacity:1; transform:translateX(0); }
+
+.cur-cross, .cur-arrow{
+  width:28px; height:28px;
+  overflow:visible;
+  fill:none;
+  stroke:var(--cur-ink);
+  stroke-width:1;
+  /* The stroke stays hairline whatever transform is applied to it. */
+  vector-effect:non-scaling-stroke;
+}
+.cur-cross .cur-dot{ fill:var(--cur-ink); stroke:none; }
+
+/* ---- the control ----
+   A 1px box with technical type in it. Sized by its own content so VIEW,
+   OPEN and ← DRAG → each get the width they need instead of being padded
+   to a common box. */
+.cur-box{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  height:28px;
+  padding:0 10px;
+  border:1px solid var(--cur-ink);
+  background:transparent;
+  font-family:var(--font-tech);
+  font-size:10px;
+  line-height:1;
+  text-transform:uppercase;
+  /* Tighter than the page's own labels: this is an instrument readout, and
+     it is read at a glance rather than scanned. */
+  letter-spacing:0.06em;
+  white-space:nowrap;
+  color:var(--cur-ink);
+}
+/* The one place the accent is allowed: the direction mark inside the
+   control, where it reads as the interaction rather than as decoration. */
+.cur-post, .cur-pre{ color:var(--accent-cur, #055DFF); }
+.cur[data-theme="dark"]{ --accent-cur: #5C9BFF; }
+
+/* ---- state machine ----
+   Hidden shapes are scaled down rather than merely faded, so a state change
+   is one control resolving into another instead of two things overlapping. */
+.cur-cross{ opacity:1; transform:scale(1); }
+.cur-arrow{ opacity:0; transform:scale(0.7) rotate(-8deg); }
+.cur-box{ opacity:0; transform:scale(0.88); }
+
+.cur[data-state="link"] .cur-cross{ opacity:0; transform:scale(0.7); }
+.cur[data-state="link"] .cur-arrow{ opacity:1; transform:scale(1) rotate(0); }
+
+.cur[data-state="project"] .cur-cross,
+.cur[data-state="image"] .cur-cross,
+.cur[data-state="drag"] .cur-cross{ opacity:0; transform:scale(0.6); }
+.cur[data-state="project"] .cur-box,
+.cur[data-state="image"] .cur-box,
+.cur[data-state="drag"] .cur-box{ opacity:1; transform:scale(1); }
+
+/* ---- active ----
+   A compression, not an effect: 150ms on the wrapper, so whichever shape is
+   currently showing compresses without losing its own state transform, and
+   the mark stays registered on the same point throughout. */
+.cur.is-active .cur-inner{ transform:scale(0.82); }
+
 /* A cursor that replaces the pointer has to be the only pointer, or the
-   page has two. Restored on coarse pointers, where it never mounts. */
-@media (pointer: fine){
+   page has two. Never applied on coarse pointers, where it never mounts. */
+@media (hover: hover) and (pointer: fine){
   .js-ready.has-cursor, .js-ready.has-cursor *{ cursor:none; }
 }
 
+/* Reduced motion keeps the cursor and loses the motion: the position is
+   snapped rather than interpolated (in cursor.js) and the state changes
+   stop being transitions. The affordance survives; the movement does not. */
+@media (prefers-reduced-motion: reduce){
+  .cur, .cur > *, .work-preview{ transition:none !important; }
+}
+
 /* ---------- work preview ----------
-   Fixed to the viewport and centred on the pointer, above the list but
-   below the cursor. `visibility` is animated with it, so a hidden panel is
-   genuinely out of the way rather than an invisible thing over the rows. */
+   The project's own image, riding above the control. Positioned by
+   cursor.js in viewport coordinates — it is clamped against the edges, so
+   a pointer in any corner still shows the whole panel rather than half of
+   one hanging off the screen. */
 .work-preview{
   position:fixed;
   top:0; left:0;
   z-index:80;
-  width:clamp(220px, 22vw, 340px);
+  width:clamp(200px, 19vw, 300px);
   aspect-ratio:4 / 3;
-  margin:calc(-1 * clamp(220px, 22vw, 340px) * 0.375) 0 0 calc(-1 * clamp(220px, 22vw, 340px) / 2);
   pointer-events:none;
+  will-change:transform;
+  /* Enter and exit are the same three properties in both directions, so
+     the panel leaves the way it arrived rather than snapping out. */
   opacity:0;
   visibility:hidden;
-  will-change:transform;
+  transform-origin:50% 100%;
+  transition:
+    opacity 320ms var(--ease),
+    visibility 0s linear 320ms,
+    scale 380ms var(--ease),
+    translate 380ms var(--ease);
+  scale:0.94;
+  translate:0 8px;
+}
+.work-preview.is-on{
+  opacity:1;
+  visibility:visible;
+  scale:1;
+  translate:0 0;
+  transition:
+    opacity 380ms var(--ease),
+    visibility 0s,
+    scale 420ms var(--ease),
+    translate 420ms var(--ease);
 }
 .work-frame{
   position:absolute; inset:0;
   margin:0;
   overflow:hidden;
   opacity:0;
-  transition:opacity var(--t-micro) var(--ease);
+  transition:opacity 220ms var(--ease);
 }
 .work-frame.is-on{ opacity:1; }
 /* The image scales inside a fixed frame rather than the frame growing —
-   the panel's edge stays exactly where the pointer put it. */
+   the panel's edge stays exactly where it was placed. */
 .work-frame img{ width:100%; height:100%; object-fit:cover; transform:scale(1.04); }
 .work-plate{
   width:100%; height:100%;

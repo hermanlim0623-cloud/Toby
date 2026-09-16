@@ -148,7 +148,7 @@ const schema = {
       data-plate-under="/images/hero-plate-under.webp"
       data-plate-top-invert="false"
       data-plate-rest="1"
-      data-cursor="DRAG"
+      data-cursor="drag"
       data-figure
     >
       <canvas class="about-figure-canvas" data-hero-ink-canvas></canvas>
@@ -176,7 +176,7 @@ const schema = {
          is real before the photography exists. -->
     <div class="work-preview" data-work-preview aria-hidden="true">
       {projects.map((p, i) => (
-        <figure class="work-frame" data-work-frame>
+        <figure class="work-frame" data-preview={p.id}>
           {p.data.cover
             ? <img src={p.data.cover} alt="" loading="lazy" decoding="async" />
             : (
@@ -193,7 +193,7 @@ const schema = {
     <ul class="work-list" data-work-list>
       {projects.map((p, i) => (
         <li class="work-row">
-          <a href={`/work/${p.id}/`} data-work-row data-cursor="VIEW">
+          <a href={`/work/${p.id}/`} data-work-row data-preview={p.id} data-cursor="project">
             <span class="work-num t-counter">{String(i + 1).padStart(2, '0')}</span>
             <span class="work-title t-lg">{p.data.title}</span>
             <span class="work-cat t-label t-muted">{p.data.tag}</span>
@@ -247,7 +247,7 @@ const schema = {
        section for it: it is a list of names rather than an argument, so the
        reader loses nothing by it going quiet and dark before the contact
        block, and the page gains a beat it does not otherwise have. -->
-  <section id="technology" class="section bleed on-dark" data-section="05" data-section-name="TECHNOLOGY">
+  <section id="technology" class="section bleed on-dark" data-cursor-theme="dark" data-section="05" data-section-name="TECHNOLOGY">
     <SectionLabel num="05" name="Technology" />
     <ul class="grid tech-list">
       {allStack.map((t, i) => (
@@ -266,7 +266,7 @@ const schema = {
     <div class="grid contact-grid">
       <div style="--c:5;">
         <p class="t-tiny">EMAIL</p>
-        <a class="link t-lg contact-mail" href={`mailto:${SITE.email}`} data-cursor="OPEN">
+        <a class="link t-lg contact-mail" href={`mailto:${SITE.email}`}>
           <span>{SITE.email}</span><i>&gt;</i>
         </a>
       </div>

@@ -67,7 +67,7 @@ const schema = {
     </header>
 
     <div class="bleed">
-      <figure class="case-visual" data-figure>
+      <figure class="case-visual" data-figure data-cursor="image">
         {d.cover
           ? <img src={d.cover} alt={`${d.title} — interface`} loading="lazy" decoding="async" />
           : (
@@ -128,7 +128,7 @@ const schema = {
 
     <nav class="section bleed case-next" aria-label="Next project">
       <hr class="rule" data-rule />
-      <a href={`/work/${next.id}/`} data-cursor="VIEW">
+      <a href={`/work/${next.id}/`} data-cursor="project">
         <span class="t-tiny">NEXT PROJECT</span>
         <span class="t-lg case-next-title" data-split>{next.data.title}</span>
         <span class="t-label t-muted">{next.data.tag}</span>

@@ -131,26 +131,25 @@ test.describe('work list', () => {
     await expect(page.locator('h1')).toBeVisible();
   });
 
-  test('the hover preview follows the pointer and swaps between rows', async ({ page }) => {
+  test('the hover preview follows the pointer', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'pointer-driven');
     await page.goto('/');
-    await page.waitForTimeout(2200);
+    await page.waitForTimeout(2400);
     await page.locator('#work').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
 
-    const panel = page.locator('[data-work-preview]');
-    const box = await page.locator('[data-work-row]').nth(1).boundingBox();
-    await page.mouse.move(box!.x + 120, box!.y + box!.height / 2);
+    const panel = page.locator('.work-preview');
+    const box = (await page.locator('[data-work-row]').nth(1).boundingBox())!;
+    await page.mouse.move(box.x + 200, box.y + box.height / 2);
     await page.waitForTimeout(700);
     await expect(panel).toBeVisible();
-    // One frame on at a time: the panel re-titles itself, it does not stack.
-    expect(await page.locator('[data-work-frame].is-on').count()).toBe(1);
 
-    const before = await panel.boundingBox();
-    await page.mouse.move(box!.x + 520, box!.y + box!.height / 2);
+    // It tracks the pointer rather than parking somewhere near the row.
+    const before = (await panel.boundingBox())!;
+    await page.mouse.move(box.x + 560, box.y + box.height / 2);
     await page.waitForTimeout(700);
-    const after = await panel.boundingBox();
-    expect(after!.x).toBeGreaterThan(before!.x);
+    const after = (await panel.boundingBox())!;
+    expect(after.x).toBeGreaterThan(before.x);
   });
 });
 
@@ -179,8 +178,15 @@ test.describe('reduced motion', () => {
 
     // No curtain at all, rather than a fast one.
     expect(await page.locator('[data-loader]').count()).toBe(0);
-    // No cursor follower: it is motion by definition.
-    expect(await page.locator('.cursor').count()).toBe(0);
+    // The cursor keeps working and loses its motion: it still mounts and
+    // still names what is under it, but the position is snapped rather than
+    // interpolated and the state changes are not transitions. Removing it
+    // entirely would take the affordance away with the animation.
+    await expect(page.locator('.cur')).toHaveCount(1);
+    const eased = await page.locator('.cur-inner').evaluate(
+      (el) => getComputedStyle(el).transitionDuration,
+    );
+    expect(eased).toBe('0s');
 
     await page.locator('#technology').scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
@@ -237,5 +243,152 @@ test.describe('case study', () => {
     await page.goto(hrefs[hrefs.length - 1]!);
     const next = await page.locator('.case-next a').getAttribute('href');
     expect(next).toBe(hrefs[0]);
+  });
+});
+
+test.describe('cursor', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'pointer-driven');
+
+  test('resolves a state for whatever is under it', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const state = () => page.locator('.cur').getAttribute('data-state');
+
+    // Plain page: the crosshair.
+    await page.mouse.move(700, 640);
+    await page.waitForTimeout(300);
+    expect(await state()).toBe('default');
+
+    // The scroll cue carries no data-cursor — the link arrow has to be
+    // inferred from the element being a link, or every anchor on the site
+    // would need annotating by hand. (The header's section list is hidden
+    // below 1440px, so it is not a reliable target at test viewport sizes.)
+    const nav = (await page.locator('.hero-scroll').boundingBox())!;
+    await page.mouse.move(nav.x + 30, nav.y + nav.height / 2);
+    await page.waitForTimeout(300);
+    expect(await state()).toBe('link');
+
+    // A work row is a link too, but it declares itself a project, and the
+    // explicit declaration has to win over the inferred link.
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+    const row = (await page.locator('[data-work-row]').nth(2).boundingBox())!;
+    await page.mouse.move(row.x + 400, row.y + row.height / 2);
+    await page.waitForTimeout(400);
+    expect(await state()).toBe('project');
+  });
+
+  test('shows the hovered project’s own preview, one at a time', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+
+    const rows = page.locator('[data-work-row]');
+    for (const i of [1, 4]) {
+      const row = rows.nth(i);
+      const id = await row.getAttribute('data-preview');
+      const box = (await row.boundingBox())!;
+      await page.mouse.move(box.x + 400, box.y + box.height / 2);
+      await page.waitForTimeout(500);
+      // The frame showing must be the one belonging to the row under the
+      // pointer — paired by the project's id, not by document order.
+      const on = await page.locator('.work-frame.is-on').getAttribute('data-preview');
+      expect(on, `row ${i} shows its own preview`).toBe(id);
+      expect(await page.locator('.work-frame.is-on').count()).toBe(1);
+    }
+  });
+
+  test('the preview never leaves the viewport', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+
+    const boxes = await page.locator('[data-work-row]').evaluateAll(
+      (els) => els.map((el) => el.getBoundingClientRect().toJSON()),
+    );
+    const usable = boxes.filter((b) => b.y > 60 && b.y + b.height < 600);
+    expect(usable.length).toBeGreaterThan(1);
+
+    // Each corner of the list, at the extremes of the window.
+    for (const [x, b] of [
+      [855, usable[0]], [45, usable[0]],
+      [855, usable[usable.length - 1]], [45, usable[usable.length - 1]],
+    ] as const) {
+      await page.mouse.move(x, b.y + b.height / 2);
+      await page.waitForTimeout(500);
+      const m = await page.locator('.work-preview').evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return Math.min(r.left, r.top, window.innerWidth - r.right, window.innerHeight - r.bottom);
+      });
+      expect(m, `preview clipped at x=${x}`).toBeGreaterThanOrEqual(22);
+    }
+  });
+
+  test('compresses on press, in whichever state it is in', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const scale = () => page.locator('.cur-inner').evaluate(
+      (el) => Number(new DOMMatrix(getComputedStyle(el).transform).a.toFixed(2)),
+    );
+    await page.mouse.move(700, 640);
+    await page.waitForTimeout(300);
+    expect(await scale()).toBe(1);
+    await page.mouse.down();
+    await page.waitForTimeout(250);
+    // The compression lives on its own wrapper so a state's transform and
+    // the press cannot out-specify each other.
+    expect(await scale()).toBe(0.82);
+    await page.mouse.up();
+  });
+
+  test('goes white inside the inverted block', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#technology').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(900);
+    const t = (await page.locator('#technology .tech-item').first().boundingBox())!;
+    await page.mouse.move(t.x + 60, t.y + 12);
+    await page.waitForTimeout(300);
+    await expect(page.locator('.cur')).toHaveAttribute('data-theme', 'dark');
+    const ink = await page.locator('.cur').evaluate((el) => getComputedStyle(el).color);
+    expect(ink).toBe('rgb(255, 255, 255)');
+  });
+
+  test('never blocks what is underneath it', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    for (const sel of ['.cur', '.work-preview']) {
+      const pe = await page.locator(sel).evaluate((el) => getComputedStyle(el).pointerEvents);
+      expect(pe, `${sel} must not take pointer events`).toBe('none');
+    }
+    // And a link under the cursor still opens.
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+    await page.locator('[data-work-row]').first().click();
+    await page.waitForURL(/\/work\/.+\//);
+  });
+
+  test('does not mount on a touch device', async ({ browser }) => {
+    const ctx = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    const m = await ctx.newPage();
+    await m.goto('/');
+    await m.waitForTimeout(2400);
+    expect(await m.locator('.cur').count()).toBe(0);
+    // And the native pointer is never hidden on a device that needs it.
+    expect(await m.locator('html.has-cursor').count()).toBe(0);
+    await ctx.close();
   });
 });

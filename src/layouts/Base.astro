@@ -43,7 +43,7 @@ const year = new Date().getFullYear();
 <!-- The opening. aria-hidden and inert: it is a curtain over content that
      is already there, and a screen reader should be reading the page, not
      describing the curtain. -->
-<div class="loader on-dark" data-loader aria-hidden="true" inert>
+<div class="loader on-dark" data-cursor-theme="dark" data-loader aria-hidden="true" inert>
   <div class="loader-inner bleed" data-loader-inner>
     <p class="loader-mark t-md">TOBY</p>
     <div class="loader-row">
@@ -70,7 +70,7 @@ const year = new Date().getFullYear();
   <slot />
 </main>
 
-<footer class="foot on-dark">
+<footer class="foot on-dark" data-cursor-theme="dark">
   <div class="bleed">
     <div class="grid foot-top">
       <div style="--c:4;">

@@ -14,7 +14,6 @@ import { createClock } from './clock.js';
 import { createSpy } from './spy.js';
 import { createMenu } from './menu.js';
 import { createCursor } from './cursor.js';
-import { createWorkHover } from './workHover.js';
 import { createHeroInk } from './heroInk.js';
 import { createLoader } from './loader.js';
 import { createTransitions } from './transition.js';
@@ -52,11 +51,10 @@ function initPage() {
   createClock(signal);
   createMenu(signal);
   createSpy(ScrollTrigger);
-  disposables.push(createCursor(gsap, signal, reduced));
+  disposables.push(createCursor(signal, reduced));
   createReveals(gsap, ScrollTrigger, reduced);
   createFigureReveals(gsap, ScrollTrigger, reduced);
   createProgress(gsap, ScrollTrigger, reduced);
-  createWorkHover(gsap, signal, reduced);
   disposables.push(createHeroInk(document.querySelector('[data-hero-ink]'), {
     prefersReducedMotion: reduced,
     signal,
