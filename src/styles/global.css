@@ -767,76 +767,6 @@ html:not(.js-ready) .loader{ display:none; }
 }
 
 /* ============================================================
-   SLASH TRANSITION
-   Navigation is the brand mark doing something. Two blue halves
-   close along the diagonal of the "/", the document is swapped
-   behind that cover, and the halves open again so the
-   destination is revealed through the aperture.
-
-   Everything moves on transform. The halves are oversized and
-   rotated once; only their offset along the perpendicular is
-   animated, so no frame of this costs a layout.
-   ============================================================ */
-.pt{
-  position:fixed;
-  inset:0;
-  z-index:800;
-  overflow:hidden;
-  pointer-events:none;
-  /* Out of the way entirely between navigations: an invisible full-screen
-     layer is still a layer the compositor carries. */
-  visibility:hidden;
-}
-.pt[data-on]{ visibility:visible; }
-
-/* The diagonal is established once, on the wrapper. The halves below know
-   nothing about the angle; they only slide along its perpendicular. */
-.pt-rot{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:0;
-  height:0;
-  transform:rotate(var(--pt-angle, 20deg));
-}
-.pt-half{
-  position:absolute;
-  left:-150vmax;
-  width:300vmax;
-  height:300vmax;
-  background:var(--accent);
-  will-change:transform;
-}
-/* Above the line and below it. Closed, their edges meet along the slash;
-   open, each is clear of the viewport. */
-.pt-half-a{ bottom:0; transform:translateY(-100%); }
-.pt-half-b{ top:0; transform:translateY(100%); }
-
-/* The mark itself, at the size the blue has become. */
-.pt-mark{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%, -50%) scale(0.55);
-  font-family:var(--font-mono);
-  font-size:clamp(140px, 30vmin, 420px);
-  line-height:1;
-  color:var(--bg);
-  opacity:0;
-  user-select:none;
-}
-
-/* Astro's own cross-fade would run underneath this one. The cover is what
-   hides the swap, so the built-in animation is turned off rather than left
-   to argue with it. */
-::view-transition-old(root),
-::view-transition-new(root){ animation:none; mix-blend-mode:normal; }
-
-@media (prefers-reduced-motion: reduce){
-  .pt{ display:none; }
-}
-
-/* ============================================================
    ODOMETER
    Each digit is a column of 0–9 inside a one-line mask. Rolling
    a number slides each column to its own digit, which is why a
@@ -950,7 +880,7 @@ html:not(.js-ready) .loader{ display:none; }
 }
 
 /* ============================================================
-   STAIRCASE TRANSITION (prototype, one route)
+   STAIRCASE TRANSITION
    Five columns across the viewport, each rising to its own step
    height in sequence so the silhouette builds one step at a
    time, then closing into a wall and coming apart again.
@@ -985,3 +915,9 @@ html:not(.js-ready) .loader{ display:none; }
 @media (prefers-reduced-motion: reduce){
   .st{ display:none; }
 }
+
+/* Astro's own cross-fade would run underneath the staircase. The columns
+   are what hide the swap, so the built-in animation is turned off rather
+   than left to argue with them. */
+::view-transition-old(root),
+::view-transition-new(root){ animation:none; mix-blend-mode:normal; }

@@ -1,10 +1,10 @@
-// The slash transition.
+// The staircase transition.
 //
-// Navigation is the brand mark doing something. Clicking a project closes
-// two blue halves along the diagonal of the "/" until they meet and the
-// viewport is solid accent, the document is swapped behind that cover, and
-// the halves then open along the same line so the destination is revealed
-// *through* the aperture rather than faded in over the old page.
+// Navigation is the work being built. Clicking a project raises five blue
+// columns one after another until they stand as a staircase and the viewport
+// is solid accent, the document is swapped behind that cover, and the columns
+// then drop in reverse so the destination is revealed by the mechanism
+// unbuilding itself rather than faded in over the old page.
 //
 // The order matters and it is the whole point. Astro's
 // `astro:before-preparation` lets its loader be wrapped, so the fetch and
@@ -17,20 +17,9 @@
 
 import { createStairs } from './stairs.js';
 
-/** The staircase is the navigation signature for the work: every project
- *  opens and closes with it, in both directions. The slash remains for
- *  anything outside /work/, which in practice is only the 404 page finding
- *  its way home. */
-const isProject = (pathname) => pathname.startsWith('/work/');
-
-/** The diagonal, matching the typographic slash the identity is built on. */
-const ANGLE = 20;
-// 300 + 40 + 380 = 720ms of mechanism, which leaves room for the fetch and
-// the swap inside the brief's 700-1000ms without the visitor waiting.
-const CLOSE = 300;
+/** The pause between the cover completing and the swap being revealed,
+ *  which keeps the built staircase readable for a beat. */
 const HOLD = 40;
-const OPEN = 380;
-const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 /** IDLE -> CLOSING -> COVERED -> OPENING -> IDLE.
  *
@@ -39,11 +28,8 @@ const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
  *  navigation's loader went unwrapped, so it swapped and fired page-load
  *  while the first run was still closing, and nothing was left to open it. */
 let phase = 'IDLE';
-/** The close currently in flight, so a second navigation can await it. */
+/** The cover currently in flight, so a second navigation can await it. */
 let closing = null;
-/** The mechanism this run is using, fixed at the start so the way out
- *  always matches the way in. */
-let mechanism = 'slash';
 
 export function createTransitions(reduced) {
   // The cover is rendered by the layout with transition:persist rather than
@@ -51,112 +37,57 @@ export function createTransitions(reduced) {
   // element built from script is destroyed by the first navigation and the
   // transition runs exactly once; persisting it keeps one live node whose
   // in-flight animation survives the swap it exists to hide.
-  const root = document.querySelector('[data-pt]');
+  const root = document.querySelector('[data-stairs]');
   if (!root) return;
 
-  const stairsRoot = document.querySelector('[data-stairs]');
-  const stairs = stairsRoot ? createStairs(stairsRoot) : null;
+  const stairs = createStairs(root);
 
-  const rot = root.querySelector('[data-pt-rot]');
-  const a = root.querySelector('[data-pt-a]');
-  const b = root.querySelector('[data-pt-b]');
-  const mark = root.querySelector('[data-pt-mark]');
+  // Reduced motion gets the navigation without the mechanism: the swap
+  // happens, nothing is built across the screen.
+  if (reduced) {
+    root.remove();
+    document.addEventListener('astro:after-swap', () => window.scrollTo(0, 0));
+    return;
+  }
 
-  const animate = (el, frames, ms, extra = {}) => el.animate(frames, {
-    duration: ms, easing: EASE, fill: 'forwards', ...extra,
-  }).finished;
-
-  /** Closes, or hands back the close already running. */
-  function ensureClosed() {
+  /** Covers, or hands back the cover already running. */
+  function ensureCovered() {
     if (phase === 'COVERED') return Promise.resolve();
     if (closing) return closing;
-    const run = mechanism === 'stairs' && stairs ? coverStairs : close;
-    closing = run().finally(() => { closing = null; });
+    phase = 'CLOSING';
+    closing = stairs.cover()
+      .then(() => { phase = 'COVERED'; })
+      .finally(() => { closing = null; });
     return closing;
   }
 
-  async function coverStairs() {
-    phase = 'CLOSING';
-    await stairs.cover();
-    phase = 'COVERED';
-  }
-
-  async function uncoverStairs() {
+  async function uncover() {
     phase = 'OPENING';
     await stairs.uncover();
     phase = 'IDLE';
   }
 
-  function close() {
-    phase = 'CLOSING';
-    root.dataset.on = '';
-    return Promise.all([
-      animate(a, [{ transform: 'translateY(-100%)' }, { transform: 'translateY(0%)' }], CLOSE),
-      animate(b, [{ transform: 'translateY(100%)' }, { transform: 'translateY(0%)' }], CLOSE),
-      // The mark grows with the closing halves: the slash is what arrives,
-      // and the blue is the slash at full size.
-      animate(mark, [
-        { opacity: 0, transform: 'translate(-50%, -50%) scale(0.55)' },
-        { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
-      ], CLOSE),
-    ]).then(() => { phase = 'COVERED'; });
-  }
-
-  function open() {
-    if (phase === 'OPENING' || phase === 'IDLE') return Promise.resolve();
-    phase = 'OPENING';
-    animate(mark, [{ opacity: 1 }, { opacity: 0 }], 140);
-    return Promise.all([
-      animate(a, [{ transform: 'translateY(0%)' }, { transform: 'translateY(-100%)' }], OPEN),
-      animate(b, [{ transform: 'translateY(0%)' }, { transform: 'translateY(100%)' }], OPEN),
-    ]).then(() => {
-      delete root.dataset.on;
-      phase = 'IDLE';
-    });
-  }
-
-  // Reduced motion gets the navigation without the mechanism: the swap
-  // happens, nothing sweeps across the screen.
-  if (reduced) {
-    root.remove();
-    stairsRoot?.remove();
-    document.addEventListener('astro:after-swap', () => window.scrollTo(0, 0));
-    return;
-  }
-
   document.addEventListener('astro:before-preparation', (event) => {
-    // Going back runs the halves in from the mirrored sides, so the same
-    // mechanism reads as operating backwards rather than repeating itself.
-    if (phase === 'IDLE') {
-      // Either end being a project is enough: opening one, leaving one, and
-      // stepping between two all run the same mechanism.
-      const from = new URL(event.from, location.origin).pathname;
-      const to = new URL(event.to, location.origin).pathname;
-      mechanism = (isProject(to) || isProject(from)) && stairs ? 'stairs' : 'slash';
-      rot.style.setProperty('--pt-angle', `${event.direction === 'back' ? ANGLE + 180 : ANGLE}deg`);
-    }
-
     const load = event.loader;
     event.loader = async () => {
       // The fetch runs alongside the cover rather than after it, so the
       // animation is the navigation instead of a delay in front of one.
       // Every navigation waits for the cover, including one that arrives
-      // while an earlier one is still closing.
-      await Promise.all([ensureClosed(), load()]);
+      // while an earlier one is still building.
+      await Promise.all([ensureCovered(), load()]);
       await new Promise((r) => setTimeout(r, HOLD));
     };
   });
 
   document.addEventListener('astro:after-swap', () => {
     // The new document arrives at the top. Scrolling there while it is still
-    // behind the cover is what stops the page jumping as the aperture opens.
+    // behind the cover is what stops the page jumping as the steps drop.
     window.scrollTo(0, 0);
   });
 
   document.addEventListener('astro:page-load', () => {
     // Any state but idle means a cover is up and owes the page an opening.
     if (phase === 'IDLE') return;
-    if (mechanism === 'stairs' && stairs) uncoverStairs();
-    else open();
+    uncover();
   });
 }

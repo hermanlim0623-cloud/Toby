@@ -822,98 +822,26 @@ test.describe('hero slash', () => {
   });
 });
 
-test.describe('transition layers', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
-
-  // The project routes run the staircase and are covered by their own suite.
-  // What is left here is the shared scaffolding both mechanisms depend on:
-  // the persisted layers, their styling, and the reduced-motion opt out.
-
-  test('both layers survive the swap rather than being replaced by it', async ({ page }) => {
-    test.skip(test.info().project.name !== 'chromium', 'client routing');
-    await page.goto('/');
-    await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(700);
-
-    // The router replaces document.body on every swap. A layer created from
-    // script is destroyed by the first navigation and the mechanism then
-    // silently does nothing, which is exactly what happened before both were
-    // moved into the layout with transition:persist.
-    const steps: [string, () => Promise<unknown>][] = [
-      ['forward', () => page.locator('[data-work-row][href="/work/back-office-report/"]').click()],
-      ['back', () => page.goBack()],
-      ['forward again', () => page.goForward()],
-      ['next project', () => page.locator('.case-next a').click()],
-    ];
-    for (const [label, act] of steps) {
-      await act();
-      await page.waitForTimeout(1900);
-      expect(await page.locator('[data-pt]').count(), `${label}: slash layer survived`).toBe(1);
-      expect(await page.locator('[data-stairs]').count(), `${label}: stair layer survived`).toBe(1);
-      expect(await page.evaluate(() => {
-        const on = (sel: string) =>
-          (document.querySelector(sel) as HTMLElement | null)?.dataset.on !== undefined;
-        return on('[data-pt]') || on('[data-stairs]');
-      }), `${label}: both layers cleared`).toBe(false);
-    }
-  });
-
-  test('the cover is the brand blue, and takes no pointer events', async ({ page }) => {
-    test.skip(test.info().project.name !== 'chromium', 'client routing');
-    await page.goto('/');
-    await page.waitForTimeout(2400);
-    for (const sel of ['[data-pt]', '[data-stairs]']) {
-      const el = page.locator(sel);
-      expect(await el.evaluate((n) => getComputedStyle(n).pointerEvents), sel).toBe('none');
-      // Hidden between navigations rather than a permanently composited layer.
-      expect(await el.evaluate((n) => getComputedStyle(n).visibility), sel).toBe('hidden');
-    }
-    const half = await page.locator('[data-pt-a]').evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(half).toBe('rgb(5, 93, 255)');
-    const step = await page.locator('[data-stair]').first().evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(step).toBe('rgb(5, 93, 255)');
-  });
-
-  test('reduced motion navigates without either mechanism', async ({ browser }) => {
-    const ctx = await browser.newContext({ reducedMotion: 'reduce' });
-    const page = await ctx.newPage();
-    await page.goto('/');
-    await page.waitForTimeout(1800);
-    expect(await page.locator('[data-pt]').count()).toBe(0);
-    expect(await page.locator('[data-stairs]').count()).toBe(0);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
-    await page.locator('[data-work-row]').first().click();
-    await page.waitForTimeout(1500);
-    // Still navigates, just without anything sweeping across the screen.
-    expect(page.url()).toContain('/work/');
-    await ctx.close();
-  });
-});
-
 test.describe('staircase transition', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'client routing');
 
-  /** Which mechanism ran during the navigation just performed. */
+  /** Whether the staircase ran during the navigation just performed. */
   interface SeenWindow extends Window {
-    __seen?: { stairs: number; slash: number };
+    __seen?: number;
     __seenPoll?: ReturnType<typeof setInterval>;
   }
   const watch = (page: import('@playwright/test').Page) => page.evaluate(() => {
     const w = window as unknown as SeenWindow;
-    w.__seen = { stairs: 0, slash: 0 };
+    w.__seen = 0;
     w.__seenPoll ??= setInterval(() => {
       const st = document.querySelector('[data-stairs]') as HTMLElement | null;
-      const pt = document.querySelector('[data-pt]') as HTMLElement | null;
-      if (st && st.dataset.on !== undefined) w.__seen!.stairs += 1;
-      if (pt && pt.dataset.on !== undefined) w.__seen!.slash += 1;
+      if (st && st.dataset.on !== undefined) w.__seen! += 1;
     }, 20);
   });
-  const ran = async (page: import('@playwright/test').Page) => {
-    const s = await page.evaluate(() => (window as unknown as SeenWindow).__seen!);
-    return s.stairs > 4 ? 'stairs' : s.slash > 4 ? 'slash' : 'none';
-  };
+  /** Sampled often enough that a real run cannot be missed, and a navigation
+   *  with no mechanism at all cannot be mistaken for one. */
+  const ran = async (page: import('@playwright/test').Page) =>
+    (await page.evaluate(() => (window as unknown as SeenWindow).__seen!)) > 4;
 
   test('every project opens and closes with the staircase', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
@@ -934,11 +862,11 @@ test.describe('staircase transition', () => {
       await watch(page);
       await page.locator(`[data-work-row][href="${href}"]`).click();
       await page.waitForTimeout(1800);
-      expect(await ran(page), `${href} opening`).toBe('stairs');
+      expect(await ran(page), `${href} opening`).toBe(true);
       await watch(page);
       await page.goBack();
       await page.waitForTimeout(1800);
-      expect(await ran(page), `${href} closing`).toBe('stairs');
+      expect(await ran(page), `${href} closing`).toBe(true);
       await page.locator('#work').scrollIntoViewIfNeeded();
       await page.waitForTimeout(400);
     }
@@ -955,7 +883,7 @@ test.describe('staircase transition', () => {
     await watch(page);
     await page.locator('.case-next a').click();
     await page.waitForTimeout(1800);
-    expect(await ran(page)).toBe('stairs');
+    expect(await ran(page)).toBe(true);
   });
 
   test('the route links use it as well as the browser controls', async ({ page }) => {
@@ -968,13 +896,13 @@ test.describe('staircase transition', () => {
     await watch(page);
     await page.locator('[data-work-row][href="/work/sales-dashboard/"]').click();
     await page.waitForTimeout(1900);
-    expect(await ran(page), 'entering').toBe('stairs');
+    expect(await ran(page), 'entering').toBe(true);
     expect(page.url()).toContain('/work/sales-dashboard/');
 
     await watch(page);
     await page.goBack();
     await page.waitForTimeout(1900);
-    expect(await ran(page), 'browser back').toBe('stairs');
+    expect(await ran(page), 'browser back').toBe(true);
 
     // And the page's own back link, not just the browser control.
     await page.locator('#work').scrollIntoViewIfNeeded();
@@ -984,7 +912,7 @@ test.describe('staircase transition', () => {
     await watch(page);
     await page.locator('.case-back').click();
     await page.waitForTimeout(1900);
-    expect(await ran(page), 'the ALL WORK link').toBe('stairs');
+    expect(await ran(page), 'the ALL WORK link').toBe(true);
   });
 
   test('the steps arrive one at a time, not together', async ({ page }) => {
@@ -1050,5 +978,59 @@ test.describe('staircase transition', () => {
     expect(await page.evaluate(
       () => getComputedStyle(document.querySelector('[data-stairs]')!).visibility,
     )).toBe('hidden');
+  });
+  test('the layer survives the swap rather than being replaced by it', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(700);
+
+    // The router replaces document.body on every swap. A layer created from
+    // script is destroyed by the first navigation and the mechanism then
+    // silently does nothing, which is exactly what happened before it was
+    // moved into the layout with transition:persist.
+    const steps: [string, () => Promise<unknown>][] = [
+      ['forward', () => page.locator('[data-work-row][href="/work/back-office-report/"]').click()],
+      ['back', () => page.goBack()],
+      ['forward again', () => page.goForward()],
+      ['next project', () => page.locator('.case-next a').click()],
+    ];
+    for (const [label, act] of steps) {
+      await act();
+      await page.waitForTimeout(1900);
+      expect(await page.locator('[data-stairs]').count(), `${label}: layer survived`).toBe(1);
+      expect(await page.evaluate(
+        () => (document.querySelector('[data-stairs]') as HTMLElement).dataset.on === undefined,
+      ), `${label}: layer cleared`).toBe(true);
+    }
+  });
+
+  test('the steps are the brand blue, and take no pointer events', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const layer = page.locator('[data-stairs]');
+    expect(await layer.evaluate((n) => getComputedStyle(n).pointerEvents)).toBe('none');
+    // Hidden between navigations rather than a permanently composited layer.
+    expect(await layer.evaluate((n) => getComputedStyle(n).visibility)).toBe('hidden');
+    const step = await page.locator('[data-stair]').first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(step).toBe('rgb(5, 93, 255)');
+  });
+
+  test('reduced motion navigates without the mechanism', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.goto('/');
+    await page.waitForTimeout(1800);
+    expect(await page.locator('[data-stairs]').count()).toBe(0);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
+    await page.locator('[data-work-row]').first().click();
+    await page.waitForTimeout(1500);
+    // Still navigates, just without anything building across the screen.
+    expect(page.url()).toContain('/work/');
+    await ctx.close();
   });
 });
