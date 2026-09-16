@@ -303,6 +303,21 @@ test.describe('cursor', () => {
     }
   });
 
+  test('the preview escapes the transformed sections it sits inside', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    // The panel is position:fixed and placed in viewport coordinates, but a
+    // transformed ancestor becomes the containing block for fixed children —
+    // and the section focus scrub puts a scale on every section. Inside the
+    // work section the panel would resolve against that section instead of
+    // the window, and every edge calculation would be against the wrong box.
+    const parent = await page.locator('.work-preview').evaluate(
+      (el) => el.parentElement?.tagName,
+    );
+    expect(parent).toBe('BODY');
+  });
+
   test('the preview never leaves the viewport', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
     await page.setViewportSize({ width: 900, height: 600 });
@@ -591,5 +606,56 @@ test.describe('section motion', () => {
         return cs.filter !== 'none' || Number(cs.opacity) < 0.99;
       }).length);
     expect(soft).toBe(0);
+  });
+});
+
+test.describe('project covers', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
+
+  test('the index never pulls a full-size cover', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'network shape only');
+
+    const fetched: string[] = [];
+    page.on('response', (r) => {
+      if (r.url().includes('/images/work/')) fetched.push(r.url().split('/').pop()!);
+    });
+    await page.goto('/');
+    await page.waitForTimeout(2600);
+    // Nothing to guard until covers exist; this becomes a real assertion the
+    // moment the first one is dropped in.
+    test.skip(fetched.length === 0, 'no covers in public/images/work/ yet');
+
+    // `.work-preview` is position:fixed, so the browser treats it as
+    // on-screen and loading="lazy" defers nothing — every preview is
+    // fetched on first paint. Serving the full covers here would put the
+    // whole gallery on the index page's critical path for a panel about
+    // 270px wide.
+    const full = fetched.filter((n) => !n.includes('-thumb'));
+    expect(full, `full-size covers on the index: ${full.join(', ')}`).toEqual([]);
+  });
+
+  test('the case study gets the full-size cover, never upscaled', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'network shape only');
+    await page.goto('/work/sales-dashboard/');
+    await page.waitForTimeout(2600);
+
+    const img = page.locator('.case-visual img');
+    test.skip(await img.count() === 0, 'no cover for this project yet');
+
+    const m = await img.evaluate((el: HTMLImageElement) => ({
+      natural: el.naturalWidth,
+      shown: el.getBoundingClientRect().width,
+    }));
+    expect(m.natural).toBeGreaterThan(1000);
+    // Displayed at or below its own resolution: past that the browser is
+    // upscaling, which shows as soft text on a screenshot of an interface
+    // long before it would on a photograph.
+    expect(m.shown).toBeLessThanOrEqual(m.natural);
+
+    // And the cap holds on a display wide enough to ask for more.
+    await page.setViewportSize({ width: 2560, height: 900 });
+    await page.waitForTimeout(600);
+    const wide = await img.evaluate((el: HTMLImageElement) => el.getBoundingClientRect().width);
+    expect(wide).toBeLessThanOrEqual(m.natural);
   });
 });

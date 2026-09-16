@@ -1,10 +1,44 @@
 ---
+import { existsSync } from 'node:fs';
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import SectionLabel from '../components/SectionLabel.astro';
 import { SITE } from '../consts';
 
 const projects = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+
+/**
+ * A project's cover, by convention.
+ *
+ * Dropping `public/images/work/<id>.webp` is all it takes — the file is
+ * matched to the project by its own id, so there is no frontmatter to keep
+ * in sync and no way for the two to drift apart. An explicit `cover:` still
+ * wins, for a file that does not follow the convention.
+ */
+function coverFor(entry: { id: string; data: { cover?: string } }) {
+  if (entry.data.cover) return entry.data.cover;
+  const path = `/images/work/${entry.id}.webp`;
+  return existsSync(`public${path}`) ? path : undefined;
+}
+
+/**
+ * The hover preview's image.
+ *
+ * `.work-preview` is position:fixed, so the browser counts it as on-screen
+ * and `loading="lazy"` defers nothing — every preview is fetched on the
+ * first paint whether or not a row is ever hovered. Serving the full cover
+ * there would put the whole gallery on the critical path of the index page
+ * for a panel about 270px wide.
+ *
+ * `npm run covers` writes a small 4:3 crop beside each cover; this uses it
+ * when it exists and falls back to the cover when it does not, so a freshly
+ * dropped image still works before the script has been run.
+ */
+function thumbFor(cover?: string) {
+  if (!cover) return undefined;
+  const thumb = cover.replace(/\.webp$/, '-thumb.webp');
+  return existsSync(`public${thumb}`) ? thumb : cover;
+}
 
 // Every number on this page is derived from the content collection rather
 // than typed in, so a new project updates the counters and nothing here can
@@ -161,8 +195,8 @@ const schema = {
     <div class="work-preview" data-work-preview aria-hidden="true">
       {projects.map((p, i) => (
         <figure class="work-frame" data-preview={p.id}>
-          {p.data.cover
-            ? <img src={p.data.cover} alt="" loading="lazy" decoding="async" />
+          {coverFor(p)
+            ? <img src={thumbFor(coverFor(p))} alt="" decoding="async" width="600" height="450" />
             : (
               <div class="work-plate on-dark">
                 <span class="t-counter">{String(i + 1).padStart(2, '0')}</span>

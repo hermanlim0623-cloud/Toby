@@ -703,6 +703,10 @@ html:not(.js-ready) .loader{ display:none; }
 .case-visual{
   margin:0;
   overflow:hidden;
+  /* Never display a cover wider than the source. Past its native width the
+     browser is upscaling, which on a screenshot of an interface shows up as
+     soft text long before it would on a photograph. */
+  max-width:1672px;
 }
 .case-visual img{ width:100%; aspect-ratio:16 / 9; object-fit:cover; }
 .case-plate{

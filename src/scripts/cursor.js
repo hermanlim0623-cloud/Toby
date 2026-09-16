@@ -102,6 +102,14 @@ export function createCursor(signal, reduced) {
   const frames = new Map();
   if (preview) {
     preview.querySelectorAll('[data-preview]').forEach((f) => frames.set(f.dataset.preview, f));
+    // Reparented to the body, and this is load-bearing rather than tidy.
+    // The panel is position:fixed and placed in viewport coordinates, but a
+    // transformed ancestor becomes the containing block for fixed children —
+    // and the section focus scrub puts a scale on every section. Left inside
+    // the work section the panel resolves against that section instead of
+    // the window, so it drifts with the scrub and the edge clamping computed
+    // here means nothing.
+    document.body.appendChild(preview);
   }
 
   let px = window.innerWidth / 2;
@@ -150,10 +158,14 @@ export function createCursor(signal, reduced) {
     const h = preview.offsetHeight;
 
     let x = cx - w / 2;
-    // Above the control by default — the ASCII in the brief has the preview
-    // over the cursor, and it keeps the panel off the row being read.
+    // Above the control by default — it keeps the panel off the row being
+    // read. Near the top of the window there is no room for that, so it
+    // flips below; the clearance there has to clear the control itself,
+    // which sits 16px under the pointer and is 26px tall. At the original
+    // 34px the panel landed on top of it and VIEW → became unreadable over
+    // the photograph.
     let y = cy - h - 34;
-    if (y < EDGE) y = cy + 34;
+    if (y < EDGE) y = cy + 56;
 
     x = Math.min(Math.max(x, EDGE), window.innerWidth - w - EDGE);
     y = Math.min(Math.max(y, EDGE), window.innerHeight - h - EDGE);

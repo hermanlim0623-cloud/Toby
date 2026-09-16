@@ -1,4 +1,5 @@
 ---
+import { existsSync } from 'node:fs';
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import SectionLabel from '../../components/SectionLabel.astro';
@@ -21,6 +22,10 @@ export async function getStaticPaths() {
 }
 
 const { entry, next, index, total } = Astro.props;
+// Same convention as the index: a file named after the project is its cover,
+// and an explicit `cover:` overrides it.
+const cover = entry.data.cover
+  ?? (existsSync(`public/images/work/${entry.id}.webp`) ? `/images/work/${entry.id}.webp` : undefined);
 const { Content } = await render(entry);
 const d = entry.data;
 const num = String(index).padStart(2, '0');
@@ -68,8 +73,8 @@ const schema = {
 
     <div class="bleed">
       <figure class="case-visual" data-figure data-cursor="image">
-        {d.cover
-          ? <img src={d.cover} alt={`${d.title} — interface`} loading="lazy" decoding="async" />
+        {cover
+          ? <img src={cover} alt={`${d.title} — interface`} decoding="async" width="1672" height="941" />
           : (
             <div class="case-plate on-dark">
               <span class="t-counter">{num}</span>
