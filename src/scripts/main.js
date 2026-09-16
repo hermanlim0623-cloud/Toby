@@ -16,6 +16,7 @@ import { createClock } from './clock.js';
 import { createSpy } from './spy.js';
 import { createMenu } from './menu.js';
 import { createCursor } from './cursor.js';
+import { createHeroSlash } from './heroSlash.js';
 import { createLoader } from './loader.js';
 import { createTransitions } from './transition.js';
 import { createProgress } from './progress.js';
@@ -53,6 +54,7 @@ function initPage() {
   createMenu(signal);
   createSpy(ScrollTrigger);
   disposables.push(createCursor(signal, reduced));
+  disposables.push(createHeroSlash(signal, reduced));
   createReveals(gsap, ScrollTrigger, reduced);
   createFigureReveals(gsap, ScrollTrigger, reduced);
   createSectionMotion(gsap, ScrollTrigger, reduced,

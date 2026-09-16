@@ -718,3 +718,75 @@ test.describe('project covers', () => {
     expect(wide).toBeLessThanOrEqual(m.natural);
   });
 });
+
+test.describe('hero slash', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'pointer-driven');
+
+  test('appears on movement and fades once the pointer stops', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const fx = page.locator('[data-hero-slash]');
+
+    // It is an interaction, not a background: the hero at rest is unchanged.
+    await expect(fx).toHaveCSS('opacity', '0');
+
+    for (let i = 0; i < 18; i += 1) {
+      await page.mouse.move(340 + i * 26, 430);
+      await page.waitForTimeout(16);
+    }
+    await page.waitForTimeout(500);
+    expect(Number(await fx.evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThan(0.5);
+
+    // And it lets go again rather than staying on screen.
+    await page.waitForTimeout(1600);
+    await expect(fx).toHaveCSS('opacity', '0');
+  });
+
+  test('tracks the pointer horizontally', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    const band = page.locator('[data-hero-slash-band]');
+    const x = () => band.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).e);
+
+    await page.mouse.move(400, 430);
+    await page.waitForTimeout(700);
+    const left = await x();
+    await page.mouse.move(1100, 430);
+    await page.waitForTimeout(700);
+    expect(await x()).toBeGreaterThan(left);
+  });
+
+  test('never covers the hero content', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    // The band paints under the hero's own grid, and takes no pointer
+    // events, so the headline and the links behind it still work.
+    expect(await page.locator('[data-hero-slash]').evaluate(
+      (el) => getComputedStyle(el).pointerEvents,
+    )).toBe('none');
+    const fxZ = await page.locator('[data-hero-slash]').evaluate((el) => getComputedStyle(el).zIndex);
+    const contentZ = await page.locator('.hero .hero-top').evaluate((el) => getComputedStyle(el).zIndex);
+    expect(Number(fxZ)).toBeLessThan(Number(contentZ));
+    // The scroll link inside the hero is still clickable.
+    await page.locator('.hero-scroll').click();
+    await page.waitForTimeout(600);
+    expect(page.url()).toContain('#about');
+  });
+
+  test('is not mounted where there is no pointer to follow', async ({ browser }) => {
+    for (const ctxOpts of [
+      { reducedMotion: 'reduce' as const },
+      { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+    ]) {
+      const ctx = await browser.newContext(ctxOpts);
+      const page = await ctx.newPage();
+      await page.goto('/');
+      await page.waitForTimeout(2400);
+      expect(await page.locator('[data-hero-slash]').count()).toBe(0);
+      await ctx.close();
+    }
+  });
+});

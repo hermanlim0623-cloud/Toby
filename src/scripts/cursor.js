@@ -31,6 +31,10 @@ const EDGE = 24;
 /** Preview tilt ceiling, in degrees. */
 const MAX_TILT = 3;
 
+// The ring sits outside that wrapper: it is the one thing that shows in
+// every state, including the default one where there is no control at all.
+// The native pointer is left visible inside it rather than replaced, which
+// is what keeps the pointer itself lag-free while the ring eases.
 // The shapes live inside their own wrapper. The press compression scales
 // the wrapper, so it composes with whatever transform the current state has
 // on the shape itself rather than competing with it for specificity, which
@@ -39,6 +43,7 @@ const MAX_TILT = 3;
 // so it composes with the state's own transform instead of competing with
 // it for specificity.
 const SHAPES = `
+  <span class="cur-ring"></span>
   <div class="cur-inner">
   <div class="cur-box">
     <span class="cur-pre"></span>
