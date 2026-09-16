@@ -18,6 +18,7 @@
 // the boundary between the plates is a bleed rather than a cut.
 
 const BRUSH = 150;        // brush radius in CSS pixels at a 1200px-wide stage
+const REST = 0.34;        // how present the upper plate is before it is touched
 const BLEED = 0.985;      // per-frame ink retention — how long a stroke lasts
 const SPACING = 0.22;     // stamp spacing as a fraction of the brush radius
 
@@ -96,6 +97,11 @@ export function createHeroInk(root, { prefersReducedMotion, signal } = {}) {
   // the site is black, so the landing plate is shown as its negative: TOBY
   // comes up white on black, and the brush is what turns it black again.
   const invertTop = root.dataset.plateTopInvert !== 'false';
+  // At full strength the plate's wordmark is a second headline competing with
+  // the real one for the same space. Held back to a ghost, it is texture the
+  // H1 sits on — and the brush is then the only thing in the hero at full
+  // contrast, which is what makes the reveal read as a reveal.
+  const rest = Number(root.dataset.plateRest ?? REST);
   // Only the lower plate is required; `data-plate-top` is optional and is
   // synthesised as its negative when it is absent.
   if (!canvas || !underSrc) return () => {};
@@ -199,7 +205,9 @@ export function createHeroInk(root, { prefersReducedMotion, signal } = {}) {
       revealCtx.globalCompositeOperation = 'source-over';
 
       ctx.clearRect(0, 0, w, h);
+      ctx.globalAlpha = rest;
       drawCover(ctx, top);
+      ctx.globalAlpha = 1;
       ctx.drawImage(reveal, 0, 0);
     }
 
@@ -212,7 +220,9 @@ export function createHeroInk(root, { prefersReducedMotion, signal } = {}) {
 
     if (prefersReducedMotion) {
       // No brush, no loop: the upper plate is drawn once and that is the hero.
+      ctx.globalAlpha = rest;
       drawCover(ctx, top);
+      ctx.globalAlpha = 1;
       return;
     }
 

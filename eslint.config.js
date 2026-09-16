@@ -24,7 +24,9 @@ export default [
     },
   },
   {
-    files: ['tests/**/*.ts', '*.config.{js,mjs,ts}'],
+    // Build tooling: the test suite, the config files, and the scripts that
+    // prepare assets for the site. All Node, none of it shipped to a browser.
+    files: ['tests/**/*.ts', '*.config.{js,mjs,ts}', 'scripts/**/*.mjs'],
     languageOptions: { globals: { ...globals.node } },
   },
 ];
