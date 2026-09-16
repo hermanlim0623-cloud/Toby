@@ -415,7 +415,23 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
    interface: there is no card, and the rule between rows is the
    only edge in the section.
    ============================================================ */
+/* The list's own readout. The word is set from script as the sort runs,
+   and is composed rather than replaced so the line never reflows. */
+.work-status{
+  display:flex;
+  gap:0.6em;
+  margin-top:clamp(20px, 3vh, 36px);
+  border-bottom:1px solid var(--line);
+  padding-bottom:8px;
+}
+.work-status::after{ content:'SORTED'; }
+.work-status[data-state='queued']::after{ content:'QUEUED'; }
+.work-status[data-state='sorting']::after{ content:'SORTING'; color:var(--accent); }
+
 .work-list{ margin-top:clamp(8px, 2vh, 20px); }
+/* The rows are moved by transform alone while the sort runs, and stack
+   against each other as two of them cross. */
+.work-row{ position:relative; will-change:transform; }
 .work-row > a{
   display:grid;
   grid-template-columns:auto 1fr auto auto auto;

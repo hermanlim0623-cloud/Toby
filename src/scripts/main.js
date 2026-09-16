@@ -19,6 +19,7 @@ import { createCursor } from './cursor.js';
 import { createHeroSlash } from './heroSlash.js';
 import { createLoader } from './loader.js';
 import { createTransitions } from './transition.js';
+import { createWorkSort } from './workSort.js';
 import { createProgress } from './progress.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -53,6 +54,7 @@ function initPage() {
   createClock(signal);
   createMenu(signal);
   createSpy(ScrollTrigger);
+  disposables.push(createWorkSort(gsap, ScrollTrigger, reduced));
   disposables.push(createCursor(signal, reduced));
   disposables.push(createHeroSlash(signal, reduced));
   createReveals(gsap, ScrollTrigger, reduced);

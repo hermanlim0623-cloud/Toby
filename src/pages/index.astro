@@ -334,11 +334,18 @@ const schema = {
       ))}
     </div>
 
+    <!-- What the section is doing, in its own terms. Decorative metadata
+         about the list rather than part of it, so it is hidden from
+         assistive technology; the list itself is always in final order. -->
+    <p class="work-status t-tiny" data-work-status data-state="done" aria-hidden="true">
+      <span>{projects.length} RECORDS</span>
+    </p>
+
     <ul class="work-list" data-work-list>
       {projects.map((p, i) => (
         <li class="work-row">
           <a href={`/work/${p.id}/`} data-work-row data-preview={p.id} data-cursor="project">
-            <span class="work-num t-counter" data-odometer>{String(i + 1).padStart(2, '0')}</span>
+            <span class="work-num t-counter">{String(i + 1).padStart(2, '0')}</span>
             <span class="work-title t-lg">{p.data.title}</span>
             <span class="work-cat t-label t-muted">{p.data.tag}</span>
             <span class="work-year t-label t-muted">{p.data.timeframe}</span>

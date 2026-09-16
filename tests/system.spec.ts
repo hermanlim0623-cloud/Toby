@@ -1,5 +1,20 @@
 import { test, expect } from '@playwright/test';
 
+/**
+ * Scrolls to the work list and waits for its sort to settle.
+ *
+ * The rows are displaced and the list takes no pointer events while the
+ * sort runs, so anything that hovers or clicks a row has to let it finish
+ * first. Tests about the sort itself deliberately do not use this.
+ */
+async function workSettled(page: import('@playwright/test').Page) {
+  await page.locator('#work').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-work-status]');
+    return !el || el.getAttribute('data-state') === 'done';
+  }, null, { timeout: 15_000 });
+}
+
 // The design system's own rules, asserted. These are the things that make
 // the page read as one system rather than as a set of sections that happen
 // to share a font, and every one of them is easy to break by accident.
@@ -87,8 +102,7 @@ test.describe('the index', () => {
   test('the header names the section you are actually in', async ({ page }) => {
     await page.goto('/');
     await page.waitForTimeout(2200);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(900);
+    await workSettled(page);
     await expect(page.locator('[data-where-name]')).toHaveText('SELECTED WORK');
     await expect(page.locator('[data-where-num]')).toHaveText('02');
 
@@ -137,8 +151,7 @@ test.describe('work list', () => {
     test.skip(test.info().project.name !== 'chromium', 'pointer-driven');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await workSettled(page);
 
     const panel = page.locator('.work-preview');
     const box = (await page.locator('[data-work-row]').nth(1).boundingBox())!;
@@ -329,8 +342,7 @@ test.describe('cursor', () => {
 
     // A work row is a link too, but it declares itself a project, and the
     // explicit declaration has to win over the inferred link.
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await workSettled(page);
     const row = (await page.locator('[data-work-row]').nth(2).boundingBox())!;
     await page.mouse.move(row.x + 400, row.y + row.height / 2);
     await page.waitForTimeout(400);
@@ -341,8 +353,7 @@ test.describe('cursor', () => {
     test.skip(test.info().project.name !== 'chromium', 'fine pointer only');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await workSettled(page);
 
     const rows = page.locator('[data-work-row]');
     for (const i of [1, 4]) {
@@ -379,8 +390,7 @@ test.describe('cursor', () => {
     await page.setViewportSize({ width: 900, height: 600 });
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await workSettled(page);
 
     const boxes = await page.locator('[data-work-row]').evaluateAll(
       (els) => els.map((el) => el.getBoundingClientRect().toJSON()),
@@ -466,8 +476,7 @@ test.describe('cursor', () => {
 
     // A project row: the control appears, because VIEW → is information the
     // pointer cannot carry by itself.
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await workSettled(page);
     const row = (await page.locator('[data-work-row]').nth(2).boundingBox())!;
     await page.mouse.move(row.x + 400, row.y + row.height / 2);
     await page.waitForTimeout(500);
@@ -497,8 +506,7 @@ test.describe('cursor', () => {
       expect(pe, `${sel} must not take pointer events`).toBe('none');
     }
     // And a link under the cursor still opens.
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await workSettled(page);
     await page.locator('[data-work-row]').first().click();
     await page.waitForURL(/\/work\/.+\//);
   });
@@ -848,8 +856,7 @@ test.describe('staircase transition', () => {
     test.setTimeout(180_000);
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
+    await workSettled(page);
 
     const hrefs = await page.locator('[data-work-row]').evaluateAll(
       (els) => els.map((e) => e.getAttribute('href')!),
@@ -867,8 +874,7 @@ test.describe('staircase transition', () => {
       await page.goBack();
       await page.waitForTimeout(1800);
       expect(await ran(page), `${href} closing`).toBe(true);
-      await page.locator('#work').scrollIntoViewIfNeeded();
-      await page.waitForTimeout(400);
+      await workSettled(page);
     }
   });
 
@@ -876,8 +882,7 @@ test.describe('staircase transition', () => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
+    await workSettled(page);
     await page.locator('[data-work-row]').first().click();
     await page.waitForTimeout(1800);
     await watch(page);
@@ -890,8 +895,7 @@ test.describe('staircase transition', () => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
+    await workSettled(page);
 
     await watch(page);
     await page.locator('[data-work-row][href="/work/sales-dashboard/"]').click();
@@ -905,8 +909,7 @@ test.describe('staircase transition', () => {
     expect(await ran(page), 'browser back').toBe(true);
 
     // And the page's own back link, not just the browser control.
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
+    await workSettled(page);
     await page.locator('[data-work-row][href="/work/sales-dashboard/"]').click();
     await page.waitForTimeout(1900);
     await watch(page);
@@ -919,8 +922,7 @@ test.describe('staircase transition', () => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
+    await workSettled(page);
 
     // Sample the columns mid-build. If they were animating together every
     // column would sit at the same offset and the staircase would be a
@@ -962,8 +964,7 @@ test.describe('staircase transition', () => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
+    await workSettled(page);
 
     const row = page.locator('[data-work-row][href="/work/sales-dashboard/"]');
     await row.click();
@@ -983,8 +984,7 @@ test.describe('staircase transition', () => {
     test.skip(test.info().project.name !== 'chromium', 'client routing');
     await page.goto('/');
     await page.waitForTimeout(2400);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(700);
+    await workSettled(page);
 
     // The router replaces document.body on every swap. A layer created from
     // script is destroyed by the first navigation and the mechanism then
@@ -1025,12 +1025,135 @@ test.describe('staircase transition', () => {
     await page.goto('/');
     await page.waitForTimeout(1800);
     expect(await page.locator('[data-stairs]').count()).toBe(0);
-    await page.locator('#work').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+    await workSettled(page);
     await page.locator('[data-work-row]').first().click();
     await page.waitForTimeout(1500);
     // Still navigates, just without anything building across the screen.
     expect(page.url()).toContain('/work/');
+    await ctx.close();
+  });
+});
+
+test.describe('work list sort', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
+
+  /** Row indices ordered by where they sit on screen, sampled over the run. */
+  const watchOrder = (page: import('@playwright/test').Page) => page.evaluate(() => {
+    (window as unknown as { __ord: string[] }).__ord = [];
+    const poll = setInterval(() => {
+      const ys = [...document.querySelectorAll('.work-row')]
+        .map((r) => r.getBoundingClientRect().top);
+      const order = ys.map((_, i) => i).sort((a, b) => ys[a] - ys[b]).join('');
+      (window as unknown as { __ord: string[] }).__ord.push(order);
+    }, 25);
+    setTimeout(() => clearInterval(poll), 4000);
+  });
+  const orders = async (page: import('@playwright/test').Page) => {
+    const raw = await page.evaluate(() => (window as unknown as { __ord: string[] }).__ord);
+    return raw.filter((o, i) => i === 0 || raw[i - 1] !== o);
+  };
+
+  test('the rows arrive out of order and end sorted', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await watchOrder(page);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForFunction(
+      () => document.querySelector('[data-work-status]')!.getAttribute('data-state') === 'done',
+    );
+
+    const seen = await orders(page);
+    // No frame may show the finished list before the sort runs: seeing the
+    // answer and then watching it be thrown away reads as a glitch.
+    expect(seen[0], `first order seen: ${seen[0]}`).not.toBe('0123456');
+    expect(seen.at(-1), 'settles sorted').toBe('0123456');
+    // A sort, not a jump. Several distinct arrangements on the way.
+    expect(seen.length, `arrangements: ${seen.join(' ')}`).toBeGreaterThan(3);
+  });
+
+  test('the numbers stay readable, so the disorder is legible', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(120);
+    // Sampled mid-sort. An odometer rolling here would leave every row
+    // reading 00 at the one moment the number is what carries the meaning.
+    const nums = await page.locator('.work-num').allInnerTexts();
+    expect(nums.map((n) => n.trim())).toEqual(
+      ['01', '02', '03', '04', '05', '06', '07'],
+    );
+  });
+
+  test('the document order is right even mid-sort', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    // Only the transforms are allowed to lie. Reading order, tab order and
+    // link targets are the finished order from the first frame.
+    const hrefs = await page.locator('[data-work-row]').evaluateAll(
+      (els) => els.map((e) => e.getAttribute('href')!),
+    );
+    expect(hrefs[0]).toContain('sales-dashboard');
+    expect(hrefs.length).toBe(7);
+    const moved = await page.evaluate(() => [...document.querySelectorAll('.work-row')]
+      .some((r) => new DOMMatrix(getComputedStyle(r).transform).f !== 0));
+    expect(moved, 'rows were still in motion when this was sampled').toBe(true);
+  });
+
+  test('replays when the section is scrolled back to', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForFunction(
+      () => document.querySelector('[data-work-status]')!.getAttribute('data-state') === 'done',
+    );
+    await page.locator('#contact').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1200);
+
+    await watchOrder(page);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(2000);
+    const seen = await orders(page);
+    expect(seen.length, `second pass: ${seen.join(' ')}`).toBeGreaterThan(3);
+    expect(seen.at(-1)).toBe('0123456');
+  });
+
+  test('the list cannot be hovered while its rows are moving', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'client routing');
+    await page.goto('/');
+    await page.waitForTimeout(2400);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    // A row sliding under a stationary cursor would otherwise fire hover on
+    // whichever project happened to pass beneath it.
+    expect(await page.locator('[data-work-list]')
+      .evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+    await page.waitForFunction(
+      () => document.querySelector('[data-work-status]')!.getAttribute('data-state') === 'done',
+    );
+    expect(await page.locator('[data-work-list]')
+      .evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('auto');
+  });
+
+  test('reduced motion gets the sorted list and no sort', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.goto('/');
+    await page.waitForTimeout(1800);
+    await page.locator('#work').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const state = await page.evaluate(
+      () => [...document.querySelectorAll('.work-row')].map((r) => ({
+        y: new DOMMatrix(getComputedStyle(r).transform).f,
+        o: +getComputedStyle(r).opacity,
+      })));
+    expect(state.every((s) => s.y === 0), 'nothing displaced').toBe(true);
+    expect(state.every((s) => s.o === 1), 'everything legible').toBe(true);
     await ctx.close();
   });
 });
