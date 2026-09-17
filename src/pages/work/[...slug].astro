@@ -43,18 +43,23 @@ const facts = [
   { k: 'CAPABILITIES', v: d.capabilities.join(', ') },
 ];
 
+// Built by src/pages/og/[slug].png.ts, one per project. Seo.astro resolves
+// it against `site`, which is what social scrapers require.
+const ogImage = `/og/${entry.id}.png`;
+
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'CreativeWork',
   name: d.title,
   description: d.summary,
   about: d.tag,
+  image: new URL(ogImage, Astro.site).href,
   author: { '@type': 'Person', name: 'Toby', url: SITE.url },
   keywords: d.stack.join(', '),
 };
 ---
 
-<Base title={`${d.title} (${SITE.name})`} description={d.summary} type="article" schema={schema}>
+<Base title={`${d.title} (${SITE.name})`} description={d.summary} image={ogImage} type="article" schema={schema}>
   <article class="case" data-section={num} data-section-name={d.tag.toUpperCase()}>
 
     <header class="section bleed case-head" data-motion>

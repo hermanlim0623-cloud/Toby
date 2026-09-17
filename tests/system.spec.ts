@@ -1519,3 +1519,50 @@ test.describe('footer field', () => {
     }
   });
 });
+
+// The social card. Every case study used to point at the same /og.jpg, so a
+// shared link said nothing about which project it opened. These assert the
+// per-project cards exist, are actually distinct, and are shaped the way
+// social scrapers require.
+test.describe('social cards', () => {
+  test('every case study points at its own card, and no two are the same', async ({ page, request }) => {
+    await page.goto('/');
+    const slugs = await page.locator('[data-work-row]').evaluateAll((rows) =>
+      rows
+        .map((r) => r.closest('a')?.getAttribute('href') ?? r.getAttribute('href'))
+        .filter((h): h is string => !!h && h.startsWith('/work/'))
+        .map((h) => h.replace(/^\/work\/|\/$/g, '')),
+    );
+    expect(slugs.length).toBeGreaterThan(1);
+
+    const seen = new Set<string>();
+    for (const slug of slugs) {
+      await page.goto(`/work/${slug}/`);
+      const content = await page.locator('meta[property="og:image"]').getAttribute('content');
+      // Absolute, because scrapers do not resolve relative image paths.
+      expect(content).toBe(`https://toby.dev/og/${slug}.png`);
+      expect(seen.has(content!), `${slug} reuses another project's card`).toBe(false);
+      seen.add(content!);
+
+      // The declared dimensions have to be the file's real ones, or the
+      // preview is cropped by whatever platform trusted the meta tag.
+      const res = await request.get(`/og/${slug}.png`);
+      expect(res.status()).toBe(200);
+      expect(res.headers()['content-type']).toContain('image/png');
+      const body = await res.body();
+      expect(body.subarray(1, 4).toString()).toBe('PNG');
+      // Width and height are big-endian 32-bit values in the IHDR chunk.
+      expect(body.readUInt32BE(16)).toBe(1200);
+      expect(body.readUInt32BE(20)).toBe(630);
+    }
+  });
+
+  test('the card the page declares is the card its structured data names', async ({ page }) => {
+    // Two places state the image, and a scraper may read either. They are
+    // built from one value in the page, and this is what keeps that true.
+    await page.goto('/work/sales-dashboard/');
+    const meta = await page.locator('meta[property="og:image"]').getAttribute('content');
+    const ld = await page.locator('script[type="application/ld+json"]').textContent();
+    expect(JSON.parse(ld!).image).toBe(meta);
+  });
+});
