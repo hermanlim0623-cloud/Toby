@@ -69,12 +69,14 @@ so an inverted block is the same design rather than a second one.
 
 ```
 src/
+├── assets/work/  Project covers, processed by astro:assets at build time
 ├── components/   Header, SectionLabel, Seo
 ├── content/work/ Seven projects as Markdown, with the schema in
 │                 content.config.ts driving the counters, the technology
 │                 list and the project rows
 ├── layouts/      Base: head, header, footer, one script entry
-├── pages/        index, work/[...slug], 404
+├── lib/          Build-time helpers: cover resolution, the social card
+├── pages/        index, work/[...slug], 404, og/[slug].png
 ├── scripts/      One module per behaviour, all torn down on navigation
 └── styles/       global.css: the whole system
 ```
@@ -98,11 +100,26 @@ project so it is tested rather than assumed.
 
 ## Images
 
-The About figure composites two plates of the wordmark under a brush. See
-`public/images/README.md`. Project rows show a hover preview built from each
-project's own number, title and category; add `cover: "/images/work/x.webp"`
-to a project's frontmatter and it shows that instead, on both the row
-preview and the case-study page, with no code change.
+Project rows show a hover preview built from each project's own number,
+title and category. Drop `src/assets/work/<id>.webp` and that project shows
+the real screenshot instead, on both the row preview and the case-study
+page, with no code change: the file is matched to the project by id. A
+screenshot that cannot follow the convention can be named in the project's
+frontmatter as `cover:`, relative to the Markdown file.
+
+Everything after that is `astro:assets`. Each page declares the sizes it
+actually renders and the build derives them, in AVIF with a WebP fallback
+and content-hashed URLs. The hover panel matters most here: it is
+`position:fixed`, so the browser counts it as on-screen and `loading="lazy"`
+defers nothing, and every preview is fetched on the first paint whether or
+not a row is hovered. It asks for 300px, not the full cover.
+
+## Social cards
+
+Each case study gets its own card at `/og/<id>.png`, written during the
+build by Satori and resvg from the project's own entry. The composition is
+the site's dark plate, so a shared link and the page it opens are visibly
+the same object.
 
 ## Tests
 

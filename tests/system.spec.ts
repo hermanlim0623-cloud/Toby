@@ -676,29 +676,80 @@ test.describe('section motion', () => {
   });
 });
 
+/**
+ * The real pixel width of the file a responsive image actually loaded.
+ *
+ * Not `naturalWidth`: for a `w`-descriptor srcset the browser divides the
+ * intrinsic width by the density it computed from `sizes`, so `naturalWidth`
+ * reports the CSS box rather than the file, and an assertion built on it
+ * passes no matter which candidate was served. `currentSrc` is the file, so
+ * it is fetched and decoded to get the number the srcset was supposed to
+ * decide.
+ */
+async function loadedWidth(img: import('@playwright/test').Locator) {
+  return img.evaluate(async (el: HTMLImageElement) => {
+    const blob = await (await fetch(el.currentSrc)).blob();
+    const bmp = await createImageBitmap(blob);
+    const { width } = bmp;
+    bmp.close();
+    return width;
+  });
+}
+
 test.describe('project covers', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'one engine is enough');
 
   test('the index never pulls a full-size cover', async ({ page }) => {
     test.skip(test.info().project.name !== 'chromium', 'network shape only');
 
-    const fetched: string[] = [];
-    page.on('response', (r) => {
-      if (r.url().includes('/images/work/')) fetched.push(r.url().split('/').pop()!);
-    });
     await page.goto('/');
     await page.waitForTimeout(2600);
-    // Nothing to guard until covers exist; this becomes a real assertion the
-    // moment the first one is dropped in.
-    test.skip(fetched.length === 0, 'no covers in public/images/work/ yet');
+
+    const previews = page.locator('.work-frame img');
+    const count = await previews.count();
+    test.skip(count === 0, 'no covers in src/assets/work/ yet');
 
     // `.work-preview` is position:fixed, so the browser treats it as
     // on-screen and loading="lazy" defers nothing: every preview is
     // fetched on first paint. Serving the full covers here would put the
-    // whole gallery on the index page's critical path for a panel about
-    // 270px wide.
-    const full = fetched.filter((n) => !n.includes('-thumb'));
-    expect(full, `full-size covers on the index: ${full.join(', ')}`).toEqual([]);
+    // whole gallery on the index page's critical path for a panel the
+    // stylesheet caps at 300px.
+    //
+    // 600 is the 2x candidate; anything past it is a full cover that got
+    // through. This holds whichever file the browser picked and whatever
+    // the files are named, which the old `-thumb` suffix check did not.
+    const oversized: number[] = [];
+    for (let i = 0; i < count; i++) {
+      const w = await loadedWidth(previews.nth(i));
+      expect(w, 'a preview failed to load').toBeGreaterThan(0);
+      if (w > 600) oversized.push(w);
+    }
+    expect(oversized, `full-size covers on the index: ${oversized.join(', ')}`).toEqual([]);
+  });
+
+  test('the previews are served in a modern format', async ({ page }) => {
+    test.skip(test.info().project.name !== 'chromium', 'network shape only');
+
+    await page.goto('/');
+    await page.waitForTimeout(2600);
+
+    const previews = page.locator('.work-frame img');
+    test.skip(await previews.count() === 0, 'no covers in src/assets/work/ yet');
+
+    // `currentSrc` rather than the response's content-type: this is about
+    // which file the picture element resolved to, and reading it from the
+    // element keeps the assertion off whatever the static server decides
+    // to label a .avif as.
+    const chosen = await previews.evaluateAll((els) =>
+      els.map((el) => new URL((el as HTMLImageElement).currentSrc).pathname),
+    );
+    // The build emits AVIF with a WebP fallback; a Chromium that took
+    // neither means the picture element lost its sources.
+    const stale = chosen.filter((u) => !/\.(avif|webp)$/.test(u));
+    expect(stale, `not a modern format: ${stale.join(', ')}`).toEqual([]);
+    // And at least one is the AVIF, or the source element is not being
+    // consulted at all and everything is quietly falling back.
+    expect(chosen.some((u) => u.endsWith('.avif'))).toBe(true);
   });
 
   test('the case study gets the full-size cover, never upscaled', async ({ page }) => {
@@ -709,21 +760,24 @@ test.describe('project covers', () => {
     const img = page.locator('.case-visual img');
     test.skip(await img.count() === 0, 'no cover for this project yet');
 
-    const m = await img.evaluate((el: HTMLImageElement) => ({
-      natural: el.naturalWidth,
-      shown: el.getBoundingClientRect().width,
-    }));
-    expect(m.natural).toBeGreaterThan(1000);
-    // Displayed at or below its own resolution: past that the browser is
-    // upscaling, which shows as soft text on a screenshot of an interface
-    // long before it would on a photograph.
-    expect(m.shown).toBeLessThanOrEqual(m.natural);
+    // Displayed at or below the resolution of the file that was served:
+    // past that the browser is upscaling, which shows as soft text on a
+    // screenshot of an interface long before it would on a photograph.
+    // This is what a `sizes` that understates the layout box breaks.
+    const shown = await img.evaluate((el: HTMLImageElement) => el.getBoundingClientRect().width);
+    const served = await loadedWidth(img);
+    expect(served).toBeGreaterThan(1000);
+    expect(shown, `served ${served}px into a ${shown}px box`).toBeLessThanOrEqual(served);
 
-    // And the cap holds on a display wide enough to ask for more.
+    // And the cap holds on a display wide enough to ask for more. The
+    // candidate is re-read rather than compared against the one measured
+    // before the resize: upgrading to a wider file is the srcset working.
     await page.setViewportSize({ width: 2560, height: 900 });
-    await page.waitForTimeout(600);
-    const wide = await img.evaluate((el: HTMLImageElement) => el.getBoundingClientRect().width);
-    expect(wide).toBeLessThanOrEqual(m.natural);
+    await page.waitForTimeout(900);
+    const wideShown = await img.evaluate((el: HTMLImageElement) => el.getBoundingClientRect().width);
+    const wideServed = await loadedWidth(img);
+    expect(wideShown, `served ${wideServed}px into a ${wideShown}px box`)
+      .toBeLessThanOrEqual(wideServed);
   });
 });
 

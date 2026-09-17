@@ -1,9 +1,10 @@
 ---
-import { existsSync } from 'node:fs';
 import { getCollection, render } from 'astro:content';
+import { Picture } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import SectionLabel from '../../components/SectionLabel.astro';
 import { SITE } from '../../consts';
+import { coverFor } from '../../lib/covers';
 
 export async function getStaticPaths() {
   const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
@@ -22,10 +23,7 @@ export async function getStaticPaths() {
 }
 
 const { entry, next, index, total } = Astro.props;
-// Same convention as the index: a file named after the project is its cover,
-// and an explicit `cover:` overrides it.
-const cover = entry.data.cover
-  ?? (existsSync(`public/images/work/${entry.id}.webp`) ? `/images/work/${entry.id}.webp` : undefined);
+const cover = coverFor(entry);
 const { Content } = await render(entry);
 const d = entry.data;
 const num = String(index).padStart(2, '0');
@@ -83,9 +81,29 @@ const schema = {
     </header>
 
     <div class="bleed">
+      <!-- `sizes` restates the box the stylesheet gives this image, because
+           a browser picks its candidate from `sizes` alone and a guess that
+           runs low fetches a file too small and renders it soft. The cover
+           fills `.bleed`, which is the viewport less its two margins, up to
+           the max-width `.case-visual` sets; both are spelled out here in
+           the tokens' own terms so the two cannot drift apart.
+
+           The widest candidate is the source's own width: past that the
+           build would be upscaling a screenshot, which shows as soft text
+           long before it would on a photograph. -->
       <figure class="case-visual" data-figure data-cursor="image">
         {cover
-          ? <img src={cover} alt={`${d.title}, illustrative render`} decoding="async" width="1672" height="941" />
+          ? (
+            <Picture
+              src={cover}
+              widths={[640, 960, 1280, 1672]}
+              sizes="min(100vw - 2 * clamp(20px, 4.4vw, 80px), 1672px)"
+              formats={['avif']}
+              fallbackFormat="webp"
+              alt={`${d.title}, illustrative render`}
+              decoding="async"
+            />
+          )
           : (
             <div class="case-plate on-dark">
               <span class="t-counter">{num}</span>

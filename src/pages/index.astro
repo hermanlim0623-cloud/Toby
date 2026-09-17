@@ -1,45 +1,33 @@
 ---
-import { existsSync } from 'node:fs';
 import { getCollection } from 'astro:content';
+import { Picture } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import SectionLabel from '../components/SectionLabel.astro';
 import HeroSlash from '../components/HeroSlash.astro';
 import { SITE } from '../consts';
+import { coverFor } from '../lib/covers';
 
 const projects = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
 
 /**
- * A project's cover, by convention.
- *
- * Dropping `public/images/work/<id>.webp` is all it takes: the file is
- * matched to the project by its own id, so there is no frontmatter to keep
- * in sync and no way for the two to drift apart. An explicit `cover:` still
- * wins, for a file that does not follow the convention.
- */
-function coverFor(entry: { id: string; data: { cover?: string } }) {
-  if (entry.data.cover) return entry.data.cover;
-  const path = `/images/work/${entry.id}.webp`;
-  return existsSync(`public${path}`) ? path : undefined;
-}
-
-/**
- * The hover preview's image.
+ * The hover preview's image budget.
  *
  * `.work-preview` is position:fixed, so the browser counts it as on-screen
  * and `loading="lazy"` defers nothing: every preview is fetched on the
- * first paint whether or not a row is ever hovered. Serving the full cover
- * there would put the whole gallery on the critical path of the index page
- * for a panel about 270px wide.
+ * first paint whether or not a row is ever hovered. Seven full-width covers
+ * on that path would be the whole gallery downloaded for a panel the
+ * stylesheet caps at 300px.
  *
- * `npm run covers` writes a small 4:3 crop beside each cover; this uses it
- * when it exists and falls back to the cover when it does not, so a freshly
- * dropped image still works before the script has been run.
+ * So the panel asks for exactly what it renders. `astro:assets` derives
+ * these from the originals at build time, which is what the hand-run crop
+ * script used to do, except that nothing has to remember to run it and the
+ * 4:3 crop is stated here beside the 4:3 box rather than in a second file.
  */
-function thumbFor(cover?: string) {
-  if (!cover) return undefined;
-  const thumb = cover.replace(/\.webp$/, '-thumb.webp');
-  return existsSync(`public${thumb}`) ? thumb : cover;
-}
+// The stylesheet caps the panel at 300px, so that is the 1x size, and the
+// 2x candidate is the 600x450 the old crop script produced by hand. `fit`
+// crops the 16:9 cover into the panel's 4:3 box instead of squashing it.
+const PREVIEW_WIDTH = 300;
+const PREVIEW_HEIGHT = 225;
 
 // Every number on this page is derived from the content collection rather
 // than typed in, so a new project updates the counters and nothing here can
@@ -322,7 +310,20 @@ const schema = {
       {projects.map((p, i) => (
         <figure class="work-frame" data-preview={p.id}>
           {coverFor(p)
-            ? <img src={thumbFor(coverFor(p))} alt="" decoding="async" width="600" height="450" />
+            ? (
+              <Picture
+                src={coverFor(p)!}
+                width={PREVIEW_WIDTH}
+                height={PREVIEW_HEIGHT}
+                densities={[2]}
+                fit="cover"
+                position="center"
+                formats={['avif']}
+                fallbackFormat="webp"
+                alt=""
+                decoding="async"
+              />
+            )
             : (
               <div class="work-plate on-dark">
                 <span class="t-counter">{String(i + 1).padStart(2, '0')}</span>
